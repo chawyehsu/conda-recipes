@@ -24,6 +24,10 @@ tests:
       include:
         - detours.h
         - detver.h
+# uncomment this when bug in rattler-build is fixed
+#      lib:
+#        - if: win
+#          then: detours.lib
 
 about:
   homepage: https://github.com/microsoft/Detours
