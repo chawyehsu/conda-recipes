@@ -1,0 +1,37 @@
+context:
+  name: detours
+  version: 4.0.1
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/microsoft/Detours/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 75df7f1f084acaf83c3b96a90328e93823c2506a97363d50556f1ee700c81f68
+
+build:
+  number: 0
+  skip:
+    - unix
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+
+tests:
+  - package_contents:
+      include:
+        - detours.h
+        - detver.h
+
+about:
+  homepage: https://github.com/microsoft/Detours
+  license: MIT
+  license_file: LICENSE.md
+  description: Detours is a software package for monitoring and instrumenting API calls on Windows.
+  repository: https://github.com/microsoft/Detours
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
