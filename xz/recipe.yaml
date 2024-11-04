@@ -1,0 +1,41 @@
+context:
+  name: xz
+  version: 5.6.3
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/tukaani-project/xz/releases/download/v${{ version }}/xz-${{ version }}.tar.bz2
+  sha256: a95a49147b2dbb5487517acc0adcd77f9c2032cf00664eeae352405357d14a6c
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - cmake
+    - ninja
+
+tests:
+  - package_contents:
+      include:
+        - lzma.h
+
+about:
+  homepage: https://tukaani.org/xz/
+  summary: General-purpose data compression with high compression ratio
+  description: |
+    XZ Utils is free general-purpose data compression software with a high
+    compression ratio. XZ Utils were written for POSIX-like systems, but also
+    work on some not-so-POSIX systems.
+  license: 0BSD AND GPL-2.0-or-later
+  license_file: COPYING
+  documentation: https://tukaani.org/xz/
+  repository: https://github.com/tukaani-project/xz
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
