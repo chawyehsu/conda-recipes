@@ -10,4 +10,4 @@ license = "BSD-3-Clause"
 [tasks]
 
 [dependencies]
-rattler-build = ">=0.23.0,<0.24"
+rattler-build = ">=0.28.2,<0.29"
