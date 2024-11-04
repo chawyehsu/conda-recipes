@@ -79,11 +79,10 @@ jobs:
         CHANGED_FILES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
       run: |
-        pixi shell
         $changed_dirs = $env:CHANGED_FILES -split '\n'
         foreach ($dir in $changed_dirs) {
           Write-Host "Building $dir..."
-          rattler-build build --recipe-dir $dir `
+          pixi run build build --recipe-dir $dir `
             --target-platform=${{ matrix.target }} `
             -c conda-forge -c chawyehsu
         }
