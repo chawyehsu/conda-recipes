@@ -121,6 +121,11 @@ jobs:
       with:
         path: uploads
 
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        cache: true
+
     - name: Upload to Anaconda
       env:
         ANACONDA_OWNER: chawyehsu
