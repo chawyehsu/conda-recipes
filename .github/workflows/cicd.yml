@@ -118,6 +118,8 @@ jobs:
 
     - name: Download Artifacts
       uses: actions/download-artifact@v4
+      with:
+        path: uploads
 
     - name: Upload to Anaconda
       env:
@@ -135,7 +137,7 @@ jobs:
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
         }
-        foreach ($file in Get-ChildItem -Path "$name*.conda") {
-          Write-Host "Uploading $file..."
+        foreach ($file in Get-ChildItem -Path "./uploads/*/$name*.conda") {
+          Write-Host "Uploading $($file.Name)"
           pixi run build upload anaconda "$file" --log-style plain
         }
