@@ -37,8 +37,8 @@ jobs:
       shell: pwsh
       run: |
         if ($env:IS_RELEASE_COMMIT -eq 'true') {
-          $name = $env:COMMIT_MESSAGE -replace 'chore.*release (\w+) v?.*', '$1'
-          echo "should_build='true'" >> $env:GITHUB_OUTPUT
+          $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (\w+) v?.*', '$1'
+          echo "should_build=true" >> $env:GITHUB_OUTPUT
           echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
         } else {
           $changed_dirs = $env:CHANGED_FILES -split '\r?\n'
@@ -126,7 +126,7 @@ jobs:
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       shell: pwsh
       run: | # commit message format: chore(main): release pkg_name v1.2.3
-        $name = $env:COMMIT_MESSAGE -replace 'chore.*release (\w+) v?.*', '$1'
+        $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (\w+) v?.*', '$1'
         if ($name -eq '') {
           Write-Error "Package name is not found in the commit message."
           exit 1
