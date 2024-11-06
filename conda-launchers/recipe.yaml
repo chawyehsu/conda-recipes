@@ -1,0 +1,47 @@
+context:
+  name: conda-launchers
+  version: "0.1.0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  - url: https://raw.githubusercontent.com/python/cpython/3.7/PC/launcher.c
+    sha256: a3167e5908cefa942f63e0de5c6ec7a929e8ca82a382537ab8292e5aaa82ca2e
+    file_name: launcher.c.orig
+    patches:
+      - cpython-launcher-c-mods-for-setuptools.3.7.patch
+  - url: https://raw.githubusercontent.com/python/cpython/3.7/LICENSE
+    sha256: 96e4f59524cde5af4a2ea837ef5e52b65e51f1f999825fd8a9ec3b444cb82aea
+    file_name: cpython-LICENSE
+  - path: ./src
+
+build:
+  number: 0
+  skip:
+    - unix
+
+requirements:
+  build:
+    - zig >=0.13.0
+  run:
+    - python
+
+tests:
+  - script:
+      # there's currently no python for win-arm64 so only do tests for win-64
+      - if: win64
+        then:
+          file: test
+
+about:
+  homepage: https://github.com/conda
+  summary: Conda's Windows launchers for Python entry points
+  description: Windows launchers for Python entry points used in the conda ecosystem
+  license: Python-2.0 AND BSD-3-Clause
+  license_file: cpython-LICENSE
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
