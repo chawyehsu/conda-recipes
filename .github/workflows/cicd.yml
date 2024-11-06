@@ -26,7 +26,7 @@ jobs:
       with:
         dir_names: true
         dir_names_exclude_current_dir: true
-        dir_names_max_depth: '2'
+        dir_names_max_depth: '1'
 
     - name: Should Build
       id: should_build
