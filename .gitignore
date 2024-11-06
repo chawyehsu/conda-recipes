@@ -2,3 +2,4 @@ output
 # pixi environments
 .pixi
 *.egg-info
+.zig-cache
