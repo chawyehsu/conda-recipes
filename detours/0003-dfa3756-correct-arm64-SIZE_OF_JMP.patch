@@ -1,0 +1,40 @@
+From dfa375637ec28355b6dfcf43b1159d534ef98de1 Mon Sep 17 00:00:00 2001
+From: Jay Krell <jay.krell@cornell.edu>
+Date: Thu, 2 Aug 2018 17:35:58 -0700
+Subject: [PATCH] Correct ARM64 SIZE_OF_JMP from 8 to 16 and spell out 2*4 as
+ 8. (#11)
+
+This is a lot of bytes to overwrite, and it precludes
+patching a number of small-ish functions, but it is how many.
+
+For example, automatic following imports, has lead to system service stubs,
+that were smaller than this (and aligned less than this).
+---
+ src/detours.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/detours.cpp b/src/detours.cpp
+index 3cd0e9d..79171f1 100644
+--- a/src/detours.cpp
++++ b/src/detours.cpp
+@@ -893,7 +893,7 @@ struct _DETOUR_TRAMPOLINE
+ C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 120);
+ 
+ enum {
+-    SIZE_OF_JMP = 8
++    SIZE_OF_JMP = 16
+ };
+ 
+ inline ULONG fetch_opcode(PBYTE pbCode)
+@@ -915,7 +915,7 @@ PBYTE detour_gen_jmp_immediate(PBYTE pbCode, PBYTE *ppPool, PBYTE pbJmpVal)
+         pbLiteral = *ppPool;
+     }
+     else {
+-        pbLiteral = pbCode + 2*4;
++        pbLiteral = pbCode + 8;
+     }
+ 
+     *((PBYTE*&)pbLiteral) = pbJmpVal;
+-- 
+2.46.0.windows.1
+

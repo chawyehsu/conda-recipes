@@ -1,0 +1,124 @@
+From d19ba159a01502209a31c5b84cb6dd00abbea709 Mon Sep 17 00:00:00 2001
+From: Jay Krell <jay.krell@cornell.edu>
+Date: Fri, 25 Jan 2019 14:21:29 -0800
+Subject: [PATCH] ARM64 does not like addresses below 4GB -- rebase tests
+ higher. (#9)
+
+* ARM64 does not like addresses below 4GB -- rebase tests higher.
+
+Port of these changes:
+
+Change 114680 by NTDEV\jaykrell@JAYKRELL100-4 on 2017/10/20 22:24:17
+        ARM64 does not like addresses below 4GB.
+        Disable managed test on ARM64 until/unless anyone constructs an adequate environment.
+        It is disabled on ARM32 also.
+Affected files ...
+... //depot/969/private/jaykrell/3.0/samples/einst/Makefile#5 edit
+... //depot/969/private/jaykrell/3.0/samples/findfunc/Makefile#4 edit
+... //depot/969/private/jaykrell/3.0/samples/Makefile#4 edit
+
+Change 114788 by NTDEV\jaykrell@JAYKRELL100-4 on 2017/11/16 01:00:07
+        fix copy/pasto that breaks all except arm64
+Affected files ...
+... //depot/969/private/jaykrell/3.0/samples/findfunc/Makefile#5 edit
+
+* PR: Use separate variables for each .dll base address and set them each conditionally based on ARM64.
+---
+ samples/einst/Makefile    | 19 ++++++++++++++++---
+ samples/findfunc/Makefile | 15 +++++++++++++--
+ 2 files changed, 29 insertions(+), 5 deletions(-)
+
+diff --git a/samples/einst/Makefile b/samples/einst/Makefile
+index 8e1adc5..ea6fea7 100644
+--- a/samples/einst/Makefile
++++ b/samples/einst/Makefile
+@@ -9,6 +9,19 @@
+ 
+ !include ..\common.mak
+ 
++# ARM64 does not like base addresses below 4GB.
++# Append two extra zeros for it.
++#
++!if "$(DETOURS_TARGET_PROCESSOR)" == "ARM64"
++EDLL1X_BASE=0x710000000
++EDLL2X_BASE=0x720000000
++EDLL3X_BASE=0x730000000
++!else
++EDLL1X_BASE=0x7100000
++EDLL2X_BASE=0x7200000
++EDLL3X_BASE=0x7300000
++!endif
++
+ LIBS=$(LIBS) kernel32.lib user32.lib
+ 
+ all: dirs \
+@@ -60,7 +73,7 @@ $(BIND)\edll1x$(DETOURS_BITS).dll : $(OBJD)\edll1x.obj $(DEPS)
+         $(OBJD)\edll1x.obj /LD \
+         /link $(LINKFLAGS) $(LIBS) \
+         /subsystem:windows \
+-        /base:0x7100000
++        /base:$(EDLL1X_BASE)
+ 
+ $(OBJD)\edll1x$(DETOURS_BITS).bsc : $(OBJD)\edll1x.obj
+     bscmake /v /n /o $@ $(OBJD)\edll1x.sbr
+@@ -72,7 +85,7 @@ $(BIND)\edll2x$(DETOURS_BITS).dll : $(OBJD)\edll2x.obj $(DEPS)
+         $(OBJD)\edll2x.obj /LD \
+         /link $(LINKFLAGS) $(LIBS) \
+         /subsystem:console \
+-        /base:0x7200000
++        /base:$(EDLL2X_BASE)
+ 
+ $(OBJD)\edll2x$(DETOURS_BITS).bsc : $(OBJD)\edll2x.obj
+     bscmake /v /n /o $@ $(OBJD)\edll2x.sbr
+@@ -84,7 +97,7 @@ $(BIND)\edll3x$(DETOURS_BITS).dll : $(OBJD)\edll3x.obj $(DEPS)
+         $(OBJD)\edll3x.obj /LD \
+         /link $(LINKFLAGS) $(LIBS) \
+         /subsystem:console \
+-        /base:0x7300000
++        /base:$(EDLL3X_BASE)
+ 
+ $(OBJD)\edll3x$(DETOURS_BITS).bsc : $(OBJD)\edll3x.obj
+     bscmake /v /n /o $@ $(OBJD)\edll3x.sbr
+diff --git a/samples/findfunc/Makefile b/samples/findfunc/Makefile
+index eac824d..42e4e37 100644
+--- a/samples/findfunc/Makefile
++++ b/samples/findfunc/Makefile
+@@ -9,6 +9,17 @@
+ 
+ !include ..\common.mak
+ 
++# ARM64 does not like base addresses below 4GB.
++# Append two extra zeros for it.
++#
++!if "$(DETOURS_TARGET_PROCESSOR)" == "ARM64"
++TARGET_BASE=0x190000000
++EXTEND_BASE=0x1a0000000
++!else
++TARGET_BASE=0x1900000
++EXTEND_BASE=0x1a00000
++!endif
++
+ LIBS=$(LIBS) kernel32.lib
+ 
+ ##############################################################################
+@@ -44,7 +55,7 @@ $(BIND)\target$(DETOURS_BITS).dll $(BIND)\target$(DETOURS_BITS).lib: \
+         $(OBJD)\target.obj $(OBJD)\target.res \
+         /link $(LINKFLAGS) /subsystem:console \
+         /export:Target \
+-        /base:0x1900000 \
++        /base:$(TARGET_BASE) \
+         $(LIBS)
+ 
+ $(OBJD)\target$(DETOURS_BITS).bsc : $(OBJD)\target.obj
+@@ -60,7 +71,7 @@ $(BIND)\extend$(DETOURS_BITS).dll $(BIND)\extend$(DETOURS_BITS).lib: \
+         $(OBJD)\extend.obj $(OBJD)\extend.res \
+         /link $(LINKFLAGS) /subsystem:console \
+         /export:DetourFinishHelperProcess,@1,NONAME \
+-        /base:0x1a00000 \
++        /base:$(EXTEND_BASE) \
+         $(LIBS)
+ 
+ $(OBJD)\extend$(DETOURS_BITS).bsc : $(OBJD)\extend.obj
+-- 
+2.46.0.windows.1
+

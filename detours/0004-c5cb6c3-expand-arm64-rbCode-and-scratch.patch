@@ -1,0 +1,94 @@
+From c5cb6c3af5a6871df47131d6cc29d4262a412623 Mon Sep 17 00:00:00 2001
+From: Jay Krell <jay.krell@cornell.edu>
+Date: Thu, 2 Aug 2018 18:03:58 -0700
+Subject: [PATCH] Expand ARM64 rbCode (and scratch) to 128 and document why.
+ (#10)
+
+This is a little high, but 64 seemed low.
+
+Change 114686 by NTDEV\jaykrell@JAYKRELL100-4 on 2017/10/23 19:06:28
+        Expand ARM64 rbCode (and scratch) to 128 and document why.
+        This is a little high, but 64 seemed low.
+---
+ src/detours.cpp | 26 ++++++++++++++++++++++++--
+ src/disasm.cpp  |  6 +++---
+ 2 files changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/src/detours.cpp b/src/detours.cpp
+index 79171f1..f6137ec 100644
+--- a/src/detours.cpp
++++ b/src/detours.cpp
+@@ -879,7 +879,29 @@ inline ULONG detour_is_code_filler(PBYTE pbCode)
+ struct _DETOUR_TRAMPOLINE
+ {
+     // An ARM64 instruction is 4 bytes long.
+-    BYTE            rbCode[64];     // target code + jmp to pbRemain
++    //
++    // The overwrite is always 2 instructions plus a literal, so 16 bytes, 4 instructions.
++    //
++    // Copied instructions can expand.
++    //
++    // The scheme using MovImmediate can cause an instruction
++    // to grow as much as 6 times.
++    // That would be Bcc or Tbz with a large address space:
++    //   4 instructions to form immediate
++    //   inverted tbz/bcc
++    //   br
++    //
++    // An expansion of 4 is not uncommon -- bl/blr and small address space:
++    //   3 instructions to form immediate
++    //   br or brl
++    //
++    // A theoretical maximum for rbCode is thefore 4*4*6 + 16 = 112 (another 16 for jmp to pbRemain).
++    //
++    // With literals, the maximum expansion is 5, including the literals: 4*4*5 + 16 = 96.
++    //
++    // The number is rounded up to 128. m_rbScratchDst should match this.
++    //
++    BYTE            rbCode[128];    // target code + jmp to pbRemain
+     BYTE            cbCode;         // size of moved target code.
+     BYTE            cbCodeBreak[3]; // padding to make debugging easier.
+     BYTE            rbRestore[24];  // original target code.
+@@ -890,7 +912,7 @@ struct _DETOUR_TRAMPOLINE
+     PBYTE           pbDetour;       // first instruction of detour function.
+ };
+ 
+-C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 120);
++C_ASSERT(sizeof(_DETOUR_TRAMPOLINE) == 184);
+ 
+ enum {
+     SIZE_OF_JMP = 16
+diff --git a/src/disasm.cpp b/src/disasm.cpp
+index 4ae8d00..f7896d4 100644
+--- a/src/disasm.cpp
++++ b/src/disasm.cpp
+@@ -312,7 +312,7 @@ class CDetourDis
+ 
+     LONG                m_lScratchExtra;
+     PBYTE               m_pbScratchTarget;
+-    BYTE                m_rbScratchDst[64];
++    BYTE                m_rbScratchDst[64]; // matches or exceeds rbCode
+ };
+ 
+ PVOID WINAPI DetourCopyInstruction(_In_opt_ PVOID pDst,
+@@ -2538,7 +2538,7 @@ class CDetourDis
+     PBYTE   m_pbPool;
+     LONG    m_lExtra;
+ 
+-    BYTE    m_rbScratchDst[64];
++    BYTE    m_rbScratchDst[64]; // matches or exceeds rbCode
+ 
+     static const COPYENTRY s_rceCopyTable[33];
+ };
+@@ -3870,7 +3870,7 @@ class CDetourDis
+ 
+   protected:
+     PBYTE   m_pbTarget;
+-    BYTE    m_rbScratchDst[64];
++    BYTE    m_rbScratchDst[128]; // matches or exceeds rbCode
+ };
+ 
+ BYTE CDetourDis::PureCopy32(BYTE* pSource, BYTE* pDest)
+-- 
+2.46.0.windows.1
+

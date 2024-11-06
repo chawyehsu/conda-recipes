@@ -1,6 +1,6 @@
 context:
   name: detours
-  version: 4.0.1
+  version: "4.0.1"
 
 package:
   name: ${{ name|lower }}
@@ -9,6 +9,15 @@ package:
 source:
   url: https://github.com/microsoft/Detours/archive/refs/tags/v${{ version }}.tar.gz
   sha256: 75df7f1f084acaf83c3b96a90328e93823c2506a97363d50556f1ee700c81f68
+  patches:
+  - if: win and arm64
+    then: # patches refer to https://github.com/microsoft/Detours/commit/<commit-id>
+    - 0001-66b5e07-establish-arm64-baseline.patch
+    - 0002-e48b141-arm64-relocates-bl-as-br.patch
+    - 0003-dfa3756-correct-arm64-SIZE_OF_JMP.patch
+    - 0004-c5cb6c3-expand-arm64-rbCode-and-scratch.patch
+    - 0005-c0c0ef9-fix-arm64-detour_skip_jmp.patch
+    - 0006-d19ba15-arm64-does-not-like-addresses-below-4gb.patch
 
 build:
   number: 0
@@ -18,22 +27,25 @@ build:
 requirements:
   build:
     - ${{ compiler('cxx') }}
+  run_exports:
+    - ${{ pin_subpackage(name, upper_bound='x') }}
 
 tests:
   - package_contents:
       include:
         - detours.h
         - detver.h
-# uncomment this when bug in rattler-build is fixed
-#      lib:
-#        - if: win
-#          then: detours.lib
+      lib:
+        - if: win
+          then: detours.lib
 
 about:
   homepage: https://github.com/microsoft/Detours
+  summary: Microsoft Research Detours Package
+  description: Detours is a software package for monitoring and instrumenting API calls on Windows.
   license: MIT
   license_file: LICENSE.md
-  description: Detours is a software package for monitoring and instrumenting API calls on Windows.
+  documentation: https://github.com/microsoft/Detours/wiki
   repository: https://github.com/microsoft/Detours
 
 extra:
