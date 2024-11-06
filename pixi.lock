@@ -17,6 +17,9 @@ environments:
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/rattler-build-0.28.2-hcbb27f7_0.conda
       win-64:
+      - conda: https://conda.anaconda.org/conda-forge/win-64/m2-conda-epoch-20230914-0_x86_64.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/m2-msys2-runtime-3.4.9.1-hd8ed1ab_4.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/m2-patch-2.7.6.2-hd8ed1ab_4.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/rattler-build-0.28.2-h49672d7_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/ucrt-10.0.22621.0-h57928b3_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/vc-14.3-ha32ba9b_22.conda
@@ -96,6 +99,53 @@ packages:
   license_family: GPL
   size: 460992
   timestamp: 1729027639220
+- kind: conda
+  name: m2-conda-epoch
+  version: '20230914'
+  build: 0_x86_64
+  subdir: win-64
+  url: https://conda.anaconda.org/conda-forge/win-64/m2-conda-epoch-20230914-0_x86_64.conda
+  sha256: 5514efb349d06a8dfe7966b64a3076efad461934e35da9e84c0693a36097fe77
+  md5: e2a0da44f380c05e8d1f897ed3ec3ce0
+  constrains:
+  - msys2-conda-epoch <0.0a0
+  license: BSD-3-Clause
+  license_family: BSD
+  size: 6961
+  timestamp: 1696161055254
+- kind: conda
+  name: m2-msys2-runtime
+  version: 3.4.9.1
+  build: hd8ed1ab_4
+  build_number: 4
+  subdir: noarch
+  noarch: generic
+  url: https://conda.anaconda.org/conda-forge/noarch/m2-msys2-runtime-3.4.9.1-hd8ed1ab_4.conda
+  sha256: e505bf056171089c761b600d21dee062ad1c962b892ca8a7bc852211e3fd3273
+  md5: 77d17c947f9014b2b97a267c5e95cbf2
+  depends:
+  - m2-conda-epoch 20230914 *_x86_64
+  - m2-conda-epoch 20230914.*
+  license: GPL
+  size: 1918370
+  timestamp: 1719980096293
+- kind: conda
+  name: m2-patch
+  version: 2.7.6.2
+  build: hd8ed1ab_4
+  build_number: 4
+  subdir: noarch
+  noarch: generic
+  url: https://conda.anaconda.org/conda-forge/noarch/m2-patch-2.7.6.2-hd8ed1ab_4.conda
+  sha256: c53d091882a43cfc49f74be7c3d74d41856eac9a2cd62424d31c78b3ae5d313f
+  md5: ace92cb3c819c9baa7f90a9e58435ba8
+  depends:
+  - m2-conda-epoch 20230914 *_x86_64
+  - m2-conda-epoch 20230914.*
+  - m2-msys2-runtime
+  license: GPL
+  size: 132160
+  timestamp: 1719980487208
 - kind: conda
   name: openssl
   version: 3.3.2

@@ -12,3 +12,6 @@ build = "rattler-build"
 
 [dependencies]
 rattler-build = ">=0.28.2,<0.29"
+
+[target.win-64.dependencies]
+m2-patch = ">=2.7.6.2,<3"
