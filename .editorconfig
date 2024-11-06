@@ -11,7 +11,7 @@ insert_final_newline = true
 [*.bat]
 end_of_line = crlf
 
-[*.{yml,yaml,json}]
+[*.{json,xml,yml,yaml}]
 indent_size = 2
 
 [*.json]
