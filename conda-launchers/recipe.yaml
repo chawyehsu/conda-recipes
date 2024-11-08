@@ -11,7 +11,7 @@ source:
     sha256: a3167e5908cefa942f63e0de5c6ec7a929e8ca82a382537ab8292e5aaa82ca2e
     file_name: launcher.c.orig
     patches:
-      - cpython-launcher-c-mods-for-setuptools.3.7.patch
+      - ./src/cpython-launcher-c-mods-for-setuptools.3.7.patch
   - url: https://raw.githubusercontent.com/python/cpython/3.7/LICENSE
     sha256: 96e4f59524cde5af4a2ea837ef5e52b65e51f1f999825fd8a9ec3b444cb82aea
     file_name: cpython-LICENSE
@@ -36,11 +36,17 @@ tests:
           file: test
 
 about:
-  homepage: https://github.com/conda
+  homepage: https://github.com/conda/conda-launchers
   summary: Conda's Windows launchers for Python entry points
-  description: Windows launchers for Python entry points used in the conda ecosystem
+  description: |
+    Windows launchers for Python entry points used in the conda ecosystem
+
+    In order to launch Python entrypoints properly on Windows, a corresponding
+    executable is used to proxy the call because shebangs do not work on Windows.
+    This is achieved by the launchers (or called shims).
   license: Python-2.0 AND BSD-3-Clause
   license_file: cpython-LICENSE
+  repository: https://github.com/conda/conda-launchers
 
 extra:
   recipe-maintainers:
