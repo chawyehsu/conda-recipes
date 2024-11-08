@@ -23,8 +23,18 @@ if %ERRORLEVEL% neq 0 exit 1
 
 @rem install launcher scripts
 cd %SCRIPTS%
-for %%f in (cli gui) do (
-    echo print^("%%f-%EXE_TARGET%.exe successfully launched the accompanying Python script"^)> "%%f-%EXE_TARGET%-script.py"
-)
+(
+echo print^("cli-%EXE_TARGET%.exe successfully launched the accompanying Python script"^)
+)> "cli-%EXE_TARGET%-script.py"
+
+(
+echo import tkinter as tk
+echo root = tk.Tk^(^)
+echo text = tk.Label^(root, text ="Hello and Bye!"^)
+echo text.pack^(^)
+echo root.geometry^("150x100"^)
+echo root.after^(1000, lambda: root.destroy^(^)^)
+echo root.mainloop^(^)
+)> "gui-%EXE_TARGET%-script.pyw"
 
 if %ERRORLEVEL% neq 0 exit 1

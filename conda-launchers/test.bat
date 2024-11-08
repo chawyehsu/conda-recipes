@@ -13,3 +13,4 @@ if not exist "%SCRIPTS%\cli-%EXE_TARGET%-script.py" exit 1
 CALL "%SCRIPTS%\cli-%EXE_TARGET%.exe"
 if not exist "%SCRIPTS%\gui-%EXE_TARGET%.exe" exit 1
 if not exist "%SCRIPTS%\gui-%EXE_TARGET%-script.py" exit 1
+CALL "%SCRIPTS%\gui-%EXE_TARGET%.exe"
