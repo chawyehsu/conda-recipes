@@ -96,6 +96,7 @@ jobs:
           pixi run build build --recipe-dir $dir `
             --target-platform ${{ matrix.target }} `
             --log-style plain `
+            --skip-existing all `
             -c conda-forge -c chawyehsu
         }
 
