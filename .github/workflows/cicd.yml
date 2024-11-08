@@ -105,7 +105,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.target }}-builds
-        path: ./output/[${{ matrix.target }}|noarch]/*.conda
+        path: |
+          ./output/${{ matrix.target }}/*.conda
+          ./output/noarch/*.conda
 
   cd_release:
     name: Release
