@@ -17,6 +17,8 @@ jobs:
     steps:
     - name: Checkout Source
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
 
     - name: Changed Files
       id: changed_files
@@ -76,6 +78,7 @@ jobs:
     - name: Checkout Source
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.head_ref }}
         fetch-depth: 1
 
     - name: Setup Pixi
@@ -113,6 +116,7 @@ jobs:
     - name: Checkout Source
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.head_ref }}
         fetch-depth: 1
 
     - name: Download Artifacts
