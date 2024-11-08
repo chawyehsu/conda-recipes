@@ -1,8 +1,9 @@
 context:
   name: conda-launchers
   version: "0.1.0"
+  build_number: 0
 
-package:
+recipe:
   name: ${{ name|lower }}
   version: ${{ version }}
 
@@ -18,22 +19,120 @@ source:
   - path: ./src
 
 build:
-  number: 0
+  number: ${{ build_number }}
   skip:
     - unix
 
-requirements:
-  build:
-    - zig >=0.13.0
-  run:
-    - python
+outputs:
+  - package:
+      name: ${{ name }}
 
-tests:
-  - script:
-      # there's currently no python for win-arm64 so only do tests for win-64
-      - if: win64
-        then:
-          file: test
+    build:
+      noarch: generic
+
+    requirements:
+      run:
+        - ${{ name }}_win-32 ${{ version }}
+        - ${{ name }}_win-64 ${{ version }}
+        - ${{ name }}_win-arm64 ${{ version }}
+
+    tests:
+      - requirements:
+          run:
+            - ${{ name }}_win-32 ${{ version }}
+            - ${{ name }}_win-64 ${{ version }}
+            - ${{ name }}_win-arm64 ${{ version }}
+        script:
+          # cli
+          - if not exist %PREFIX%\Scripts\cli-32.exe exit 1
+          - if not exist %PREFIX%\Scripts\cli-32-script.py exit 1
+          - call "%PREFIX%\Scripts\cli-32.exe"
+          - if not exist %PREFIX%\Scripts\cli-64.exe exit 1
+          - if not exist %PREFIX%\Scripts\cli-64-script.py exit 1
+          - call "%PREFIX%\Scripts\cli-64.exe"
+          - if not exist %PREFIX%\Scripts\cli-arm64.exe exit 1
+          - if not exist %PREFIX%\Scripts\cli-arm64-script.py exit 1
+          # gui
+          - if not exist %PREFIX%\Scripts\gui-32.exe exit 1
+          - if not exist %PREFIX%\Scripts\gui-32-script.pyw exit 1
+          - call "%PREFIX%\Scripts\gui-32.exe"
+          - if not exist %PREFIX%\Scripts\gui-64.exe exit 1
+          - if not exist %PREFIX%\Scripts\gui-64-script.pyw exit 1
+          - call "%PREFIX%\Scripts\gui-64.exe"
+          - if not exist %PREFIX%\Scripts\gui-arm64.exe exit 1
+          - if not exist %PREFIX%\Scripts\gui-arm64-script.pyw exit 1
+
+  - package:
+      name: ${{ name }}_win-32
+
+    build:
+      noarch: generic
+
+    requirements:
+      build:
+        - zig >=0.13.0
+
+      run:
+        - python
+        - __win
+
+    tests:
+      - package_contents:
+          files:
+            # cli
+            - Scripts/cli-32.exe
+            - Scripts/cli-32-script.py
+            # gui
+            - Scripts/gui-32.exe
+            - Scripts/gui-32-script.pyw
+
+  - package:
+      name: ${{ name }}_win-64
+
+    build:
+      noarch: generic
+
+    requirements:
+      build:
+        - zig >=0.13.0
+
+      run:
+        - python
+        - __win
+
+    tests:
+      - package_contents:
+          files:
+            # cli
+            - Scripts/cli-64.exe
+            - Scripts/cli-64-script.py
+            # gui
+            - Scripts/gui-64.exe
+            - Scripts/gui-64-script.pyw
+
+  - package:
+      name: ${{ name }}_win-arm64
+
+    build:
+      noarch: generic
+
+    requirements:
+      build:
+        - zig >=0.13.0
+
+      run:
+        - python
+        - __win
+
+    tests:
+      - package_contents:
+          files:
+            # cli
+            - Scripts/cli-arm64.exe
+            - Scripts/cli-arm64-script.py
+            # gui
+            - Scripts/gui-arm64.exe
+            - Scripts/gui-arm64-script.pyw
 
 about:
   homepage: https://github.com/conda/conda-launchers

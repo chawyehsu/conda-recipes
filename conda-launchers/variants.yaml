@@ -1,0 +1,3 @@
+# This is required because noarch pacakges are built with linux ci by default
+noarch_platforms:
+  - win_64
