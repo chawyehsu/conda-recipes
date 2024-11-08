@@ -59,6 +59,10 @@ pub fn build(b: *std.Build) void {
     exe.linkLibC();
     exe.subsystem = if (gui) .Windows else .Console;
 
+    if (gui) {
+        exe.defineCMacro("_WINDOWS", null);
+    }
+
     if (target.result.abi == .gnu) {
         // NOTE: This requires Zig version 0.12.0-dev.3493+3661133f9 or later
         exe.mingw_unicode_entry_point = true;
