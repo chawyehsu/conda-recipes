@@ -149,5 +149,5 @@ jobs:
         }
         foreach ($file in Get-ChildItem -Path "./uploads/*/$name*.conda") {
           Write-Host "Uploading $($file.Name)"
-          pixi run build upload anaconda "$file" --log-style plain
+          pixi run build upload --log-style plain anaconda "$file"
         }
