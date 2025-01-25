@@ -14,8 +14,8 @@ build:
   number: 0
   skip:
     # remove when moonbit adds support for these targets
-    - win-arm64
-    - linux-aarch64
+    - win and arm64
+    - linux and aarch64
   script: cargo install --locked --root ${{ PREFIX }} --path . --no-track
 
 requirements:
