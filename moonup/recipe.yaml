@@ -22,6 +22,9 @@ requirements:
   build:
     - ${{ compiler("c") }}
     - ${{ compiler("rust") }}
+  host:
+    - if: linux
+      then: openssl
 
 tests:
   - script:
