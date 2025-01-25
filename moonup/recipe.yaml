@@ -1,0 +1,40 @@
+context:
+  name: moonup
+  version: "0.2.0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/chawyehsu/moonup/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: f0967ff0aa20b2f4c67277376b610b3cbf7eadaed798598593717c29df13a3a9
+
+build:
+  number: 0
+  skip:
+    # remove when moonbit adds support for these targets
+    - win-arm64
+    - linux-aarch64
+  script: cargo install --locked --root ${{ PREFIX }} --path . --no-track
+
+requirements:
+  build:
+    - ${{ compiler("c") }}
+    - ${{ compiler("rust") }}
+
+tests:
+  - script:
+      - moonup --help
+
+about:
+  homepage: https://github.com/chawyehsu/moonup
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: "Manage multiple MoonBit installations"
+  description: "Moonup is a version manager for MoonBit"
+  repository: https://github.com/chawyehsu/moonup
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
