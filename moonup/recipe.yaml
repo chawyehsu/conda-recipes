@@ -16,7 +16,11 @@ build:
     # remove when moonbit adds support for these targets
     - win and arm64
     - linux and aarch64
-  script: cargo install --locked --root ${{ PREFIX }} --path . --no-track
+  script:
+    # [win] disable default static linked executables
+    - if: win
+      then: del /S /Q .cargo\config.toml
+    - cargo install --locked --root ${{ PREFIX }} --path . --no-track
 
 requirements:
   build:
