@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: moonup
-  version: "0.2.0"
+  version: "0.2.1"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://github.com/chawyehsu/moonup/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: f0967ff0aa20b2f4c67277376b610b3cbf7eadaed798598593717c29df13a3a9
+  sha256: 85a321ab3cb21c65196851244fa82b93230b01e69676824750d83dc84c781c49
 
 build:
   number: 0
@@ -22,7 +22,8 @@ build:
     # [win] disable default static linked executables
     - if: win
       then: del /S /Q .cargo\config.toml
-    - cargo install --locked --root ${{ PREFIX }} --path . --no-track
+    # Disable `self_update` feature for conda variant builds
+    - cargo install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
 
 requirements:
   build:
