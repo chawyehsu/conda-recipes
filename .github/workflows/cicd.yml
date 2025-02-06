@@ -138,7 +138,9 @@ jobs:
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       shell: pwsh
       run: | # commit message format: chore(main): release pkg_name v1.2.3
+        $ErrorActionPreference = 'Stop'
         $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (\w+) v?.*', '$1'
+        Write-Host "Package name: $name"
         if ($name -eq '') {
           Write-Error "Package name is not found in the commit message."
           exit 1
@@ -147,9 +149,7 @@ jobs:
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
         }
-        $files = Get-ChildItem -Path "./uploads/*/$name*.conda"
-        Write-Debug "Files: $files"
-        $files | ForEach-Object {
-          Write-Host "Uploading $($_.Name)"
-          pixi run build upload --log-style plain anaconda "$($_.FullName)"
+        foreach ($file in Get-ChildItem -Path "./uploads/*/$name*.conda") {
+          Write-Host "Uploading $($file.Name)"
+          pixi run build upload --log-style plain anaconda "$file"
         }

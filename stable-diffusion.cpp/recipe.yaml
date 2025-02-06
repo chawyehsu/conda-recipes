@@ -1,0 +1,17 @@
+context:
+  name: stable-diffusion.cpp
+  version: snapshot-1d2af5c
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/leejet/stable-diffusion.cpp/archive/1d2af5ca3fc30dec9657a6cca8f87c20dfd83f1c.zip
+
+build:
+  number: 0
+
+about:
+  homepage: 
+  license: 
