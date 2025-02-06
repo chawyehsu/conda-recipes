@@ -147,7 +147,9 @@ jobs:
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
         }
-        foreach ($file in Get-ChildItem -Path "./uploads/*/$name*.conda") {
-          Write-Host "Uploading $($file.Name)"
-          pixi run build upload --log-style plain anaconda "$file"
+        $files = Get-ChildItem -Path "./uploads/*/$name*.conda"
+        Write-Debug "Files: $files"
+        $files | ForEach-Object {
+          Write-Host "Uploading $($_.Name)"
+          pixi run build upload --log-style plain anaconda "$($_.FullName)"
         }
