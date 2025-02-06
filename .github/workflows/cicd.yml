@@ -121,15 +121,15 @@ jobs:
         ref: ${{ github.head_ref }}
         fetch-depth: 1
 
-    - name: Download Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: uploads
-
     - name: Setup Pixi
       uses: prefix-dev/setup-pixi@v0.8.1
       with:
         cache: true
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: uploads
 
     - name: Upload to Anaconda
       env:
@@ -138,7 +138,6 @@ jobs:
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       shell: pwsh
       run: | # commit message format: chore(main): release pkg_name v1.2.3
-        $ErrorActionPreference = 'Stop'
         if (-not $env:ANACONDA_API_KEY -or $env:ANACONDA_API_KEY -eq '') {
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
@@ -149,10 +148,11 @@ jobs:
           Write-Error "Package name is not found in the commit message."
           exit 1
         }
+        Get-ChildItem -Path "./uploads/"
+        Get-ChildItem -Path "./uploads/*/*"
         $files = Get-ChildItem -Path "./uploads/*/$name*.conda"
         Write-Host "Files to upload: $($files.Count)"
         foreach ($file in $files) {
           Write-Host "Uploading $($file.Name)"
           pixi run build upload --log-style plain anaconda "$file"
         }
-        Write-Host "WTF??"
