@@ -139,17 +139,20 @@ jobs:
       shell: pwsh
       run: | # commit message format: chore(main): release pkg_name v1.2.3
         $ErrorActionPreference = 'Stop'
+        if (-not $env:ANACONDA_API_KEY -or $env:ANACONDA_API_KEY -eq '') {
+          Write-Error "ANACONDA_API_KEY is not set."
+          exit 1
+        }
         $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (\w+) v?.*', '$1'
         Write-Host "Package name: $name"
         if ($name -eq '') {
           Write-Error "Package name is not found in the commit message."
           exit 1
         }
-        if (-not $env:ANACONDA_API_KEY -or $env:ANACONDA_API_KEY -eq '') {
-          Write-Error "ANACONDA_API_KEY is not set."
-          exit 1
-        }
-        foreach ($file in Get-ChildItem -Path "./uploads/*/$name*.conda") {
+        $files = Get-ChildItem -Path "./uploads/*/$name*.conda"
+        Write-Host "Files to upload: $($files.Count)"
+        foreach ($file in $files) {
           Write-Host "Uploading $($file.Name)"
           pixi run build upload --log-style plain anaconda "$file"
         }
+        Write-Host "WTF??"
