@@ -149,11 +149,9 @@ jobs:
           Write-Error "Package name is not found in the commit message."
           exit 1
         }
-        Get-ChildItem -Path "./uploads/"
-        Get-ChildItem -Path "./uploads/*/*"
         $files = Get-ChildItem -Path "./uploads/*/$name*.conda"
         Write-Host "Files to upload: $($files.Count)"
-        # foreach ($file in $files) {
-        #   Write-Host "Uploading $($file.Name)"
-        #   pixi run build upload --log-style plain anaconda "$file"
-        # }
+        foreach ($file in $files) {
+          Write-Host "Uploading $($file.Name)"
+          pixi run build upload --log-style plain anaconda "$file"
+        }
