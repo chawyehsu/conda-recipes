@@ -22,7 +22,7 @@ jobs:
 
     - name: Changed Files
       id: changed_files
-      uses: tj-actions/changed-files@v45
+      uses: tj-actions/changed-files@v46
       with:
         dir_names: true
         dir_names_exclude_current_dir: true
