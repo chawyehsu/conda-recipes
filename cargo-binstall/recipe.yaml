@@ -17,7 +17,7 @@ build:
   script:
     env:
       # https://github.com/aws/aws-lc-rs/blob/dbb7d2e77dac0f696a5b59c94bd4571fdc1e1d5d/book/src/resources.md#troubleshooting
-      AWS_LC_SYS_C_STD: "99"
+      AWS_LC_SYS_CMAKE_BUILDER: "0"
     content: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
