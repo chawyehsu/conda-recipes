@@ -13,9 +13,12 @@ source:
   sha256: f96ba30a65888aaa48e7539512b734f88b6bdd03b40e06a765cc298087ef4618
 
 build:
-  number: 1
+  number: 2
   script:
-    - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+    env:
+      # https://github.com/aws/aws-lc-rs/blob/dbb7d2e77dac0f696a5b59c94bd4571fdc1e1d5d/book/src/resources.md#troubleshooting
+      AWS_LC_SYS_C_STD: "99"
+    content: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
   build:
