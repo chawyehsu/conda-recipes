@@ -13,7 +13,7 @@ source:
   sha256: f96ba30a65888aaa48e7539512b734f88b6bdd03b40e06a765cc298087ef4618
 
 build:
-  number: 0
+  number: 1
   script:
     - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
@@ -24,7 +24,8 @@ requirements:
 
 tests:
   - script:
-      - cargo-binstall -V
+      - if: build_platform == target_platform
+        then: cargo-binstall -V
 
 about:
   homepage: https://github.com/cargo-bins/cargo-binstall
