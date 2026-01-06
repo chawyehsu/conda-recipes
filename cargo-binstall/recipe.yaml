@@ -1,0 +1,42 @@
+schema_version: 1
+
+context:
+  name: cargo-binstall
+  version: "1.16.6"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/cargo-bins/cargo-binstall/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: f96ba30a65888aaa48e7539512b734f88b6bdd03b40e06a765cc298087ef4618
+
+build:
+  number: 0
+  script:
+    - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+
+requirements:
+  build:
+    - ${{ compiler("c") }}
+    - ${{ compiler("rust") }}
+
+tests:
+  - script:
+      - cargo-binstall -V
+
+about:
+  homepage: https://github.com/cargo-bins/cargo-binstall
+  license: GPL-3.0-only
+  license_file: crates/bin/LICENSE
+  summary: Binary installation for rust projects
+  description: |
+    Binstall provides a low-complexity mechanism for installing Rust binaries
+    as an alternative to building from source (via cargo install) or manually
+    downloading packages
+  repository: https://github.com/cargo-bins/cargo-binstall
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
