@@ -37,7 +37,7 @@ jobs:
       shell: pwsh
       run: |
         if ($env:IS_RELEASE_COMMIT -eq 'true') {
-          $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (\w+) v?.*', '$1'
+          $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (.*?) v?.*', '$1'
           echo "should_build=true" >> $env:GITHUB_OUTPUT
           echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
         } else {
