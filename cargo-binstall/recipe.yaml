@@ -23,7 +23,8 @@ build:
       then: |
         set AWS_LC_SYS_CFLAGS=/std:c11
         set CARGO_TARGET_DIR=C:\tmp\cargo-target
-        cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track --target aarch64-pc-windows-msvc
+        set CARGO_BUILD_TARGET=aarch64-pc-windows-msvc
+        cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
       else: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
