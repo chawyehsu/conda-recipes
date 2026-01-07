@@ -1,3 +1,7 @@
 c_compiler:
   - if: win
     then: vs2022
+macos_deployment_target:
+  - if: osx and x86_64
+    then: 10.9
+    else: 11.0
