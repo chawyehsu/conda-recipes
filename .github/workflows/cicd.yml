@@ -3,9 +3,7 @@ name: CICD
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-  pull_request_target:
+  pull_request:
 
 jobs:
   ci_check:
@@ -34,10 +32,15 @@ jobs:
         CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         IS_RELEASE_COMMIT: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'chore(main): release') }}"
+        IS_BUILD_COMMIT: "${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'build: test') }}"
       shell: pwsh
       run: |
         if ($env:IS_RELEASE_COMMIT -eq 'true') {
           $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (.*?) v?.*', '$1'
+          echo "should_build=true" >> $env:GITHUB_OUTPUT
+          echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
+        } else if ($env:IS_BUILD_COMMIT -eq 'true') {
+          $name = $env:COMMIT_MESSAGE -replace '(?s)build: test (.*?) v?.*', '$1'
           echo "should_build=true" >> $env:GITHUB_OUTPUT
           echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
         } else {
