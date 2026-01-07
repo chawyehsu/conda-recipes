@@ -23,7 +23,7 @@ build:
       then: export MACOSX_DEPLOYMENT_TARGET=10.9
     - if: osx and arm64
       then: export MACOSX_DEPLOYMENT_TARGET=11.0
-    - if: target_platform == win-arm64
+    - if: target_platform == 'win-arm64'
       then: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track --target aarch64-pc-windows-msvc
       else: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
