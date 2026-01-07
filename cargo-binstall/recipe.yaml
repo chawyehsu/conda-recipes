@@ -19,7 +19,13 @@ build:
       then: |
         set AWS_LC_SYS_CFLAGS=/std:c11 /experimental:c11atomics
         set AWS_LC_SYS_NO_JITTER_ENTROPY=1
-    - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+    - if: osx and x86_64
+      then: export MACOSX_DEPLOYMENT_TARGET=10.9
+    - if: osx and arm64
+      then: export MACOSX_DEPLOYMENT_TARGET=11.0
+    - if: target_platform == win-arm64
+      then: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track --target aarch64-pc-windows-msvc
+      else: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
   build:
