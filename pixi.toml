@@ -11,7 +11,7 @@ license = "BSD-3-Clause"
 build = "rattler-build"
 
 [dependencies]
-rattler-build = ">=0.35.6,<0.36"
+rattler-build = ">=0.55.0,<0.56"
 
 [target.win-64.dependencies]
 m2-patch = ">=2.7.6.2,<3"
