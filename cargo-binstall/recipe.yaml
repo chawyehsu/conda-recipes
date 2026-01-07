@@ -13,12 +13,11 @@ source:
   sha256: f96ba30a65888aaa48e7539512b734f88b6bdd03b40e06a765cc298087ef4618
 
 build:
-  number: 2
+  number: 0
   script:
-    env:
-      # https://github.com/aws/aws-lc-rs/blob/dbb7d2e77dac0f696a5b59c94bd4571fdc1e1d5d/book/src/resources.md#troubleshooting
-      AWS_LC_SYS_CMAKE_BUILDER: "0"
-    content: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+    - if: win
+      then: set AWS_LC_SYS_CFLAGS=/std:c11 /experimental:c11atomics
+    - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
   build:
