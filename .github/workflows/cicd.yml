@@ -40,7 +40,7 @@ jobs:
           echo "should_build=true" >> $env:GITHUB_OUTPUT
           echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
         } elseif ($env:IS_BUILD_COMMIT -eq 'true') {
-          $name = $env:COMMIT_MESSAGE -replace '(?s)build: test (.*?) v?.*', '$1'
+          $name = $env:COMMIT_MESSAGE -replace '(?s)build: test (.*?)', '$1'
           echo "should_build=true" >> $env:GITHUB_OUTPUT
           echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
         } else {
