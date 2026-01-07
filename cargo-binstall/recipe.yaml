@@ -16,7 +16,9 @@ build:
   number: 0
   script:
     - if: win
-      then: set AWS_LC_SYS_CFLAGS=/std:c11 /experimental:c11atomics
+      then: |
+        set AWS_LC_SYS_CFLAGS=/std:c11 /experimental:c11atomics
+        set AWS_LC_SYS_NO_JITTER_ENTROPY=1
     - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
