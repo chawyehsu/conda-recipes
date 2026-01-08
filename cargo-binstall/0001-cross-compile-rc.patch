@@ -1,0 +1,30 @@
+diff --git a/crates/bin/build.rs b/crates/bin/build.rs
+index 6f08aa57..086cb876 100644
+--- a/crates/bin/build.rs
++++ b/crates/bin/build.rs
+@@ -60,9 +60,22 @@ fn main() {
+         let handle = s.spawn(|| {
+             println!("{RERUN_INSTRUCTIONS}");
+ 
+-            embed_resource::compile("manifest.rc", embed_resource::NONE)
+-                .manifest_required()
+-                .unwrap();
++            // embed_resource::compile("manifest.rc", embed_resource::NONE)
++            //     .manifest_required()
++            //     .unwrap();
++
++            if cfg!(windows) {
++                let out_dir = std::env::var_os("OUT_DIR").unwrap();
++                let out = std::path::PathBuf::from(&out_dir).join("manifest.res");
++                let outpath = out.to_str().unwrap();
++
++                Command::new("rc.exe")
++                    .args(["/nologo", "/fo", outpath, "manifest.rc"])
++                    .status()
++                    .expect("failed to run rc.exe");
++            
++                println!("cargo:rustc-link-arg={outpath}");
++            }
+         });
+ 
+         emit_vergen_info();

@@ -11,6 +11,9 @@ package:
 source:
   url: https://github.com/cargo-bins/cargo-binstall/archive/refs/tags/v${{ version }}.tar.gz
   sha256: f96ba30a65888aaa48e7539512b734f88b6bdd03b40e06a765cc298087ef4618
+  patches:
+    - if: win and build_platform != target_platform
+      then: 0001-cross-compile-rc.patch
 
 build:
   number: 0
@@ -21,11 +24,9 @@ build:
         set AWS_LC_SYS_NO_JITTER_ENTROPY=1
     - if: build_platform == 'win-64' and target_platform == 'win-arm64'
       then: |
-        set AWS_LC_SYS_CFLAGS=/std:c11
-        set CARGO_TARGET_DIR=C:\tmp\cargo-target
-        set CARGO_BUILD_TARGET=aarch64-pc-windows-msvc
-        cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
-      else: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+        set "CARGO_TARGET_DIR=C:\tmp\cargo-target"
+        set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
+    - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
 
 requirements:
   build:
