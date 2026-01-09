@@ -43,9 +43,9 @@ tests:
 about:
   homepage: https://github.com/cargo-bins/cargo-binstall
   license: GPL-3.0-only
-  license_file: |
-    crates/bin/LICENSE
-    THIRDPARTY.yml
+  license_file:
+    - crates/bin/LICENSE
+    - THIRDPARTY.yml
   summary: Binary installation for rust projects
   description: |
     Binstall provides a low-complexity mechanism for installing Rust binaries
