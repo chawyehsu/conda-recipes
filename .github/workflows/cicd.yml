@@ -146,7 +146,7 @@ jobs:
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
         }
-        $name = $env:COMMIT_MESSAGE -replace '(?s)chore.*release (\w+) v?.*', '$1'
+        $name = ($env:COMMIT_MESSAGE -split '\n')[0] -replace '^chore.*release (.*?) v?.*', '$1'
         Write-Host "Package name: $name"
         if ($name -eq '') {
           Write-Error "Package name is not found in the commit message."
