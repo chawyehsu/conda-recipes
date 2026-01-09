@@ -11,6 +11,9 @@ package:
 source:
   url: https://github.com/cargo-bins/cargo-binstall/archive/refs/tags/v${{ version }}.tar.gz
   sha256: f96ba30a65888aaa48e7539512b734f88b6bdd03b40e06a765cc298087ef4618
+  patches:
+    - if: win and build_platform != target_platform
+      then: 0001-cross-compile-rc.patch
 
 build:
   number: 0
@@ -19,18 +22,18 @@ build:
       then: |
         set AWS_LC_SYS_CFLAGS=/std:c11 /experimental:c11atomics
         set AWS_LC_SYS_NO_JITTER_ENTROPY=1
-    - if: osx and x86_64
-      then: export MACOSX_DEPLOYMENT_TARGET=10.9
-    - if: osx and arm64
-      then: export MACOSX_DEPLOYMENT_TARGET=11.0
-    - if: target_platform == 'win-arm64'
-      then: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track --target aarch64-pc-windows-msvc
-      else: cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+    - if: build_platform == 'win-64' and target_platform == 'win-arm64'
+      then: |
+        set "CARGO_TARGET_DIR=C:\tmp\cargo-target"
+        set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
+    - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+    - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
 
 requirements:
   build:
     - ${{ compiler("c") }}
     - ${{ compiler("rust") }}
+    - cargo-bundle-licenses
 
 tests:
   - script:
@@ -40,7 +43,9 @@ tests:
 about:
   homepage: https://github.com/cargo-bins/cargo-binstall
   license: GPL-3.0-only
-  license_file: crates/bin/LICENSE
+  license_file:
+    - crates/bin/LICENSE
+    - THIRDPARTY.yml
   summary: Binary installation for rust projects
   description: |
     Binstall provides a low-complexity mechanism for installing Rust binaries
