@@ -27,11 +27,13 @@ build:
         set "CARGO_TARGET_DIR=C:\tmp\cargo-target"
         set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
     - cargo install --locked --root ${{ PREFIX }} --path crates/bin --no-track
+    - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
 
 requirements:
   build:
     - ${{ compiler("c") }}
     - ${{ compiler("rust") }}
+    - cargo-bundle-licenses
 
 tests:
   - script:
@@ -41,7 +43,9 @@ tests:
 about:
   homepage: https://github.com/cargo-bins/cargo-binstall
   license: GPL-3.0-only
-  license_file: crates/bin/LICENSE
+  license_file: |
+    crates/bin/LICENSE
+    THIRDPARTY.yml
   summary: Binary installation for rust projects
   description: |
     Binstall provides a low-complexity mechanism for installing Rust binaries
