@@ -28,7 +28,8 @@ requirements:
 
 tests:
   - script:
-      - mihoro --help
+    - if: build_platform == target_platform
+      then: mihoro -V
 
 about:
   homepage: https://github.com/spencerwooo/mihoro
