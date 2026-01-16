@@ -1,0 +1,43 @@
+schema_version: 1
+
+context:
+  name: mihoro
+  version: "0.9.1"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/spencerwooo/mihoro/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 202267d7254b5f07ac192639441cf719bc46ec3276ba36238617bb75e79f8c17
+
+build:
+  number: 0
+  skip:
+    - win
+    - osx
+  script:
+    # Disable `self_update` feature for conda variant builds
+    - cargo install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
+
+requirements:
+  build:
+    - ${{ compiler("c") }}
+    - ${{ compiler("rust") }}
+
+tests:
+  - script:
+      - mihoro --help
+
+about:
+  homepage: https://github.com/spencerwooo/mihoro
+  license: MIT
+  license_file: LICENSE
+  summary: Mihomo CLI client on Linux
+  description: Mihomo CLI client on Linux
+  repository: https://github.com/spencerwooo/mihoro
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
