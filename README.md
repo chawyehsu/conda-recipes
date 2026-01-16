@@ -4,6 +4,15 @@
 
 ## Getting Started
 
+Find and install packages from the channel:
+
+```
+pixi search <package> -c chaweyhsu
+pixi global install <package> -c chawyehsu -c conda-forge
+```
+
+## Development
+
 [Pixi] is used for project mangement.
 
 ```
