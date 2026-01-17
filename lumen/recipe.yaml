@@ -19,6 +19,8 @@ build:
     - if: build_platform == 'win-64' and target_platform == 'win-arm64'
       then: |
         set "CC=clang"
+        set "CARGO_TARGET_DIR=C:\tmp\cargo-target"
+        set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
     - cargo install --locked --root ${{ PREFIX }} --path . --no-track
 
 requirements:
