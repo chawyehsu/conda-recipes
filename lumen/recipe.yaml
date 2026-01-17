@@ -1,0 +1,44 @@
+schema_version: 1
+
+context:
+  name: lumen
+  version: "2.16.0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/jnsahaj/lumen/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: a25e94123988775a17ce10ab491f5eacd8191821014d1118cafb94a4b11da3a8
+
+build:
+  number: 0
+  skip:
+    - win
+  script:
+    - cargo install --locked --root ${{ PREFIX }} --path . --no-track
+
+requirements:
+  build:
+    - ${{ compiler("c") }}
+    - ${{ compiler("rust") }}
+
+tests:
+  - script:
+    - if: build_platform == target_platform
+      then: lumen -V
+
+about:
+  homepage: https://github.com/jnsahaj/lumen
+  license: MIT
+  license_file: LICENSE
+  summary: CLI tool to generate commit messages, summarise git diffs with AI
+  description: |
+    A command-line tool that uses AI to streamline your git workflow
+    generate commit messages, view diff and explain changes.
+  repository: https://github.com/jnsahaj/lumen
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
