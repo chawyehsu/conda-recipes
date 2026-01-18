@@ -14,8 +14,6 @@ source:
 
 build:
   number: 0
-  skip:
-    - unix
   script:
     # use clang for `ring`, see: https://github.com/briansmith/ring/issues/2215
     - if: build_platform == 'win-64' and target_platform == 'win-arm64'
