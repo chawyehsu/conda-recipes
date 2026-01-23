@@ -114,9 +114,9 @@ jobs:
 
   cd_release:
     name: Release
-    needs: ci_build
+    needs: [ci_check, ci_build]
     runs-on: ubuntu-latest
-    if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'chore(main): release') }}"
+    if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release') }}"
     steps:
     - name: Checkout Source
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -140,21 +140,22 @@ jobs:
         ANACONDA_OWNER: chawyehsu
         ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_KEY }}
         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        CHANGED_PACKAGES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
       run: | # commit message format: chore(main): release pkg_name v1.2.3
         if (-not $env:ANACONDA_API_KEY -or $env:ANACONDA_API_KEY -eq '') {
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
         }
-        $name = ($env:COMMIT_MESSAGE -split '\n')[0] -replace '^chore.*release (.*?) v?.*', '$1'
-        Write-Host "Package name: $name"
-        if ($name -eq '') {
-          Write-Error "Package name is not found in the commit message."
-          exit 1
-        }
-        $files = Get-ChildItem -Path "./uploads/*/$name*.conda"
-        Write-Host "Files to upload: $($files.Count)"
-        foreach ($file in $files) {
-          Write-Host "Uploading $($file.Name)"
-          pixi run build upload --log-style plain anaconda "$file"
+        if ($env:CHANGED_PACKAGES) {
+          $env:CHANGED_PACKAGES -split '\n' | ForEach-Object {
+            Write-Host "Changed package to upload: $_"
+
+            $files = Get-ChildItem -Path "./uploads/*/$_*.conda"
+            Write-Host "Files to upload for package $_: $($files.Count)"
+            foreach ($file in $files) {
+              Write-Host "Uploading $($file.Name)"
+              pixi run build upload --log-style plain anaconda "$file"
+            }
+          }
         }
