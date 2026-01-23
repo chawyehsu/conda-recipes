@@ -25,6 +25,7 @@ jobs:
         dir_names: true
         dir_names_exclude_current_dir: true
         dir_names_max_depth: '1'
+        separator: ","
 
     - name: Should Build
       id: should_build
@@ -44,21 +45,19 @@ jobs:
           echo "should_build=true" >> $env:GITHUB_OUTPUT
           echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
         } else {
-          $changed_dirs = $env:CHANGED_FILES -split '\r?\n'
+          $changed_dirs = $env:CHANGED_FILES -split ','
           Write-Host "Changed directories: $changed_dirs"
-          $changed_dirs = $changed_dirs | Where-Object { `
-            -not $_.StartsWith('.') `
-            -and (Test-Path -Path "$_/recipe.yaml") `
+          $changed_dirs = $changed_dirs | Where-Object {
+            -not $_.StartsWith('.') -and (Test-Path -Path "$_/recipe.yaml")
           }
-          $should_build = 'false'
+          Write-Host "Changed packages: $changed_dirs"
           if ($changed_dirs) {
-            $should_build = 'true'
+            $changed_dirs = $changed_dirs -join ','
+            Write-Host "should_build: true"
+            Write-Host "changed_dirs: $changed_dirs"
+            echo "should_build=true" >> $env:GITHUB_OUTPUT
+            echo "changed_dirs=$changed_dirs" >> $env:GITHUB_OUTPUT
           }
-          $changed_dirs = $changed_dirs -join '\n'
-          # Write-Host "should_build: $should_build"
-          # Write-Host "changed_dirs: $changed_dirs"
-          echo "should_build=$should_build" >> $env:GITHUB_OUTPUT
-          echo "changed_dirs=$changed_dirs" >> $env:GITHUB_OUTPUT
         }
 
   ci_build:
@@ -94,7 +93,7 @@ jobs:
         CHANGED_FILES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
       run: |
-        $changed_dirs = $env:CHANGED_FILES -split '\n'
+        $changed_dirs = $env:CHANGED_FILES -split ','
         foreach ($dir in $changed_dirs) {
           Write-Host "Building $dir..."
           pixi run build build --recipe-dir $dir `
@@ -148,11 +147,9 @@ jobs:
           exit 1
         }
         if ($env:CHANGED_PACKAGES) {
-          $env:CHANGED_PACKAGES -split '\n' | ForEach-Object {
-            Write-Host "Changed package to upload: $_"
-
+          $env:CHANGED_PACKAGES -split ',' | ForEach-Object {
             $files = Get-ChildItem -Path "./uploads/*/$_*.conda"
-            Write-Host "Files to upload for package $_: $($files.Count)"
+            Write-Host "Changed package to upload: $_ $($files.Count) files."
             foreach ($file in $files) {
               Write-Host "Uploading $($file.Name)"
               pixi run build upload --log-style plain anaconda "$file"
