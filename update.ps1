@@ -125,35 +125,56 @@ function Update-Recipe {
         [string]$NewSha
     )
 
-    $content = Get-Content -Raw -LiteralPath $RecipePath
-    $versionPattern = '(?ms)(^context:\s*\r?\n(?:[^\S\r\n].*\r?\n)*?\s*version:\s*)(["'']?)([^"''\r\n]+)(\2)'
-    $shaPattern = '(?ms)(^source:\s*\r?\n(?:[^\S\r\n].*\r?\n)*?\s*sha256:\s*)(["'']?)([^"''\r\n]+)(\2)'
+    $lines = Get-Content -LiteralPath $RecipePath
+    $contextUpdated = $false
+    $sourceUpdated = $false
+    $inContext = $false
+    $inSource = $false
 
-    if (-not ([regex]::IsMatch($content, $versionPattern))) {
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+
+        if ($line -match '^\s*context:\s*$') {
+            $inContext = $true
+            continue
+        }
+
+        if ($line -match '^\s*source:\s*$') {
+            $inSource = $true
+            continue
+        }
+
+        if ($inContext) {
+            if ($line -match '^\S') {
+                $inContext = $false
+            } elseif (-not $contextUpdated -and $line -match '^(\s+)version:\s*.*$') {
+                $lines[$i] = "$($Matches[1])version: `"$NewVersion`""
+                $contextUpdated = $true
+            }
+        }
+
+        if ($inSource) {
+            if ($line -match '^\S') {
+                $inSource = $false
+            } elseif (-not $sourceUpdated -and $line -match '^(\s+)sha256:\s*.*$') {
+                $lines[$i] = "$($Matches[1])sha256: $NewSha"
+                $sourceUpdated = $true
+            }
+        }
+    }
+
+    if (-not $contextUpdated) {
         Write-Output "  - skip: context.version not found"
         return $false
     }
-    if (-not ([regex]::IsMatch($content, $shaPattern))) {
+
+    if (-not $sourceUpdated) {
         Write-Output "  - skip: source.sha256 not found"
         return $false
     }
 
-    $updated = [regex]::Replace($content, $versionPattern, {
-        param($m)
-        $m.Groups[1].Value + $m.Groups[2].Value + $NewVersion + $m.Groups[2].Value
-    }, 1)
-
-    $updated = [regex]::Replace($updated, $shaPattern, {
-        param($m)
-        $m.Groups[1].Value + $m.Groups[2].Value + $NewSha + $m.Groups[2].Value
-    }, 1)
-
-    if ($updated -ne $content) {
-        [System.IO.File]::WriteAllText($RecipePath, $updated, [System.Text.UTF8Encoding]::new($false))
-        return $true
-    }
-
-    return $false
+    [System.IO.File]::WriteAllLines($RecipePath, $lines, [System.Text.UTF8Encoding]::new($false))
+    return $true
 }
 
 $targets = Get-TargetPackages -RootPath $root -Names $Package
@@ -210,6 +231,8 @@ foreach ($dir in $targets) {
         continue
     }
 
+    Write-Output "  - current version: $currentVersionText"
+
     $apiUrl = "https://api.github.com/repos/$($releaseInfo.Owner)/$($releaseInfo.Repo)/releases/latest"
     try {
         $release = Invoke-RestMethod -Uri $apiUrl -Headers @{ 'User-Agent' = 'conda-recipes-update' } -ErrorAction Stop
@@ -230,6 +253,8 @@ foreach ($dir in $targets) {
         continue
     }
 
+    Write-Output "  - latest version: $latestVersionText"
+
     if ($latestVersion -le $currentVersion) {
         Write-Output "  - up-to-date ($currentVersionText)"
         continue
@@ -241,9 +266,12 @@ foreach ($dir in $targets) {
         continue
     }
 
+    Write-Output "  - downloading: $resolvedUrl"
+
     $tempFile = [System.IO.Path]::GetTempFileName()
     try {
         Invoke-WebRequest -Uri $resolvedUrl -OutFile $tempFile -ErrorAction Stop
+        Write-Output "  - hashing: sha256"
         $newSha = (Get-FileHash -Algorithm SHA256 -LiteralPath $tempFile).Hash.ToLowerInvariant()
     } catch {
         Write-Output "  - skip: failed to download or hash"
