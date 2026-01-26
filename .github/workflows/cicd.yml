@@ -14,7 +14,7 @@ jobs:
       changed_dirs: ${{ steps.should_build.outputs.changed_dirs }}
     steps:
     - name: Checkout Source
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         ref: ${{ github.head_ref }}
 
@@ -78,7 +78,7 @@ jobs:
     if: needs.ci_check.outputs.should_build == 'true'
     steps:
     - name: Checkout Source
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         ref: ${{ github.head_ref }}
         fetch-depth: 1
@@ -118,7 +118,7 @@ jobs:
     if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'release') }}"
     steps:
     - name: Checkout Source
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
         ref: ${{ github.head_ref }}
         fetch-depth: 1
