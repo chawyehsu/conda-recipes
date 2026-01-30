@@ -95,7 +95,7 @@ jobs:
     name: Build
     needs: [ci_check, ci_matrix]
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix: ${{ fromJson(needs.ci_matrix.outputs.matrix) }}
 
     runs-on: ${{ matrix.os }}
