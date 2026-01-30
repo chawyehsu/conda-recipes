@@ -55,6 +55,12 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
+    - name: Checkout Source
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+        ref: ${{ github.head_ref }}
+        fetch-depth: 1
+
     - name: Set Matrix
       id: set-matrix
       env:
