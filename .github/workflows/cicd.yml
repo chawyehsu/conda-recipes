@@ -124,8 +124,8 @@ jobs:
           if (Test-Path -Path $matrixPath) {
             $matrixContent = Get-Content -Path $matrixPath | Out-String | ConvertFrom-Json
             $targets = $matrixContent.include | ForEach-Object { $_.target }
-            Write-Host "Build targets for $dir : $targets"
-            if (-not ($targets -contains ${{ matrix.target }})) {
+            Write-Host "Custom build targets for $dir : $targets"
+            if (-not ($targets -contains "${{ matrix.target }}")) {
               Write-Host "Skipping $dir for target ${{ matrix.target }}."
               continue
             }
