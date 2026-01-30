@@ -1,0 +1,47 @@
+schema_version: 1
+
+context:
+  name: skills-ref
+  version: "0.1.0"
+  requires_python: ">=3.11"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  git: https://github.com/agentskills/agentskills.git
+
+build:
+  noarch: python
+  python:
+    entry_points:
+      - skills-ref = skills_ref.cli:main
+  number: 0
+  script: ${{ PYTHON }} -m pip install ./skills-ref -vv --no-deps --no-build-isolation --disable-pip-version-check
+
+requirements:
+  host:
+    - hatchling
+    - pip
+  run:
+    - python ${{ requires_python }}
+    - click >=8.0
+    - strictyaml >=1.7.3
+
+tests:
+  - python:
+      imports:
+        - skills_ref
+
+about:
+  homepage: https://github.com/agentskills/agentskills
+  license: Apache-2.0
+  license_file: skills-ref/LICENSE
+  summary: Reference library for Agent Skills
+  description: Reference library for Agent Skills
+  repository: https://github.com/agentskills/agentskills
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
