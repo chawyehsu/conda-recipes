@@ -31,33 +31,20 @@ jobs:
       id: should_build
       env:
         CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        IS_RELEASE_COMMIT: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'chore(main): release') }}"
-        IS_BUILD_COMMIT: "${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'build: test') }}"
       shell: pwsh
       run: |
-        if ($env:IS_RELEASE_COMMIT -eq 'true') {
-          $name = ($env:COMMIT_MESSAGE -split '\n')[0] -replace '^chore.*release (.*?) v?.*', '$1'
+        $changed_dirs = $env:CHANGED_FILES -split ','
+        Write-Host "Changed directories: $changed_dirs"
+        $changed_dirs = $changed_dirs | Where-Object {
+          -not $_.StartsWith('.') -and (Test-Path -Path "$_/recipe.yaml")
+        }
+        Write-Host "Changed packages: $changed_dirs"
+        if ($changed_dirs) {
+          $changed_dirs = $changed_dirs -join ','
+          Write-Host "should_build: true"
+          Write-Host "changed_dirs: $changed_dirs"
           echo "should_build=true" >> $env:GITHUB_OUTPUT
-          echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
-        } elseif ($env:IS_BUILD_COMMIT -eq 'true') {
-          $name = ($env:COMMIT_MESSAGE -split '\n')[0] -replace '^build: test (.*?)', '$1'
-          echo "should_build=true" >> $env:GITHUB_OUTPUT
-          echo "changed_dirs=$name" >> $env:GITHUB_OUTPUT
-        } else {
-          $changed_dirs = $env:CHANGED_FILES -split ','
-          Write-Host "Changed directories: $changed_dirs"
-          $changed_dirs = $changed_dirs | Where-Object {
-            -not $_.StartsWith('.') -and (Test-Path -Path "$_/recipe.yaml")
-          }
-          Write-Host "Changed packages: $changed_dirs"
-          if ($changed_dirs) {
-            $changed_dirs = $changed_dirs -join ','
-            Write-Host "should_build: true"
-            Write-Host "changed_dirs: $changed_dirs"
-            echo "should_build=true" >> $env:GITHUB_OUTPUT
-            echo "changed_dirs=$changed_dirs" >> $env:GITHUB_OUTPUT
-          }
+          echo "changed_dirs=$changed_dirs" >> $env:GITHUB_OUTPUT
         }
 
   ci_matrix:
@@ -179,7 +166,6 @@ jobs:
       env:
         ANACONDA_OWNER: chawyehsu
         ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_KEY }}
-        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         CHANGED_PACKAGES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
       run: | # commit message format: chore(main): release pkg_name v1.2.3
