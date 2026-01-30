@@ -87,6 +87,7 @@ jobs:
             $matrixInclude = $matrixInclude + $matrixContent.include
           }
         }
+        Write-Host "Generated matrix include: `n$matrixInclude"
         $matrixJson = @{ include = $matrixInclude } | ConvertTo-Json -Compress
         echo "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
 
@@ -123,8 +124,9 @@ jobs:
           if (Test-Path -Path $matrixPath) {
             $matrixContent = Get-Content -Path $matrixPath | Out-String | ConvertFrom-Json
             $targets = $matrixContent.include | ForEach-Object { $_.target }
-            if (-not ($targets -contains $env:matrix_target)) {
-              Write-Host "Skipping $dir for target $env:matrix_target."
+            Write-Host "Build targets for $dir: $targets"
+            if (-not ($targets -contains ${{ matrix.target }})) {
+              Write-Host "Skipping $dir for target ${{ matrix.target }}."
               continue
             }
           }
