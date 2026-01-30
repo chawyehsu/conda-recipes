@@ -60,19 +60,49 @@ jobs:
           }
         }
 
+  ci_matrix:
+    name: Generate Matrix
+    needs: ci_check
+    runs-on: ubuntu-latest
+    if: needs.ci_check.outputs.should_build == 'true'
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - name: Set Matrix
+      id: set-matrix
+      env:
+        CHANGED_DIRS: ${{ needs.ci_check.outputs.changed_dirs }}
+      shell: pwsh
+      run: |
+        $matrixInclude = @()
+        $changed_dirs = $env:CHANGED_DIRS -split ','
+        foreach ($dir in $changed_dirs) {
+          # Check matrix.json, use default matrix and skip if not found
+          # default matrix file located at .github/matrix.json
+          $matrixPath = Join-Path -Path $dir -ChildPath "matrix.json"
+          if (-not (Test-Path -Path $matrixPath)) {
+            Write-Host "No matrix.json found for $dir, using default matrix."
+            # Add all targets from default matrix
+            $defaultMatrixPath = Get-Content -Path ".github/matrix.json" | Out-String | ConvertFrom-Json
+            $matrixInclude = $defaultMatrixPath.include
+            break
+          } else {
+            $matrixContent = Get-Content -Path $matrixPath | Out-String | ConvertFrom-Json
+            if (-not $matrixContent.include) {
+              continue
+            }
+            $matrixInclude = $matrixInclude + $matrixContent.include
+          }
+        }
+        $matrixJson = @{ include = $matrixInclude } | ConvertTo-Json -Compress
+        echo "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
+
   ci_build:
     name: Build
-    needs: ci_check
+    needs: [ci_check, ci_matrix]
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - { target: win-64,        os: windows-latest }
-          - { target: win-arm64,     os: windows-latest }
-          - { target: linux-64,      os: ubuntu-latest }
-          - { target: linux-aarch64, os: ubuntu-latest }
-          - { target: osx-64,        os: macos-15-intel }
-          - { target: osx-arm64,     os: macos-latest }
+      matrix: ${{ fromJson(needs.ci_matrix.outputs.matrix) }}
 
     runs-on: ${{ matrix.os }}
     if: needs.ci_check.outputs.should_build == 'true'
@@ -95,6 +125,17 @@ jobs:
       run: |
         $changed_dirs = $env:CHANGED_FILES -split ','
         foreach ($dir in $changed_dirs) {
+          # Check matrix.json and skip if target not found
+          $matrixPath = Join-Path -Path $dir -ChildPath "matrix.json"
+          if (Test-Path -Path $matrixPath) {
+            $matrixContent = Get-Content -Path $matrixPath | Out-String | ConvertFrom-Json
+            $targets = $matrixContent.include | ForEach-Object { $_.target }
+            if (-not ($targets -contains $env:matrix_target)) {
+              Write-Host "Skipping $dir for target $env:matrix_target."
+              continue
+            }
+          }
+
           Write-Host "Building $dir..."
           pixi run build build --recipe-dir $dir `
             --target-platform ${{ matrix.target }} `
