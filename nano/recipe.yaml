@@ -1,0 +1,51 @@
+schema_version: 1
+
+context:
+  name: nano
+  version: "8.7"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://www.nano-editor.org/dist/v${{ (version | split('.'))[0] }}/nano-${{ version }}.tar.xz
+  sha256: afd287aa672c48b8e1a93fdb6c6588453d527510d966822b687f2835f0d986e9
+
+build:
+  number: 0
+  skip:
+    - win
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - make
+    - pkg-config
+  host:
+    - ncurses
+
+tests:
+  - script:
+    - if: build_platform == target_platform
+      then: nano -h
+  - package_contents:
+      files: bin/nano
+
+about:
+  homepage: https://www.nano-editor.org
+  license: GPL-3.0-or-later
+  license_file: COPYING
+  summary: Nano's ANOther text editor, inspired by Pico
+  repository: https://cgit.git.savannah.gnu.org/cgit/nano.git/
+  description: |
+    Nano is a small and simple text editor for use on the terminal.
+    It copied the interface and key bindings of the Pico editor but
+    added several missing features: undo/redo, syntax highlighting,
+    line numbers, softwrapping, multiple buffers, selecting text by
+    holding Shift, search-and-replace with regular expressions, and
+    several other conveniences.
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
