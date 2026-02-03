@@ -1,0 +1,6 @@
+{
+  "include": [
+    { "target": "win-64", "os": "ubuntu-latest" },
+    { "target": "win-64", "os": "windows-latest" }
+  ]
+}
