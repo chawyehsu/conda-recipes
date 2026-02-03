@@ -5,6 +5,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+$DefaultPackages = @(
+    'cargo-binstall',
+    'lumen',
+    'mihoro',
+    'moonup'
+)
+
 if (-not (Get-Command -Name ConvertFrom-Yaml -ErrorAction SilentlyContinue)) {
     Write-Error "ConvertFrom-Yaml is required. Please run with PowerShell 7.2+"
     exit 1
@@ -19,26 +26,18 @@ function Get-TargetPackages {
     )
 
     $targets = @()
-    if ($Names -and $Names.Count -gt 0) {
-        foreach ($name in $Names) {
-            $dir = Join-Path $RootPath $name
-            if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
-                continue
-            }
-            $recipe = Join-Path $dir 'recipe.yaml'
-            if (Test-Path -LiteralPath $recipe -PathType Leaf) {
-                $targets += $dir
-            }
-        }
-        return $targets
+    if (-not $Names -or $Names.Count -eq 0) {
+        $Names = $DefaultPackages
     }
 
-    Get-ChildItem -LiteralPath $RootPath -Directory | Where-Object {
-        $_.Name -ne 'output' -and -not $_.Name.StartsWith('.')
-    } | ForEach-Object {
-        $recipe = Join-Path $_.FullName 'recipe.yaml'
+    foreach ($name in $Names) {
+        $dir = Join-Path $RootPath $name
+        if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
+            continue
+        }
+        $recipe = Join-Path $dir 'recipe.yaml'
         if (Test-Path -LiteralPath $recipe -PathType Leaf) {
-            $targets += $_.FullName
+            $targets += $dir
         }
     }
 
