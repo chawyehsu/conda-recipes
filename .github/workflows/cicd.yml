@@ -131,6 +131,21 @@ jobs:
             }
           }
 
+          # Build unpublished dependencies if any
+          $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.txt"
+          if (Test-Path -Path $unpublishedDepsPath) {
+            # read each line in _deps.txt and build the dependency
+            $deps = Get-Content -Path $unpublishedDepsPath | Where-Object { $_ -and -not $_.StartsWith('#') }
+            foreach ($dep in $deps) {
+              Write-Host "Building unpublished dependency $dep for $dir..."
+              pixi run build build --recipe-dir $dep `
+                --target-platform ${{ matrix.target }} `
+                --log-style plain `
+                --skip-existing all `
+                -c conda-forge -c chawyehsu
+            }
+          }
+
           Write-Host "Building $dir..."
           pixi run build build --recipe-dir $dir `
             --target-platform ${{ matrix.target }} `
