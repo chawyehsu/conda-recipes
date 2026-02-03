@@ -1,0 +1,49 @@
+schema_version: 1
+
+context:
+  name: mingw-w64-pdcursesmod
+  version: "4.5.4"
+
+source:
+  url: https://github.com/Bill-Gray/PDCursesMod/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: d5efc7f2b7107abe382bdf8bac0a9bfd8e716facbca2bb9cf12dfeb8e1122c4b
+
+build:
+  number: 0
+  skip:
+    - unix
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - make
+
+tests:
+  - package_contents:
+      bin:
+        - pdcurses.dll
+      include:
+        - curses.h
+        - panel.h
+        - term.h
+      files:
+        - Library/lib/curses.a
+        - Library/lib/pdcurses.a
+
+about:
+  homepage: https://www.projectpluto.com/win32a.htm
+  license: LicenseRef-PD-hp
+  license_file: README.md
+  summary: Modified version of Public Domain Curses
+  repository: https://github.com/Bill-Gray/PDCursesMod
+  description: |
+    PDCursesMod is a modified version of Public Domain Curses,
+    an implementation of X/Open curses for multiple platforms.
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
