@@ -9,28 +9,44 @@ package:
   version: ${{ version }}
 
 source:
-  url: https://www.nano-editor.org/dist/v${{ (version | split('.'))[0] }}/nano-${{ version }}.tar.xz
-  sha256: afd287aa672c48b8e1a93fdb6c6588453d527510d966822b687f2835f0d986e9
+  - url: https://www.nano-editor.org/dist/v${{ (version | split('.'))[0] }}/nano-${{ version }}.tar.xz
+    sha256: afd287aa672c48b8e1a93fdb6c6588453d527510d966822b687f2835f0d986e9
+    patches:
+      - if: win
+        then:
+        # https://github.com/Bill-Gray/PDCursesMod/issues/214
+        - 0001-pdcurses-define-key-stub.patch
 
 build:
   number: 0
-  skip:
-    - win
 
 requirements:
   build:
     - ${{ compiler('c') }}
     - make
     - pkg-config
+    - if: build_platform == win-64 or build_platform == win-arm64
+      then:
+        - m2-bash
+        - m2-coreutils
+        - m2-sed
+        - m2-gawk
+        - m2-grep
+
   host:
-    - ncurses
+    - if: win
+      then: mingw-w64-pdcursesmod
+      else: ncurses
 
 tests:
   - script:
     - if: build_platform == target_platform
       then: nano -h
   - package_contents:
-      files: bin/nano
+      bin:
+        - if: win
+          then: nano.exe
+          else: nano
 
 about:
   homepage: https://www.nano-editor.org
