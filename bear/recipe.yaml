@@ -13,7 +13,6 @@ source:
     sha256: e0b54ccd7a2442209fa4313a7e715cc59af83f93b2d7bf2d92633b6e4c9a7edc
     patches:
       - 0001-wrapper-relative-path-support.patch
-      - 0002-relative-default-wrapper-path.patch
 
 build:
   number: 0
@@ -27,6 +26,10 @@ build:
       else:
         - mkdir -p ${{ PREFIX }}/libexec/bear
         - mv ${{ PREFIX }}/bin/wrapper ${{ PREFIX }}/libexec/bear
+    - if: linux
+      then:
+        - cargo build --release --lib --manifest-path=intercept-preload/Cargo.toml
+        - cp target/*/release/libexec.so ${{ PREFIX }}/libexec/bear
 
 requirements:
   build:
@@ -42,6 +45,8 @@ tests:
         - if: win
           then: libexec\bear\wrapper.exe
           else: libexec/bear/wrapper
+        - if: linux
+          then: libexec/bear/libexec.so
   - script:
     - if: build_platform == target_platform
       then: bear -V

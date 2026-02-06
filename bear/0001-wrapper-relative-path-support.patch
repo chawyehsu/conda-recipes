@@ -1,15 +1,51 @@
+diff --git a/bear/build.rs b/bear/build.rs
+index 5aad005..0ed80c6 100644
+--- a/bear/build.rs
++++ b/bear/build.rs
+@@ -29,13 +29,13 @@
+ ///                   sequence ("C:\Users\..." breaks); use forward slashes
+ ///                   ("C:/Users/..."), escaped backslashes ("C:\\Users\\..."),
+ ///                   or a raw string literal (r"C:\Users\...")
+-const DEFAULT_WRAPPER_PATH: &str = "/usr/local/libexec/bear";
++const DEFAULT_WRAPPER_PATH: &str = "../libexec/bear";
+ 
+ /// Default preload library path
+ /// Package creators: modify this entire path to change preload library location
+ /// Note: $LIB will be expanded at runtime to the appropriate architecture subdirectory
+ /// Note for Windows: preload isn't supported; feel free to ignore this path
+-const DEFAULT_PRELOAD_PATH: &str = "/usr/local/libexec/bear/$LIB";
++const DEFAULT_PRELOAD_PATH: &str = "../libexec/bear";
+ 
+ // =============================================================================
+ // PLATFORM-SPECIFIC EXECUTABLE AND LIBRARY NAMES (DO NOT CHANGE THESE)
 diff --git a/bear/src/config.rs b/bear/src/config.rs
-index 48e7a34..81a0028 100644
+index 48e7a34..abcc3d8 100644
 --- a/bear/src/config.rs
 +++ b/bear/src/config.rs
-@@ -325,7 +325,25 @@ mod types {
+@@ -325,12 +325,12 @@ mod types {
  
      /// The default path to the wrapper executable.
      pub(super) fn default_wrapper_executable() -> PathBuf {
 -        PathBuf::from(WRAPPER_EXECUTABLE_PATH)
-+        let ret  = PathBuf::from(WRAPPER_EXECUTABLE_PATH);
-+        if ret.is_absolute() {
-+            ret
++        build_default_path(WRAPPER_EXECUTABLE_PATH)
+     }
+ 
+     /// The default path to the shared library that will be preloaded.
+     pub(super) fn default_preload_library() -> PathBuf {
+-        PathBuf::from(PRELOAD_LIBRARY_PATH)
++        build_default_path(PRELOAD_LIBRARY_PATH)
+     }
+ 
+     fn default_enabled() -> bool {
+@@ -352,6 +352,28 @@ mod types {
+             Ok(schema)
+         }
+     }
++
++    fn build_default_path(path: &str) -> PathBuf {
++        let path_buf = PathBuf::from(path);
++        if path_buf.is_absolute() {
++            path_buf
 +        } else {
 +            let bear_dir = std::env::current_exe()
 +                .ok()
@@ -24,8 +60,9 @@ index 48e7a34..81a0028 100644
 +                        PathBuf::from("/usr/local/bin")
 +                    }
 +                });
-+            bear_dir.join(ret)
++            bear_dir.join(path_buf)
 +        }
-     }
++    }
+ }
  
-     /// The default path to the shared library that will be preloaded.
+ pub mod validation {
