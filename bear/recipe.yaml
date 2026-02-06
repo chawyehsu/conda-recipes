@@ -64,7 +64,7 @@ about:
   license: GPL-3.0-or-later
   license_file: COPYING
   summary: A tool that generates a compilation database for clang tooling
-  description: A tool that generates a compilation database for clang tooling
+  description: A tool that generates a compilation database for clang tooling.
   repository: https://github.com/rizsotto/Bear
 
 extra:

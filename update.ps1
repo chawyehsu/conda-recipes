@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $DefaultPackages = @(
+    'bear',
     'cargo-binstall',
     'lumen',
     'mihoro',
