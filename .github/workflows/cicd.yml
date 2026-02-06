@@ -113,6 +113,7 @@ jobs:
         cache: true
 
     - name: Run Build
+      id: run_build
       env:
         CHANGED_FILES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
@@ -154,13 +155,18 @@ jobs:
             -c conda-forge -c chawyehsu
         }
 
+        # Generate glob pattern for artifact upload based on changed package names
+        $pattern = "[$($changed_dirs -join ',')]"
+        Write-Host "Pattern for artifact upload: $pattern"
+        echo "pattern=$pattern" >> $env:GITHUB_OUTPUT
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
         name: ${{ matrix.target }}-builds
         path: |
-          ./output/${{ matrix.target }}/*.conda
-          ./output/noarch/*.conda
+          ./output/${{ matrix.target }}/${{ steps.run_build.outputs.pattern }}*.conda
+          ./output/noarch/${{ steps.run_build.outputs.pattern }}*.conda
 
   cd_release:
     name: Release
