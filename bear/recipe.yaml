@@ -48,8 +48,17 @@ tests:
         - if: linux
           then: libexec/bear/libexec.so
   - script:
-    - if: build_platform == target_platform
-      then: bear -V
+      - if: build_platform == target_platform
+        then:
+          - bear -V
+          - bear -- make --version
+      - if: win
+        then: type compile_commands.json
+        else: test -f compile_commands.json
+    requirements:
+      run:
+        - if: build_platform == target_platform
+          then: make
 
 about:
   homepage: https://github.com/rizsotto/Bear
