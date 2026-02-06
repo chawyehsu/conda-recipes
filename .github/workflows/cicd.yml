@@ -130,6 +130,13 @@ jobs:
         CHANGED_FILES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
       run: |
+        function Assert-LastExitCode([string]$Context) {
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "$Context failed with exit code $LASTEXITCODE."
+            exit $LASTEXITCODE
+          }
+        }
+
         $changed_dirs = $env:CHANGED_FILES -split ','
         foreach ($dir in $changed_dirs) {
           # Check matrix.json and skip if target not found
@@ -156,6 +163,7 @@ jobs:
                 --log-style plain `
                 --skip-existing all `
                 -c conda-forge -c chawyehsu
+              Assert-LastExitCode "Dependency build $dep"
             }
           }
 
@@ -165,6 +173,7 @@ jobs:
             --log-style plain `
             --skip-existing all `
             -c conda-forge -c chawyehsu
+          Assert-LastExitCode "Package build $dir"
         }
 
         # Generate glob pattern for artifact upload based on changed package names
