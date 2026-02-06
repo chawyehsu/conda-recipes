@@ -1,0 +1,31 @@
+diff --git a/bear/src/config.rs b/bear/src/config.rs
+index 48e7a34..81a0028 100644
+--- a/bear/src/config.rs
++++ b/bear/src/config.rs
+@@ -325,7 +325,25 @@ mod types {
+ 
+     /// The default path to the wrapper executable.
+     pub(super) fn default_wrapper_executable() -> PathBuf {
+-        PathBuf::from(WRAPPER_EXECUTABLE_PATH)
++        let ret  = PathBuf::from(WRAPPER_EXECUTABLE_PATH);
++        if ret.is_absolute() {
++            ret
++        } else {
++            let bear_dir = std::env::current_exe()
++                .ok()
++                .and_then(|p| p.parent().map(|parent| parent.to_path_buf()))
++                .unwrap_or_else(|| {
++                    #[cfg(windows)]
++                    {
++                        PathBuf::from("C:/Program Files/Bear/bin")
++                    }
++                    #[cfg(not(windows))]
++                    {
++                        PathBuf::from("/usr/local/bin")
++                    }
++                });
++            bear_dir.join(ret)
++        }
+     }
+ 
+     /// The default path to the shared library that will be preloaded.

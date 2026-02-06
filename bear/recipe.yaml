@@ -1,0 +1,59 @@
+schema_version: 1
+
+context:
+  name: bear
+  version: "4.0.2"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  - url: https://github.com/rizsotto/Bear/archive/refs/tags/${{ version }}.tar.gz
+    sha256: e0b54ccd7a2442209fa4313a7e715cc59af83f93b2d7bf2d92633b6e4c9a7edc
+    patches:
+      - 0001-wrapper-relative-path-support.patch
+      - 0002-relative-default-wrapper-path.patch
+
+build:
+  number: 0
+  script:
+    - cargo install --locked --root ${{ PREFIX }} --path bear --no-track
+    - cargo install --locked --root ${{ PREFIX }} --path intercept-wrapper --no-track
+    - if: build_platform == 'win-64' or build_platform == 'win-arm64'
+      then:
+        - mkdir ${{ PREFIX }}\libexec\bear
+        - move ${{ PREFIX }}\bin\wrapper.exe ${{ PREFIX }}\libexec\bear
+      else:
+        - mkdir -p ${{ PREFIX }}/libexec/bear
+        - mv ${{ PREFIX }}/bin/wrapper ${{ PREFIX }}/libexec/bear
+
+requirements:
+  build:
+    - ${{ compiler("rust") }}
+
+tests:
+  - package_contents:
+      bin:
+        - if: win
+          then: bear.exe
+          else: bear
+      files:
+        - if: win
+          then: libexec\bear\wrapper.exe
+          else: libexec/bear/wrapper
+  - script:
+    - if: build_platform == target_platform
+      then: bear -V
+
+about:
+  homepage: https://github.com/rizsotto/Bear
+  license: GPL-3.0-or-later
+  license_file: COPYING
+  summary: A tool that generates a compilation database for clang tooling
+  description: A tool that generates a compilation database for clang tooling
+  repository: https://github.com/rizsotto/Bear
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
