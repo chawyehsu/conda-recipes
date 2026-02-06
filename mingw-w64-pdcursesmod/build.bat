@@ -5,7 +5,8 @@ if "%TARGET_PLATFORM%"=="win-arm64" (
     set "PDC_TARGET=_a64"
 )
 
-set "CFLAGS=%CFLAGS% -v"
+gcc -c -Wall -Wextra -pedantic -O3 -I.. -DPDC_FORCE_UTF8 -DPDC_DLL_BUILD ../pdcurses/addch.c
+if errorlevel 1 exit 1
 
 make -f Makefile WIDE=Y DLL=Y UTF8=Y %PDC_TARGET%=Y
 if errorlevel 1 exit 1
