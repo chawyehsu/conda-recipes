@@ -5,7 +5,7 @@ if "%TARGET_PLATFORM%"=="win-arm64" (
     set "PDC_TARGET=_a64"
 )
 
-make -f Makefile WIDE=Y DLL=Y UTF8=Y %PDC_TARGET%=Y
+make -d -f Makefile WIDE=Y DLL=Y UTF8=Y %PDC_TARGET%=Y
 if errorlevel 1 exit 1
 
 @rem install header files
