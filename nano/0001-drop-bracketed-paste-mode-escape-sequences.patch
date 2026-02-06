@@ -1,0 +1,65 @@
+diff --git a/src/nano.c b/src/nano.c
+index bbfb226f34..bde26aa72e 100644
+--- a/src/nano.c
++++ b/src/nano.c
+@@ -230,10 +230,6 @@
+ {
+ 	curs_set(1);
+ 	endwin();
+-#ifndef NANO_TINY
+-	printf("\x1B[?2004l");
+-	fflush(stdout);
+-#endif
+ 	tcsetattr(STDIN_FILENO, TCSANOW, &original_state);
+ }
+ 
+@@ -1241,11 +1237,6 @@
+ 
+ 	disable_kb_interrupt();
+ 
+-#ifndef NANO_TINY
+-	/* Tell the terminal to enable bracketed pastes. */
+-	printf("\x1B[?2004h");
+-	fflush(stdout);
+-#endif
+ }
+ 
+ /* Ask ncurses for a keycode, or assign a default one. */
+@@ -2485,9 +2476,6 @@
+ 	shiftaltup = get_keycode("kUP4", SHIFT_ALT_UP);
+ 	shiftaltdown = get_keycode("kDN4", SHIFT_ALT_DOWN);
+ 
+-	/* Tell ncurses to transform bracketed-paste sequences into keycodes. */
+-	define_key("\e[200~", START_OF_PASTE);
+-	define_key("\e[201~", END_OF_PASTE);
+ #endif
+ 	mousefocusin = get_keycode("kxIN", FOCUS_IN);
+ 	mousefocusout = get_keycode("kxOUT", FOCUS_OUT);
+diff --git a/src/winio.c b/src/winio.c
+index d74c6fe8e5..4f5ac17889 100644
+--- a/src/winio.c
++++ b/src/winio.c
+@@ -1520,11 +1520,6 @@
+ 	if (!ISSET(RAW_SEQUENCES))
+ 		keypad(frame, FALSE);
+ 
+-#ifndef NANO_TINY
+-	/* Turn bracketed-paste mode off. */
+-	printf("\x1B[?2004l");
+-	fflush(stdout);
+-#endif
+ 
+ 	linger_after_escape = TRUE;
+ 
+@@ -1543,11 +1538,6 @@
+ 
+ 	linger_after_escape = FALSE;
+ 
+-#ifndef NANO_TINY
+-	/* Turn bracketed-paste mode back on. */
+-	printf("\x1B[?2004h");
+-	fflush(stdout);
+-#endif
+ 
+ 	/* Turn flow control characters back on if necessary and turn the
+ 	 * keypad back on if necessary now that we're done. */

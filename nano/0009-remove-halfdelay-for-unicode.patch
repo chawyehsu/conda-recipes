@@ -1,0 +1,17 @@
+diff --git a/patches/0009-remove-halfdelay-for-unicode b/patches/0009-remove-halfdelay-for-unicode
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/src/winio.c b/src/winio.c
+index 3f88af1160..ecdbd9da5f 100644
+--- a/src/winio.c
++++ b/src/winio.c
+@@ -201,9 +201,6 @@
+ 						lastmessage > HUSH && lastmessage < ALERT &&
+ 						lastmessage != INFO) || spotlighted)) {
+ 		timed = TRUE;
+-		halfdelay(ISSET(QUICK_BLANK) ? 8 : 15);
+-		/* Counteract a side effect of half-delay mode. */
+-		disable_kb_interrupt();
+ 	}
+ #endif
+ 

@@ -14,9 +14,17 @@ source:
     patches:
       - if: win
         then:
-        # https://github.com/Bill-Gray/PDCursesMod/issues/214
-        - 0001-pdcurses-define-key-stub.patch
+        - 0000-include-windows-header.patch
+        - 0001-drop-bracketed-paste-mode-escape-sequences.patch
         - 0002-system-wide-rcfile-compat.patch
+        - 0003-fix-file-parentdir-access.patch
+        - 0004-replace-slashes-and-invalid-filename-chars.patch
+        - 0005-homedir-tempdir-compat.patch
+        - 0006-file-io-to-binary-mode.patch
+        - 0007-utf8-support-and-wide-char-width-detection-fix.patch
+        - 0008-windows-conhost-read-stdin-data.patch
+        - 0009-remove-halfdelay-for-unicode.patch
+        - 0010-meta-keycode-pdcurses-compat.patch
 
 build:
   number: 0

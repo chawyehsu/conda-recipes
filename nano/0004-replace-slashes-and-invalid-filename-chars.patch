@@ -1,0 +1,36 @@
+diff --git a/src/files.c b/src/files.c
+index ec4d832a1b..01bf962acd 100644
+--- a/src/files.c
++++ b/src/files.c
+@@ -1433,6 +1433,11 @@
+ 
+ 	free(untilded);
+ 
++	if (target)
++		for (slash = target; *slash; ++slash)
++			if (*slash == '\\')
++				*slash = '/';
++
+ 	return target;
+ }
+ 
+@@ -1625,7 +1630,7 @@
+ 		 * just use the file-name portion of the given path. */
+ 		if (thename) {
+ 			for (int i = 0; thename[i] != '\0'; i++)
+-				if (thename[i] == '/')
++				if (strchr("<>:\"/\\|?*", thename[i]))
+ 					thename[i] = '!';
+ 		} else
+ 			thename = copy_of(tail(realname));
+@@ -2423,6 +2428,10 @@
+ 
+ 	free(tilded);
+ 
++	for (tilded = retval; *tilded; ++tilded)
++		if (*tilded == '\\')
++			*tilded = '/';
++
+ 	return retval;
+ }
+ 

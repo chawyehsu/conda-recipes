@@ -1,0 +1,16 @@
+diff --git a/src/nano.c b/src/nano.c
+index bde26aa72e..bc73cea203 100644
+--- a/src/nano.c
++++ b/src/nano.c
+@@ -1834,6 +1834,11 @@
+ 		{NULL, 0, NULL, 0}
+ 	};
+ 
++	/* Default file i/o operation to binary mode as linux does.
++	 *  https://learn.microsoft.com/en-us/cpp/c-runtime-library/text-and-binary-mode-file-i-o
++	 */
++	_set_fmode(_O_BINARY);
++
+ #ifdef __linux__
+ 	struct vt_stat dummy;
+ 

@@ -1,0 +1,73 @@
+diff --git a/src/chars.c b/src/chars.c
+index a0ebaec517..59998ddef1 100644
+--- a/src/chars.c
++++ b/src/chars.c
+@@ -20,6 +20,7 @@
+  **************************************************************************/
+ 
+ #include "prototypes.h"
++#include "uniwidth.h"
+ 
+ #include <ctype.h>
+ #include <string.h>
+@@ -219,7 +220,7 @@
+ 	if (mbtowide(&wc, ch) < 0)
+ 		return FALSE;
+ 
+-	return (wcwidth(wc) == 2);
++	return (uc_width(wc, "UTF-8") == 2);
+ }
+ 
+ /* Return TRUE when the given character occupies zero cells. */
+@@ -240,7 +241,7 @@
+ 		return FALSE;
+ #endif
+ 
+-	return (wcwidth(wc) == 0);
++	return (uc_width(wc, "UTF-8") == 0);
+ }
+ #endif /* ENABLE_UTF8 */
+ 
+@@ -325,7 +326,7 @@
+ 				return 1;
+ 			}
+ 
+-			int width = wcwidth(wc);
++			int width = uc_width(wc, "UTF-8");
+ 
+ #if defined(__OpenBSD__)
+ 			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
+diff --git a/src/nano.c b/src/nano.c
+index bc73cea203..bea36afd32 100644
+--- a/src/nano.c
++++ b/src/nano.c
+@@ -1859,7 +1859,7 @@
+ #ifdef ENABLE_UTF8
+ 	/* If setting the locale is successful and it uses UTF-8, we will
+ 	 * need to use the multibyte functions for text processing. */
+-	if (setlocale(LC_ALL, "") && strcmp(nl_langinfo(CODESET), "UTF-8") == 0)
++	setlocale(LC_ALL, "");
+ 		using_utf8 = TRUE;
+ #else
+ 	setlocale(LC_ALL, "");
+diff --git a/src/winio.c b/src/winio.c
+index 4f5ac17889..3f88af1160 100644
+--- a/src/winio.c
++++ b/src/winio.c
+@@ -21,6 +21,7 @@
+ 
+ #include "prototypes.h"
+ #include "revision.h"
++#include "uniwidth.h"
+ 
+ #include <ctype.h>
+ #ifdef __linux__
+@@ -1896,7 +1897,7 @@
+ 		}
+ 
+ 		/* Determine whether the character takes zero, one, or two columns. */
+-		charwidth = wcwidth(wc);
++		charwidth = uc_width(wc, "UTF-8");
+ 
+ 		/* Watch the number of zero-widths, to keep ample memory reserved. */
+ 		if (charwidth == 0 && --stowaways == 0) {
