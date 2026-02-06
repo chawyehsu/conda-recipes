@@ -22,8 +22,7 @@ if [[ "${target_platform}" =~ win-* ]]; then
         --host="${HOST}" \
         --disable-dependency-tracking \
         --enable-utf8 \
-        --disable-{nls,speller,browser} \
-        --sysconfdir="C:\\ProgramData"
+        --disable-{nls,speller,browser}
 else
     ./configure \
         --prefix="${PREFIX}" \

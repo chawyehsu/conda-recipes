@@ -16,6 +16,7 @@ source:
         then:
         # https://github.com/Bill-Gray/PDCursesMod/issues/214
         - 0001-pdcurses-define-key-stub.patch
+        - 0002-system-wide-rcfile-compat.patch
 
 build:
   number: 0
