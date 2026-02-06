@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
 
+pkg_name_static="mingw-w64-pdcursesmod-static"
+
 cd wincon
 
 PDC_TARGET=_w64
@@ -9,7 +11,11 @@ if [[ "${target_platform}" == "win-arm64" ]]; then
     PDC_TARGET=_a64
 fi
 
-make -f Makefile WIDE=Y DLL=Y UTF8=Y ${PDC_TARGET}=Y
+if [[ "${PKG_NAME}" == "$pkg_name_static" ]]; then
+    make -f Makefile WIDE=Y UTF8=Y ${PDC_TARGET}=Y
+else
+    make -f Makefile WIDE=Y UTF8=Y DLL=Y ${PDC_TARGET}=Y
+fi
 
 # install header files
 mkdir -p "$LIBRARY_PREFIX/include"
@@ -17,9 +23,11 @@ for f in curses.h panel.h term.h; do
     cp "$SRC_DIR/$f" "$LIBRARY_PREFIX/include/"
 done
 
-# install dll
-mkdir -p "$LIBRARY_PREFIX/bin"
-cp pdcurses.dll "$LIBRARY_PREFIX/bin/"
+if [[ ! "${PKG_NAME}" == "$pkg_name_static" ]]; then
+    # install dll
+    mkdir -p "$LIBRARY_PREFIX/bin"
+    cp pdcurses.dll "$LIBRARY_PREFIX/bin/"
+fi
 
 # install lib
 mkdir -p "$LIBRARY_PREFIX/lib"

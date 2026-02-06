@@ -34,11 +34,8 @@ requirements:
         - m2-grep
   host:
     - if: win
-      then: mingw-w64-pdcursesmod
+      then: mingw-w64-pdcursesmod-static
       else: ncurses
-  run:
-    - if: win
-      then: mingw-w64-pdcursesmod
 
 tests:
   - script:

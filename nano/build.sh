@@ -7,7 +7,7 @@ if [[ "${target_platform}" =~ win-* ]]; then
     export CFLAGS="$CFLAGS -DPDC_FORCE_UTF8"
     export LDFLAGS="$LDFLAGS -L$LIBRARY_PREFIX/lib -static"
     export NCURSESW_CFLAGS="-I$LIBRARY_PREFIX/include -DNCURSES_STATIC"
-    export NCURSESW_LIBS="-l:pdcurses.a"
+    export NCURSESW_LIBS="-l:pdcurses.a -lwinmm"
 
     export HOST=x86_64-w64-mingw32
     if [[ "${build_platform}" == 'win-64' ]]; then
