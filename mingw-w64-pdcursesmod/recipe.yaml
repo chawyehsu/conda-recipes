@@ -21,6 +21,10 @@ requirements:
   build:
     - ${{ compiler('c') }}
     - make
+    - if: build_platform == 'win-64' or build_platform == 'win-arm64'
+      then:
+        - m2-bash
+        - m2-coreutils
 
 tests:
   - package_contents:

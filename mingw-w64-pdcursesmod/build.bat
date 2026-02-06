@@ -1,30 +1,9 @@
-cd wincon
+:: Delegate to the unix build script
 
-set "PDC_TARGET=_w64"
-if "%TARGET_PLATFORM%"=="win-arm64" (
-    set "PDC_TARGET=_a64"
-)
+:: Convert Windows-style paths to Unix-style paths
+FOR /F "delims=" %%i IN ('cygpath.exe -u "%LIBRARY_PREFIX%"') DO set "LIBRARY_PREFIX=%%i"
+FOR /F "delims=" %%i IN ('cygpath.exe -u "%PREFIX%"') DO set "PREFIX=%%i"
+FOR /F "delims=" %%i IN ('cygpath.exe -u "%SRC_DIR%"') DO set "SRC_DIR=%%i"
 
-gcc -c -Wall -Wextra -pedantic -O3 -I.. -DPDC_FORCE_UTF8 -DPDC_DLL_BUILD ../pdcurses/addch.c
+bash "%RECIPE_DIR%\build.sh"
 if errorlevel 1 exit 1
-
-make -f Makefile WIDE=Y DLL=Y UTF8=Y %PDC_TARGET%=Y
-if errorlevel 1 exit 1
-
-@rem install header files
-mkdir "%LIBRARY_PREFIX%\include\"
-for %%f in (
-    curses.h
-    panel.h
-    term.h
-) do copy "%SRC_DIR%\%%f" "%LIBRARY_PREFIX%\include\"
-
-@rem install dll
-mkdir "%LIBRARY_PREFIX%\bin\"
-copy pdcurses.dll "%LIBRARY_PREFIX%\bin\"
-
-@rem install lib
-mkdir "%LIBRARY_PREFIX%\lib\"
-copy pdcurses.a "%LIBRARY_PREFIX%\lib\pdcurses.a"
-@rem duplicate lib as curses.lib for compatibility
-copy pdcurses.a "%LIBRARY_PREFIX%\lib\curses.a"
