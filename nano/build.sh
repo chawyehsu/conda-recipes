@@ -10,6 +10,9 @@ if [[ "${target_platform}" =~ win-* ]]; then
     export NCURSESW_LIBS="-l:pdcurses.a"
 
     export HOST=x86_64-w64-mingw32
+    if [[ "${build_platform}" == 'win-64' ]]; then
+        export BUILD=x86_64-w64-mingw32
+    fi
 
     # there's a compiling failure relevant to the `browser`
     # feature I couldn't workaround with, so disable it.
@@ -17,11 +20,14 @@ if [[ "${target_platform}" =~ win-* ]]; then
         --prefix="${PREFIX}" \
         --build="${BUILD}" \
         --host="${HOST}" \
+        --disable-dependency-tracking \
         --enable-utf8 \
-        --disable-{nls,speller,browser}
+        --disable-{nls,speller,browser} \
+        --sysconfdir="C:\\ProgramData"
 else
     ./configure \
         --prefix="${PREFIX}" \
+        --disable-dependency-tracking \
         --build="${BUILD}" \
         --host="${HOST}"
 fi
@@ -32,6 +38,6 @@ make install
 
 # shellcheck disable=SC2154
 if [[ "${target_platform}" =~ win-* ]]; then
-  # remove the rnano symlink
-  rm "${PREFIX}/bin/rnano"
+    # remove the rnano symlink
+    rm "${PREFIX}/bin/rnano"
 fi

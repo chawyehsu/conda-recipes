@@ -25,18 +25,20 @@ requirements:
     - ${{ compiler('c') }}
     - make
     - pkg-config
-    - if: build_platform == win-64 or build_platform == win-arm64
+    - if: build_platform == 'win-64' or build_platform == 'win-arm64'
       then:
         - m2-bash
         - m2-coreutils
         - m2-sed
         - m2-gawk
         - m2-grep
-
   host:
     - if: win
       then: mingw-w64-pdcursesmod
       else: ncurses
+  run:
+    - if: win
+      then: mingw-w64-pdcursesmod
 
 tests:
   - script:
