@@ -10,7 +10,8 @@ on:
       release:
         description: 'Trigger release workflow (optional, boolean)'
         required: false
-        default: 'false'
+        type: boolean
+        default: false
   push:
   pull_request:
 
