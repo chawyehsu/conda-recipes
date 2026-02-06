@@ -143,10 +143,16 @@ jobs:
           $matrixPath = Join-Path -Path $dir -ChildPath "matrix.json"
           if (Test-Path -Path $matrixPath) {
             $matrixContent = Get-Content -Path $matrixPath | Out-String | ConvertFrom-Json
-            $targets = $matrixContent.include | ForEach-Object { $_.target }
-            Write-Host "Custom build targets for $dir : $targets"
-            if (-not ($targets -contains "${{ matrix.target }}")) {
-              Write-Host "Skipping $dir for target ${{ matrix.target }}."
+            $shouldTriggerBuild = $false
+            foreach ($entry in $matrixContent.include) {
+              if ($entry.target -eq "${{ matrix.target }}" -and $entry.os -eq "${{ matrix.os }}") {
+                $shouldTriggerBuild = $true
+                Write-Host "Explicit build $dir for target ${{ matrix.target }} on OS runner ${{ matrix.os }}"
+                break
+              }
+            }
+            if (-not $shouldTriggerBuild) {
+              Write-Host "Skipping $dir for target ${{ matrix.target }} on OS runner ${{ matrix.os }}"
               continue
             }
           }
