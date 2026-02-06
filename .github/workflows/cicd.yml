@@ -97,6 +97,8 @@ jobs:
             $matrixInclude = $matrixInclude + $matrixContent.include
           }
         }
+        # Remove duplicates from matrixInclude
+        $matrixInclude = $matrixInclude | Sort-Object -Unique
         $matrixJson = @{ include = $matrixInclude } | ConvertTo-Json -Compress
         Write-Host "matrix: $matrixJson"
         echo "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
