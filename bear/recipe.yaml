@@ -47,18 +47,17 @@ tests:
           else: libexec/bear/wrapper
         - if: linux
           then: libexec/bear/libexec.so
-  - script:
-      - if: build_platform == target_platform
-        then:
-          - bear -V
-          - bear -- make --version
-      - if: win
-        then: type compile_commands.json
-        else: test -f compile_commands.json
-    requirements:
-      run:
-        - if: build_platform == target_platform
-          then: make
+  - if: build_platform == target_platform
+    then:
+      script:
+        - bear -V
+        - bear -- make --version
+        - if: build_platform == 'win-64' or build_platform == 'win-arm64'
+          then: type compile_commands.json
+          else: test -f compile_commands.json
+      requirements:
+        run:
+          - make
 
 about:
   homepage: https://github.com/rizsotto/Bear
