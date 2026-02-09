@@ -4,9 +4,9 @@ set -ex
 # shellcheck disable=SC2154
 if [[ "${target_platform}" =~ win-* ]]; then
     # `PDC_FORCE_UTF8` is required to force PDC to be utf8 mode
-    export CFLAGS="$CFLAGS -DPDC_FORCE_UTF8"
-    export LDFLAGS="$LDFLAGS -L$LIBRARY_PREFIX/lib -static"
-    export NCURSESW_CFLAGS="-I$LIBRARY_PREFIX/include -DNCURSES_STATIC"
+    export CFLAGS="${CFLAGS:-} -DPDC_FORCE_UTF8 -DPDC_NCMOUSE"
+    export LDFLAGS="${LDFLAGS:-} -L$LIBRARY_PREFIX/lib -static"
+    export NCURSESW_CFLAGS="-I$LIBRARY_PREFIX/include -DNCURSES_STATIC -DENABLE_MOUSE"
     export NCURSESW_LIBS="-l:pdcurses.a -lwinmm"
 
     export HOST=x86_64-w64-mingw32
