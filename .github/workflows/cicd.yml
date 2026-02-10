@@ -104,7 +104,7 @@ jobs:
         }
         # Remove duplicates from matrixInclude
         $matrixInclude = $matrixInclude | Select-Object -Unique -Property target,os
-        $matrixJson = @{ include = $matrixInclude } | ConvertTo-Json -Compress
+        $matrixJson = @{ include = ,$matrixInclude } | ConvertTo-Json -Compress
         Write-Host "matrix: $matrixJson"
         echo "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
 
