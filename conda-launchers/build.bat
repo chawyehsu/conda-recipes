@@ -3,9 +3,6 @@ setlocal EnableDelayedExpansion
 @rem no-op for conda-launchers metapackage
 if %PKG_NAME% == conda-launchers (exit 0)
 
-@rem rename patched source file to be used for building
-move /Y launcher.c.orig launcher.c
-
 if %PKG_NAME% == conda-launchers_win-32 (
     set ZIG_TARGET=x86-windows-gnu
     set EXE_TARGET=32

@@ -10,7 +10,6 @@ recipe:
 source:
   - url: https://raw.githubusercontent.com/python/cpython/3.7/PC/launcher.c
     sha256: a3167e5908cefa942f63e0de5c6ec7a929e8ca82a382537ab8292e5aaa82ca2e
-    file_name: launcher.c.orig
     patches:
       - ./src/cpython-launcher-c-mods-for-setuptools.3.7.patch
   - url: https://raw.githubusercontent.com/python/cpython/3.7/LICENSE
