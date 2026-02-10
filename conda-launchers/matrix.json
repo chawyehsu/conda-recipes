@@ -1,0 +1,5 @@
+{
+  "include": [
+    { "target": "win-64", "os": "windows-latest" }
+  ]
+}

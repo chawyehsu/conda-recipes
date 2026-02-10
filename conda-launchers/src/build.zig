@@ -12,7 +12,7 @@ const CrossTarget = std.Target.Query;
 //   aarch64-windows-gnu
 //   aarch64-windows-msvc
 
-const required_version = std.SemanticVersion.parse("0.13.0") catch unreachable;
+const required_version = std.SemanticVersion.parse("0.14.0") catch unreachable;
 const compatible = builtin.zig_version.order(required_version) != .lt;
 
 pub fn build(b: *std.Build) void {
@@ -49,23 +49,31 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{
         .name = name,
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
         .win32_manifest = b.path("./launcher.manifest"),
     });
 
     exe.addCSourceFile(.{ .file = b.path("./launcher.c") });
-    exe.defineCMacro("SCRIPT_WRAPPER", null);
+    exe.root_module.addCMacro("SCRIPT_WRAPPER", "");
     exe.linkLibC();
     exe.subsystem = if (gui) .Windows else .Console;
 
     if (gui) {
-        exe.defineCMacro("_WINDOWS", null);
+        exe.root_module.addCMacro("_WINDOWS", "");
     }
 
     if (target.result.abi == .gnu) {
         // NOTE: This requires Zig version 0.12.0-dev.3493+3661133f9 or later
         exe.mingw_unicode_entry_point = true;
+    } else {
+        exe.linkSystemLibrary("advapi32");
+        exe.linkSystemLibrary("shell32");
+        if (gui) {
+            exe.linkSystemLibrary("user32");
+        }
     }
 
     b.installArtifact(exe);
