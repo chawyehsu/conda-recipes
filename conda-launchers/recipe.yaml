@@ -33,16 +33,16 @@ outputs:
 
     requirements:
       run:
-        - ${{ name }}_win-32 ${{ version }}
-        - ${{ name }}_win-64 ${{ version }}
-        - ${{ name }}_win-arm64 ${{ version }}
+        - ${{ name }}_win-32 ==${{ version }}
+        - ${{ name }}_win-64 ==${{ version }}
+        - ${{ name }}_win-arm64 ==${{ version }}
 
     tests:
       - requirements:
           run:
-            - ${{ name }}_win-32 ${{ version }}
-            - ${{ name }}_win-64 ${{ version }}
-            - ${{ name }}_win-arm64 ${{ version }}
+            - ${{ name }}_win-32 ==${{ version }}
+            - ${{ name }}_win-64 ==${{ version }}
+            - ${{ name }}_win-arm64 ==${{ version }}
         script:
           # cli
           - if not exist %PREFIX%\Scripts\cli-32.exe exit 1
