@@ -30,7 +30,7 @@ jobs:
 
     - name: Changed Files
       id: changed_files
-      uses: tj-actions/changed-files@e0021407031f5be11a464abee9a0776171c79891 # v47.0.1
+      uses: tj-actions/changed-files@8cba46e29c11878d930bca7870bb54394d3e8b21 # v47.0.2
       with:
         dir_names: true
         dir_names_exclude_current_dir: true
@@ -125,7 +125,7 @@ jobs:
         fetch-depth: 1
 
     - name: Setup Pixi
-      uses: prefix-dev/setup-pixi@82d477f15f3a381dbcc8adc1206ce643fe110fb7 # v0.9.3
+      uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e # v0.9.4
       with:
         cache: true
 
@@ -213,7 +213,7 @@ jobs:
         fetch-depth: 1
 
     - name: Setup Pixi
-      uses: prefix-dev/setup-pixi@82d477f15f3a381dbcc8adc1206ce643fe110fb7 # v0.9.3
+      uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e # v0.9.4
       with:
         cache: true
 
