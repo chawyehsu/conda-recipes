@@ -1,20 +1,17 @@
 diff --git a/src/files.c b/src/files.c
-index ec4d832a1b..01bf962acd 100644
+index dd1b7ce599..c23525de6d 100644
 --- a/src/files.c
 +++ b/src/files.c
-@@ -1433,6 +1433,11 @@
+@@ -1434,6 +1434,8 @@
  
  	free(untilded);
  
-+	if (target)
-+		for (slash = target; *slash; ++slash)
-+			if (*slash == '\\')
-+				*slash = '/';
++	normalize_slashes(target);
 +
  	return target;
  }
  
-@@ -1625,7 +1630,7 @@
+@@ -1626,7 +1628,7 @@
  		 * just use the file-name portion of the given path. */
  		if (thename) {
  			for (int i = 0; thename[i] != '\0'; i++)
@@ -23,14 +20,67 @@ index ec4d832a1b..01bf962acd 100644
  					thename[i] = '!';
  		} else
  			thename = copy_of(tail(realname));
-@@ -2423,6 +2428,10 @@
+@@ -2424,6 +2426,8 @@
  
  	free(tilded);
  
-+	for (tilded = retval; *tilded; ++tilded)
-+		if (*tilded == '\\')
-+			*tilded = '/';
++	normalize_slashes(retval);
 +
  	return retval;
+ }
+ 
+diff --git a/src/history.c b/src/history.c
+index d4be9778b4..a2fc95bbee 100644
+--- a/src/history.c
++++ b/src/history.c
+@@ -415,6 +415,7 @@
+ 
+ 	/* Read and parse each line, and store the extracted data. */
+ 	while (count++ < 200 && (length = getline(&phrase, &dummy, histfile)) > 1) {
++		normalize_slashes(phrase);
+ 		stanza = strchr(phrase, '/');
+ 		length -= (stanza ? stanza - phrase : 0);
+ 
+diff --git a/src/prototypes.h b/src/prototypes.h
+index 72d46ad42b..6f9ca695d8 100644
+--- a/src/prototypes.h
++++ b/src/prototypes.h
+@@ -552,6 +552,7 @@
+ /* All functions in utils.c. */
+ void get_homedir(void);
+ const char *tail(const char *path);
++void normalize_slashes(char *path);
+ char *concatenate(const char *path, const char *name);
+ int digits(ssize_t n);
+ bool parse_num(const char *str, ssize_t *result);
+diff --git a/src/utils.c b/src/utils.c
+index 392cd81518..529bfab0b5 100644
+--- a/src/utils.c
++++ b/src/utils.c
+@@ -62,6 +62,17 @@
+ 		return slash + 1;
+ }
+ 
++/* Replace any backslashes with slashes in the given path. */
++void normalize_slashes(char *path)
++{
++	if (path == NULL)
++		return;
++
++	for (; *path; ++path)
++		if (*path == '\\')
++			*path = '/';
++}
++
+ /* Return a copy of the two given strings, welded together. */
+ char *concatenate(const char *path, const char *name)
+ {
+@@ -71,6 +82,8 @@
+ 	strcpy(joined, path);
+ 	strcpy(joined + pathlen, name);
+ 
++	normalize_slashes(joined);
++
+ 	return joined;
  }
  
