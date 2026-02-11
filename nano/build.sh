@@ -47,6 +47,10 @@ make -j "${CPU_COUNT}"
 make check
 make install
 
+# install sample.nanorc
+mkdir -p "${PREFIX}/etc/"
+cp "doc/sample.nanorc" "${PREFIX}/etc/nanorc"
+
 # shellcheck disable=SC2154
 if [[ "${target_platform}" =~ win-* ]]; then
     # remove the rnano symlink

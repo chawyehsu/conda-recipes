@@ -5,7 +5,7 @@ set -euo pipefail
 pdc_recipe="${RECIPE_DIR}/../mingw-w64-pdcursesmod/recipe.yaml"
 PDC_VER=$(grep -oP 'version:\s*"\K[^"]+' ${pdc_recipe})
 NANO_VER="GNU nano for Windows ${ARCH}, v${PKG_VERSION}-${PKG_BUILDNUM} $(TZ=UTC+8 date +'%Y-%m-%d') (PDCursesMod v${PDC_VER})"
-BRANDING="Build recipe at http://github.com/chawyehsu/conda-recipes\\\\n"
+BRANDING="Build recipe at https://github.com/chawyehsu/conda-recipes\\\\n"
 
 echo $NANO_VER
 echo $BRANDING

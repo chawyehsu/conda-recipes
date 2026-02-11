@@ -62,6 +62,8 @@ tests:
         - if: win
           then: nano.exe
           else: nano
+      files:
+        - etc/nanorc
 
 about:
   homepage: https://www.nano-editor.org
