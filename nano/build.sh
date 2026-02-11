@@ -14,6 +14,7 @@ if [[ "${target_platform}" =~ win-* ]]; then
         export BUILD=x86_64-w64-mingw32
     fi
 
+    ./branding.sh
     # there's a compiling failure relevant to the `browser`
     # feature I couldn't workaround with, so disable it.
     ./configure \
