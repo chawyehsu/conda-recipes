@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: moonup
-  version: "0.4.2"
+  version: "0.4.3"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://github.com/chawyehsu/moonup/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: bca7dc9304955d26e29aabf3db02223cfa441b3fa89ac99b808d837a79e811d2
+  sha256: dded97174eaff4c912d0f59da15e57054068e5ca976594359b5a7b0a06170ed6
 
 build:
   number: 0
