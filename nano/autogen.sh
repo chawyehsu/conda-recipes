@@ -2,10 +2,6 @@
 # Derived from GNU nano autogen.sh
 set -ex
 
-project_root="$(dirname "${BASH_SOURCE[0]}")"
-
-pushd "$project_root" || exit 1
-
 gnulib_url="https://github.com/coreutils/gnulib.git"
 gnulib_hash="440616a878c0f7419d307909ae7b2ce3147cf3cd"
 
@@ -58,5 +54,3 @@ echo
 echo "Autoreconf..."
 autoreconf --install --symlink --force
 echo "Done."
-
-popd || exit 1

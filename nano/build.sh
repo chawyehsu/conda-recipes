@@ -39,7 +39,8 @@ else
         --prefix="${PREFIX}" \
         --disable-dependency-tracking \
         --build="${BUILD}" \
-        --host="${HOST}"
+        --host="${HOST}" \
+        --enable-utf8
 fi
 
 make -j "${CPU_COUNT}"
