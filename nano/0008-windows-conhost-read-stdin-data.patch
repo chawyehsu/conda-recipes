@@ -1,5 +1,5 @@
 diff --git a/src/nano.c b/src/nano.c
-index bea36afd32..ec9cfc8ab4 100644
+index 16165e028c..17aacb1782 100644
 --- a/src/nano.c
 +++ b/src/nano.c
 @@ -844,7 +844,7 @@
@@ -20,8 +20,7 @@ index bea36afd32..ec9cfc8ab4 100644
  	restore_terminal();
  
  	/* When input comes from a terminal, show a helpful message. */
--	if (isatty(STDIN_FILENO))
-+	if (GetConsoleWindow() != NULL)
+ 	if (isatty(STDIN_FILENO))
  		fprintf(stderr, _("Reading data from keyboard; "
 -							"type ^D or ^D^D to finish.\n"));
 +							"type a ^Z line to finish.\n"));
