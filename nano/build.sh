@@ -15,15 +15,25 @@ if [[ "${target_platform}" =~ win-* ]]; then
     fi
 
     ./branding.sh
-    # there's a compiling failure relevant to the `browser`
-    # feature I couldn't workaround with, so disable it.
-    ./configure \
-        --prefix="${PREFIX}" \
-        --build="${BUILD}" \
-        --host="${HOST}" \
-        --disable-dependency-tracking \
-        --enable-utf8 \
-        --disable-{nls,speller,browser}
+
+    if [[ ! "${build_platform}" =~ win-* ]]; then
+        ./autogen.sh
+    fi
+
+    common_configure_args=(
+        --prefix="${PREFIX}"
+        --build="${BUILD}"
+        --host="${HOST}"
+        --disable-dependency-tracking
+        --enable-utf8
+    )
+
+    if [[ ! "${build_platform}" =~ win-* ]]; then
+        ./configure "${common_configure_args[@]}" --disable-{nls,speller}
+    else
+        # disable `browser` feature when building on win
+        ./configure "${common_configure_args[@]}" --disable-{nls,speller,browser}
+    fi
 else
     ./configure \
         --prefix="${PREFIX}" \

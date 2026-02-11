@@ -26,6 +26,7 @@ source:
         - 0009-remove-halfdelay-for-unicode.patch
         - 0010-meta-keycode-pdcurses-compat.patch
         - 0011-colortype-pdcursesmod-compat.patch
+  - path: autogen.sh
   - path: branding.sh
 
 build:
@@ -43,6 +44,10 @@ requirements:
         - m2-sed
         - m2-gawk
         - m2-grep
+      else:
+        - autoconf
+        - automake
+        - gettext-tools
   host:
     - if: win
       then: mingw-w64-pdcursesmod-static
