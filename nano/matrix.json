@@ -1,7 +1,6 @@
 {
   "include": [
     { "target": "win-64",        "os": "ubuntu-latest"  },
-    { "target": "win-64",        "os": "windows-latest"  },
     { "target": "linux-64",      "os": "ubuntu-latest"  },
     { "target": "linux-aarch64", "os": "ubuntu-latest"  },
     { "target": "osx-arm64",     "os": "macos-latest"   }
