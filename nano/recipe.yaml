@@ -79,6 +79,7 @@ about:
     line numbers, softwrapping, multiple buffers, selecting text by
     holding Shift, search-and-replace with regular expressions, and
     several other conveniences.
+  documentation: https://github.com/chawyehsu/conda-recipes/blob/main/nano/README.md
 
 extra:
   recipe-maintainers:
