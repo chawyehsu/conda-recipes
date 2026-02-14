@@ -89,7 +89,7 @@ index f0889ecf46..1dfd272285 100644
  	add_to_sclist(MMAIN, "^Del", CONTROL_DELETE, chop_next_word, 0);
  	add_to_sclist(MMAIN, "M-Del", ALT_DELETE, zap_text, 0);
 diff --git a/src/winio.c b/src/winio.c
-index 088b91c67e..593977df93 100644
+index 088b91c67e..91a582b2b0 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -254,10 +254,13 @@
@@ -131,7 +131,7 @@ index 088b91c67e..593977df93 100644
  
  	/* For an Esc, remember whether the last two arrived by themselves.
  	 * Then increment the counter, rolling around on three escapes. */
-@@ -1024,6 +1031,15 @@
+@@ -1024,8 +1031,15 @@
  		return ERR;
  
  	if (escapes == 0) {
@@ -141,13 +141,14 @@ index 088b91c67e..593977df93 100644
 +				case '\b': return KEY_BACKSPACE;
 +				case '\r': return KEY_ENTER;
 +			}
-+		} else if (keycode == '\b' &&
-+			(modifiers & (PDC_KEY_MODIFIER_SHIFT | PDC_KEY_MODIFIER_CONTROL)))
-+			return KEY_BACKSPACE;
++		}
  		/* Most key codes in byte range cannot be special keys. */
- 		if (keycode < 0xFF && keycode != '\t' && keycode != DEL_CODE)
+-		if (keycode < 0xFF && keycode != '\t' && keycode != DEL_CODE)
++		if (!modifiers && keycode < 0xFF && keycode != '\t' && keycode != DEL_CODE)
  			return keycode;
-@@ -1193,27 +1209,22 @@
+ 	} else if (escapes == 1) {
+ 		escapes = 0;
+@@ -1193,27 +1207,24 @@
  		return FOREIGN_SEQUENCE;
  #endif
  
@@ -171,7 +172,10 @@ index 088b91c67e..593977df93 100644
 -			if (keycode == KEY_DC && modifiers == 0x05)
 +			if (keycode == KEY_SDC && modifiers & PDC_KEY_MODIFIER_CONTROL)
  				return CONTROL_SHIFT_DELETE;
- 			if (!meta_key)
+-			if (!meta_key)
++			if (modifiers == (PDC_KEY_MODIFIER_SHIFT | PDC_KEY_MODIFIER_CONTROL))
++				keycode = convert_to_control(keycode);
++			if (!meta_key && !(modifiers & PDC_KEY_MODIFIER_CONTROL))
  				shift_held = TRUE;
  		}
  		/* Is only Alt being held? */
@@ -189,7 +193,12 @@ index 088b91c67e..593977df93 100644
  			switch (keycode) {
  				case KEY_UP:    return CONTROL_UP;
  				case KEY_DOWN:  return CONTROL_DOWN;
-@@ -1240,7 +1251,7 @@
+@@ -1237,10 +1248,12 @@
+ 				case KEY_END:   return CONTROL_END;
+ 				case KEY_DC:    return CONTROL_DELETE;
+ 			}
++			if (modifiers == PDC_KEY_MODIFIER_CONTROL)
++				keycode = convert_to_control(keycode);
  		}
  #ifndef NANO_TINY
  		/* Are both Shift and Alt being held? */
@@ -198,7 +207,7 @@ index 088b91c67e..593977df93 100644
  			switch (keycode) {
  				case KEY_UP:    return KEY_PPAGE;
  				case KEY_DOWN:  return KEY_NPAGE;
-@@ -1250,7 +1261,6 @@
+@@ -1250,7 +1263,6 @@
  		}
  #endif
  	}
