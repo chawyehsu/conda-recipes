@@ -24,7 +24,7 @@ source:
         - 0007-utf8-support-and-wide-char-width-detection-fix.patch
         - 0008-windows-conhost-read-stdin-data.patch
         - 0009-remove-halfdelay-for-unicode.patch
-        - 0010-meta-keycode-pdcurses-compat.patch
+        - 0010-keycode-pdcursesmod-compat.patch
         - 0011-colortype-pdcursesmod-compat.patch
         - 0012-poshistory-item-windows-path-compat.patch # v8.5+
   - path: autogen.sh
