@@ -128,8 +128,10 @@ function Update-Recipe {
     $lines = Get-Content -LiteralPath $RecipePath
     $contextUpdated = $false
     $sourceUpdated = $false
+    $buildUpdated = $false
     $inContext = $false
     $inSource = $false
+    $inBuild = $false
 
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $line = $lines[$i]
@@ -141,6 +143,11 @@ function Update-Recipe {
 
         if ($line -match '^\s*source:\s*$') {
             $inSource = $true
+            continue
+        }
+
+        if ($line -match '^\s*build:\s*$') {
+            $inBuild = $true
             continue
         }
 
@@ -159,6 +166,17 @@ function Update-Recipe {
             } elseif (-not $sourceUpdated -and $line -match '^(\s+)sha256:\s*.*$') {
                 $lines[$i] = "$($Matches[1])sha256: $NewSha"
                 $sourceUpdated = $true
+            }
+        }
+
+        if ($inBuild) {
+            if ($line -match '^\S') {
+                $inBuild = $false
+            } elseif (-not $buildUpdated -and $line -match '^(\s+)number:\s*(\d+)\s*$') {
+                if ($Matches[2] -ne '0') {
+                    $lines[$i] = "$($Matches[1])number: 0"
+                }
+                $buildUpdated = $true
             }
         }
     }
