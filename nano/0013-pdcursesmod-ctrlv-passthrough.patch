@@ -1,0 +1,18 @@
+diff --git a/src/nano.c b/src/nano.c
+index 17aacb1782..e53b0c9997 100644
+--- a/src/nano.c
++++ b/src/nano.c
+@@ -1843,6 +1843,13 @@
+ 	 */
+ 	_set_fmode(_O_BINARY);
+ 
++#ifdef __PDCURSESMOD__
++	/* When using PDCursesMod, we want to disable the default Ctrl+V behavior of
++	 * pasting text from the system clipboard, so that Ctrl+V behaves as a normal
++	 * keystroke that paste text from nano's cutbuffer instead. */
++	PDC_set_function_key(FUNCTION_KEY_PASTE, 0);
++#endif
++
+ #ifdef __linux__
+ 	struct vt_stat dummy;
+ 

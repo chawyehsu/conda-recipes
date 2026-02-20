@@ -27,6 +27,7 @@ source:
         - 0010-keycode-pdcursesmod-compat.patch
         - 0011-colortype-pdcursesmod-compat.patch
         - 0012-poshistory-item-windows-path-compat.patch # v8.5+
+        - 0013-pdcursesmod-ctrlv-passthrough.patch
   - path: autogen.sh
   - path: branding.sh
 
