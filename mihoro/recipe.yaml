@@ -17,7 +17,7 @@ source:
         - 0001-macos-support.patch
 
 build:
-  number: 0
+  number: 1
   skip:
     - win
   script:
