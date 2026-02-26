@@ -180,7 +180,7 @@ jobs:
                 --skip-existing all `
                 --extra-meta flow_run_id="github_$env:GITHUB_RUN_ID" `
                 --extra-meta remote_url="https://github.com/$env:GITHUB_REPOSITORY" `
-                --extra-meta sha="$env:GITHUB_SHA"
+                --extra-meta sha="$env:GITHUB_SHA" `
                 -c conda-forge -c chawyehsu
               Assert-LastExitCode "Dependency build $dep"
             }
@@ -193,7 +193,7 @@ jobs:
             --skip-existing all `
             --extra-meta flow_run_id="github_$env:GITHUB_RUN_ID" `
             --extra-meta remote_url="https://github.com/$env:GITHUB_REPOSITORY" `
-            --extra-meta sha="$env:GITHUB_SHA"
+            --extra-meta sha="$env:GITHUB_SHA" `
             -c conda-forge -c chawyehsu
           Assert-LastExitCode "Package build $dir"
         }
