@@ -1,0 +1,2160 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 00c37f2237..574aa4ed54 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -18,6 +18,15 @@
+ ]
+ 
+ [[package]]
++name = "android_system_properties"
++version = "0.1.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "819e7219dbd41043ac279b19830f2efc897156490d7fd6ea916720117ee66311"
++dependencies = [
++ "libc",
++]
++
++[[package]]
+ name = "anstream"
+ version = "0.6.21"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -80,6 +89,12 @@
+ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
+ 
+ [[package]]
++name = "autocfg"
++version = "1.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
++
++[[package]]
+ name = "base64"
+ version = "0.22.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -147,6 +162,17 @@
+ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
+ 
+ [[package]]
++name = "chrono"
++version = "0.4.44"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
++dependencies = [
++ "iana-time-zone",
++ "num-traits",
++ "windows-link",
++]
++
++[[package]]
+ name = "clap"
+ version = "4.5.53"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -813,6 +839,30 @@
+ ]
+ 
+ [[package]]
++name = "iana-time-zone"
++version = "0.1.65"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e31bc9ad994ba00e440a8aa5c9ef0ec67d5cb5e5cb0cc7f8b744a35b389cc470"
++dependencies = [
++ "android_system_properties",
++ "core-foundation-sys",
++ "iana-time-zone-haiku",
++ "js-sys",
++ "log",
++ "wasm-bindgen",
++ "windows-core",
++]
++
++[[package]]
++name = "iana-time-zone-haiku"
++version = "0.1.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
++dependencies = [
++ "cc",
++]
++
++[[package]]
+ name = "icu_collections"
+ version = "2.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -1055,6 +1105,7 @@
+ dependencies = [
+  "anyhow",
+  "base64",
++ "chrono",
+  "clap",
+  "clap_complete",
+  "colored",
+@@ -1148,6 +1199,15 @@
+ ]
+ 
+ [[package]]
++name = "num-traits"
++version = "0.2.19"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
++dependencies = [
++ "autocfg",
++]
++
++[[package]]
+ name = "number_prefix"
+ version = "0.4.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -2401,6 +2461,41 @@
+ ]
+ 
+ [[package]]
++name = "windows-core"
++version = "0.62.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b8e83a14d34d0623b51dce9581199302a221863196a1dde71a7663a4c2be9deb"
++dependencies = [
++ "windows-implement",
++ "windows-interface",
++ "windows-link",
++ "windows-result",
++ "windows-strings",
++]
++
++[[package]]
++name = "windows-implement"
++version = "0.60.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn",
++]
++
++[[package]]
++name = "windows-interface"
++version = "0.59.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
++dependencies = [
++ "proc-macro2",
++ "quote",
++ "syn",
++]
++
++[[package]]
+ name = "windows-link"
+ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+diff --git a/Cargo.toml b/Cargo.toml
+index 0a8044112c..8bcdbdb0af 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "mihoro"
+-description = "Mihomo CLI client on Linux."
++description = "Mihomo CLI client, no more, no less."
+ version = "0.10.0"
+ edition = "2021"
+ readme = "README.md"
+@@ -34,6 +34,7 @@
+ anyhow = "1.0"
+ base64 = "0.22"
+ tempfile = "3.18"
++chrono = { version = "0.4", default-features = false, features = ["clock"] }
+ self_update = { version = "0.42", default-features = false, features = [
+     "archive-tar",
+     "compression-flate2",
+diff --git a/README.md b/README.md
+index dcae835442..7d4c305482 100644
+--- a/README.md
++++ b/README.md
+@@ -14,9 +14,9 @@
+ 
+ ---
+ 
+-**mihoro** - The 🦀 Rust™-based [Mihomo](https://github.com/MetaCubeX/mihomo) CLI client on Linux.
++**mihoro** - The 🦀 Rust™-based [Mihomo](https://github.com/MetaCubeX/mihomo) CLI client.
+ 
+-- Setup, update, apply overrides, and manage with systemd. **No more, no less.**
++- Setup, update, apply overrides, and manage via native service managers. **No more, no less.**
+ - No root privilege required. Maintains per-user instance.
+ - First-class support for config subscription.
+ 
+@@ -54,6 +54,9 @@
+ mihomo_channel = "stable"
+ mihomo_binary_path = "~/.local/bin/mihomo"
+ mihomo_config_root = "~/.config/mihomo"
++service_manager = "auto"
++service_name = "mihomo"
++# service_root = "" # optional; Linux default: ~/.config/systemd/user, macOS default: ~/Library/LaunchAgents
+ user_systemd_root = "~/.config/systemd/user"
+ mihoro_user_agent = "mihoro"
+ auto_update_interval = 12
+@@ -196,19 +199,19 @@
+ 
+ ```console
+ $ mihoro --help
+-Mihomo CLI client on Linux.
++Mihomo CLI client, no more, no less.
+ 
+ Usage: mihoro [OPTIONS] [COMMAND]
+ 
+ Commands:
+   setup        Setup mihoro by downloading mihomo binary and remote config
+   update       Update mihomo components (config by default)
+-  apply        Apply mihomo config overrides and restart mihomo.service
+-  start        Start mihomo.service with systemctl
+-  status       Check mihomo.service status with systemctl
+-  stop         Stop mihomo.service with systemctl
+-  restart      Restart mihomo.service with systemctl
+-  log          Check mihomo.service logs with journalctl [aliases: logs]
++  apply        Apply mihomo config overrides and restart service
++  start        Start mihomo service
++  status       Check mihomo service status
++  stop         Stop mihomo service
++  restart      Restart mihomo service
++  log          Check mihomo service logs [aliases: logs]
+   proxy        Output proxy export commands
+   uninstall    Uninstall and remove mihoro and config
+   completions  Generate shell completions for mihoro
+diff --git a/src/cmd.rs b/src/cmd.rs
+index 998963f38d..771254c11f 100644
+--- a/src/cmd.rs
++++ b/src/cmd.rs
+@@ -56,17 +56,17 @@
+         #[arg(long)]
+         arch: Option<String>,
+     },
+-    /// Apply mihomo config overrides and restart mihomo.service
++    /// Apply mihomo config overrides and restart service
+     Apply,
+-    /// Start mihomo.service with systemctl
++    /// Start mihomo service
+     Start,
+-    /// Check mihomo.service status with systemctl
++    /// Check mihomo service status
+     Status,
+-    /// Stop mihomo.service with systemctl
++    /// Stop mihomo service
+     Stop,
+-    /// Restart mihomo.service with systemctl
++    /// Restart mihomo service
+     Restart,
+-    /// Check mihomo.service logs with journalctl
++    /// Check mihomo service logs
+     #[clap(visible_alias("logs"))]
+     Log,
+     /// Output proxy export commands
+@@ -139,3 +139,27 @@
+     /// Show auto-update cron job status
+     Status,
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use clap::Parser;
++
++    #[test]
++    fn test_service_subcommands_parse_contract() {
++        let start = Args::parse_from(["mihoro", "start"]);
++        assert!(matches!(start.command, Some(Commands::Start)));
++
++        let status = Args::parse_from(["mihoro", "status"]);
++        assert!(matches!(status.command, Some(Commands::Status)));
++
++        let stop = Args::parse_from(["mihoro", "stop"]);
++        assert!(matches!(stop.command, Some(Commands::Stop)));
++
++        let restart = Args::parse_from(["mihoro", "restart"]);
++        assert!(matches!(restart.command, Some(Commands::Restart)));
++
++        let log = Args::parse_from(["mihoro", "log"]);
++        assert!(matches!(log.command, Some(Commands::Log)));
++    }
++}
+diff --git a/src/config.rs b/src/config.rs
+index 68066f1252..eebf855eb5 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -28,6 +28,16 @@
+     pub mihomo_arch: Option<String>,
+     pub mihomo_binary_path: String,
+     pub mihomo_config_root: String,
++    /// Service manager override: `auto`, `systemd`, or `launchd`.
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub service_manager: Option<String>,
++    /// Service name used by service managers.
++    pub service_name: String,
++    /// Generic service file root; if unset on Linux, falls back to `user_systemd_root`.
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub service_root: Option<String>,
++    /// Legacy Linux-only systemd path. Keep for backward compatibility while
++    /// introducing future cross-platform service_root/service_manager fields.
+     pub user_systemd_root: String,
+     pub mihoro_user_agent: String,
+     pub auto_update_interval: u16,
+@@ -44,6 +54,9 @@
+             remote_config_url: String::from(""),
+             mihomo_binary_path: String::from("~/.local/bin/mihomo"),
+             mihomo_config_root: String::from("~/.config/mihomo"),
++            service_manager: Some(String::from("auto")),
++            service_name: String::from("mihomo"),
++            service_root: None,
+             user_systemd_root: String::from("~/.config/systemd/user"),
+             mihoro_user_agent: String::from("mihoro"),
+             auto_update_interval: 12,
+@@ -176,20 +189,26 @@
+ 
+     // Parse config file
+     let config = Config::setup_from(path)?;
+-    let required_urls = [
++    let required_fields = [
+         ("remote_config_url", &config.remote_config_url),
+         ("mihomo_binary_path", &config.mihomo_binary_path),
+         ("mihomo_config_root", &config.mihomo_config_root),
+-        ("user_systemd_root", &config.user_systemd_root),
++        ("service_name", &config.service_name),
+     ];
+ 
+-    // Validate if urls are defined
+-    for (field, value) in required_urls.iter() {
++    // Validate if required fields are defined
++    for (field, value) in required_fields.iter() {
+         if value.is_empty() {
+             bail!("`{}` undefined", field)
+         }
+     }
+ 
++    // Keep legacy compatibility: one service root path must be available.
++    let service_root = config.service_root.as_deref().unwrap_or("");
++    if service_root.is_empty() && config.user_systemd_root.is_empty() {
++        bail!("`service_root` and `user_systemd_root` cannot both be empty");
++    }
++
+     Ok(config)
+ }
+ 
+@@ -324,6 +343,50 @@
+     }
+ 
+     #[test]
++    fn test_parse_config_accepts_legacy_user_systemd_root() -> Result<()> {
++        let dir = tempdir()?;
++        let config_path = dir.path().join("legacy.toml");
++        fs::write(
++            &config_path,
++            r#"
++remote_config_url = "http://example.com/config.yaml"
++mihomo_binary_path = "/tmp/test/mihomo"
++mihomo_config_root = "/tmp/test/mihomo"
++user_systemd_root = "/tmp/test/systemd"
++"#,
++        )?;
++
++        let parsed = parse_config(config_path.to_str().unwrap())?;
++        assert_eq!(parsed.user_systemd_root, "/tmp/test/systemd");
++        Ok(())
++    }
++
++    #[test]
++    fn test_parse_config_service_root_overrides_legacy_root() -> Result<()> {
++        let dir = tempdir()?;
++        let config_path = dir.path().join("service-root.toml");
++        fs::write(
++            &config_path,
++            r#"
++remote_config_url = "http://example.com/config.yaml"
++mihomo_binary_path = "/tmp/test/mihomo"
++mihomo_config_root = "/tmp/test/mihomo"
++service_name = "mihomo"
++service_root = "/tmp/test/service-root"
++user_systemd_root = "/tmp/test/systemd"
++"#,
++        )?;
++
++        let parsed = parse_config(config_path.to_str().unwrap())?;
++        assert_eq!(
++            parsed.service_root,
++            Some("/tmp/test/service-root".to_string())
++        );
++        assert_eq!(parsed.user_systemd_root, "/tmp/test/systemd");
++        Ok(())
++    }
++
++    #[test]
+     fn test_parse_config_validates_required_fields() -> Result<()> {
+         let dir = tempdir()?;
+         let config_path = dir.path().join("test.toml");
+diff --git a/src/cron.rs b/src/cron.rs
+index 6bcef68f0d..dd66360bce 100644
+--- a/src/cron.rs
++++ b/src/cron.rs
+@@ -1,4 +1,5 @@
+ use anyhow::{anyhow, Result};
++use chrono::{DateTime, Local};
+ use colored::Colorize;
+ use std::env;
+ use std::fs;
+@@ -6,15 +7,39 @@
+ use std::path::Path;
+ use std::path::PathBuf;
+ use std::process::Command;
++use std::time::{Duration, UNIX_EPOCH};
++
++const MIHORO_CRON_START_MARKER: &str = "# >>> mihoro auto-update >>>";
++const MIHORO_CRON_END_MARKER: &str = "# <<< mihoro auto-update <<<";
++
++fn current_uid_fallback() -> u32 {
++    fs::metadata(".").map(|m| m.uid()).unwrap_or(1000)
++}
++
++fn resolve_runtime_root(os: &str, xdg_runtime_dir: Option<&str>, tmpdir: Option<&str>) -> PathBuf {
++    match os {
++        "macos" => PathBuf::from(tmpdir.filter(|value| !value.is_empty()).unwrap_or("/tmp")),
++        _ => {
++            if let Some(runtime_dir) = xdg_runtime_dir.filter(|value| !value.is_empty()) {
++                PathBuf::from(runtime_dir)
++            } else {
++                let uid = current_uid_fallback();
++                PathBuf::from(format!("/run/user/{uid}"))
++            }
++        }
++    }
++}
+ 
+ /// Get the path to the user's crontab file
+ fn crontab_path() -> PathBuf {
+-    let run_dir = env::var("XDG_RUNTIME_DIR").unwrap_or_else(|_| {
+-        // Use current user's UID as fallback
+-        let uid = fs::metadata(".").map(|m| m.uid()).unwrap_or(1000);
+-        format!("/run/user/{}", uid)
+-    });
+-    PathBuf::from(run_dir).join("mihoro-crontab")
++    let xdg_runtime_dir = env::var("XDG_RUNTIME_DIR").ok();
++    let tmpdir = env::var("TMPDIR").ok();
++    let root = resolve_runtime_root(
++        std::env::consts::OS,
++        xdg_runtime_dir.as_deref(),
++        tmpdir.as_deref(),
++    );
++    root.join("mihoro-crontab")
+ }
+ 
+ /// Get the mihoro binary path from current executable
+@@ -25,19 +50,124 @@
+         .ok_or_else(|| anyhow!("Failed to get mihoro binary path"))
+ }
+ 
+-/// Generate cron entry for auto-update
+-fn generate_cron_entry(interval_hours: u16) -> Result<String> {
++/// Generate cron line for auto-update.
++fn generate_cron_line(interval_hours: u16) -> Result<String> {
+     let bin_path = mihoro_bin_path()?;
++    Ok(format!("0 */{} * * * {} update", interval_hours, bin_path))
++}
++
++fn generate_managed_block(interval_hours: u16) -> Result<String> {
++    let cron_line = generate_cron_line(interval_hours)?;
+     Ok(format!(
+-        "0 */{} * * * {} update\n",
+-        interval_hours, bin_path
++        "{MIHORO_CRON_START_MARKER}\n{cron_line}\n{MIHORO_CRON_END_MARKER}\n"
+     ))
+ }
+ 
+-/// Generate the crontab content with mihoro entry
+-fn generate_crontab(interval_hours: u16) -> Result<String> {
+-    let mihoro_entry = generate_cron_entry(interval_hours)?;
+-    Ok(mihoro_entry)
++fn read_installed_crontab() -> Result<String> {
++    let output = Command::new("crontab")
++        .arg("-l")
++        .output()
++        .map_err(|e| anyhow!("Failed to list current crontab: {}", e))?;
++
++    if output.status.success() {
++        return Ok(String::from_utf8_lossy(&output.stdout).to_string());
++    }
++
++    let stderr = String::from_utf8_lossy(&output.stderr).to_lowercase();
++    if stderr.contains("no crontab for") || stderr.contains("does not exist") {
++        return Ok(String::new());
++    }
++
++    Err(anyhow!("Failed to list current crontab: {}", stderr.trim()))
++}
++
++fn install_crontab(content: &str, crontab_file: &Path) -> Result<()> {
++    if let Some(parent) = crontab_file.parent() {
++        fs::create_dir_all(parent)?;
++    }
++    fs::write(crontab_file, content)?;
++    let status = Command::new("crontab")
++        .arg(crontab_file)
++        .status()
++        .map_err(|e| anyhow!("Failed to install crontab: {}", e))?;
++
++    if !status.success() {
++        return Err(anyhow!("Failed to install crontab"));
++    }
++
++    Ok(())
++}
++
++fn strip_mihoro_block(content: &str) -> (String, bool) {
++    let lines: Vec<&str> = content.lines().collect();
++    let mut cleaned: Vec<&str> = Vec::with_capacity(lines.len());
++    let mut index = 0;
++    let mut removed = false;
++
++    while index < lines.len() {
++        let line = lines[index];
++        if line.trim() == MIHORO_CRON_START_MARKER {
++            let mut found_end = None;
++            let mut inner = index + 1;
++            while inner < lines.len() {
++                if lines[inner].trim() == MIHORO_CRON_END_MARKER {
++                    found_end = Some(inner);
++                    break;
++                }
++                inner += 1;
++            }
++
++            if let Some(end) = found_end {
++                removed = true;
++                index = end + 1;
++                continue;
++            }
++        }
++
++        cleaned.push(line);
++        index += 1;
++    }
++
++    let mut result = cleaned.join("\n");
++    if !result.is_empty() {
++        result.push('\n');
++    }
++    (result, removed)
++}
++
++fn merge_with_mihoro_block(existing: &str, managed_block: &str) -> String {
++    let (without_mihoro, _) = strip_mihoro_block(existing);
++    let trimmed = without_mihoro.trim_end();
++    if trimmed.is_empty() {
++        managed_block.to_string()
++    } else {
++        format!("{trimmed}\n\n{managed_block}")
++    }
++}
++
++fn find_mihoro_entry(content: &str) -> Option<String> {
++    let lines: Vec<&str> = content.lines().collect();
++    let mut index = 0;
++    while index < lines.len() {
++        if lines[index].trim() != MIHORO_CRON_START_MARKER {
++            index += 1;
++            continue;
++        }
++
++        let mut inner = index + 1;
++        while inner < lines.len() {
++            let line = lines[inner].trim();
++            if line == MIHORO_CRON_END_MARKER {
++                break;
++            }
++            if !line.is_empty() {
++                return Some(line.to_string());
++            }
++            inner += 1;
++        }
++        index = inner.saturating_add(1);
++    }
++    None
+ }
+ 
+ /// Enable auto-update by installing cron job
+@@ -54,20 +184,11 @@
+         anyhow::bail!("Auto-update interval must be between 1 and 24 hours");
+     }
+ 
+-    let crontab_content = generate_crontab(interval_hours)?;
++    let existing = read_installed_crontab()?;
++    let managed_block = generate_managed_block(interval_hours)?;
++    let crontab_content = merge_with_mihoro_block(&existing, &managed_block);
+     let crontab_file = crontab_path();
+-
+-    // Write crontab to runtime directory for reference
+-    fs::write(&crontab_file, crontab_content)?;
+-
+-    // Install crontab using crontab command
+-    let status = std::process::Command::new("crontab")
+-        .arg(&crontab_file)
+-        .status()?;
+-
+-    if !status.success() {
+-        anyhow::bail!("Failed to install crontab");
+-    }
++    install_crontab(&crontab_content, &crontab_file)?;
+ 
+     println!(
+         "{} Auto-update enabled with interval: {} hours",
+@@ -77,7 +198,7 @@
+     println!(
+         "{} Cron entry: {}",
+         "->".dimmed(),
+-        generate_cron_entry(interval_hours)?.trim()
++        generate_cron_line(interval_hours)?
+     );
+ 
+     Ok(())
+@@ -85,69 +206,51 @@
+ 
+ /// Disable auto-update by removing cron job
+ pub fn disable_auto_update(prefix: &str) -> Result<()> {
+-    let crontab_file = crontab_path();
+-
+-    // Remove our crontab reference file
+-    if crontab_file.exists() {
+-        fs::remove_file(&crontab_file)?;
+-    }
+-
+-    // Install empty crontab to remove all entries
+-    let status = std::process::Command::new("crontab").arg("-r").status();
+-
+-    match status {
+-        Ok(status) if status.success() => {
+-            println!("{} Auto-update disabled", prefix.green().bold());
+-            Ok(())
+-        }
+-        Ok(_) => {
+-            // crontab -r returns non-zero if no crontab exists, which is fine
+-            println!(
+-                "{} Auto-update disabled (no active cron job)",
+-                prefix.yellow()
+-            );
+-            Ok(())
+-        }
+-        Err(e) => Err(anyhow!("Failed to disable crontab: {}", e)),
+-    }
++    let existing = read_installed_crontab()?;
++    let (without_mihoro, had_mihoro_block) = strip_mihoro_block(&existing);
++
++    if had_mihoro_block {
++        let crontab_file = crontab_path();
++        install_crontab(&without_mihoro, &crontab_file)?;
++        println!("{} Auto-update disabled", prefix.green().bold());
++    } else {
++        println!(
++            "{} Auto-update disabled (no active cron job)",
++            prefix.yellow()
++        );
++    }
++
++    Ok(())
+ }
+ 
+-/// Format Unix timestamp to local datetime string using date command
++/// Format Unix timestamp to local datetime string.
+ fn format_datetime(secs: u64) -> String {
+-    let output = Command::new("date")
+-        .arg("-d")
+-        .arg(format!("@{}", secs))
+-        .arg("+%Y-%m-%d %H:%M:%S")
+-        .output();
+-
+-    match output {
+-        Ok(output) if output.status.success() => {
+-            String::from_utf8_lossy(&output.stdout).trim().to_string()
+-        }
+-        _ => format!("<unknown: {} secs>", secs),
+-    }
++    let ts = UNIX_EPOCH + Duration::from_secs(secs);
++    let local: DateTime<Local> = DateTime::from(ts);
++    local.format("%Y-%m-%d %H:%M:%S").to_string()
+ }
+ 
+ /// Get current cron status
+ pub fn get_cron_status(_prefix: &str, mihomo_config_path: &str) -> Result<()> {
+-    let crontab_file = crontab_path();
++    let installed = read_installed_crontab()?;
++    let cron_entry = find_mihoro_entry(&installed);
+ 
+-    if !crontab_file.exists() {
++    if cron_entry.is_none() {
+         println!("{} Auto-update is disabled", "status:".yellow().bold());
+         return Ok(());
+     }
+ 
+-    let content = fs::read_to_string(&crontab_file)?;
+-    let cron_entry = content.lines().next().unwrap_or("");
+-
+     println!("{} Auto-update is enabled", "status:".green().bold());
+-    println!("{} {}", "->".dimmed(), cron_entry.dimmed());
++    println!(
++        "{} {}",
++        "->".dimmed(),
++        cron_entry.unwrap_or_default().dimmed()
++    );
+ 
+     // Show last updated time from mihomo config file
+     let config_path = Path::new(mihomo_config_path);
+     if let Ok(metadata) = fs::metadata(config_path) {
+         if let Ok(modified) = metadata.modified() {
+-            use std::time::UNIX_EPOCH;
+             if let Ok(duration) = modified.duration_since(UNIX_EPOCH) {
+                 let secs = duration.as_secs();
+                 let datetime = format_datetime(secs);
+@@ -164,15 +267,64 @@
+     use super::*;
+ 
+     #[test]
+-    fn test_generate_cron_entry() {
+-        let entry = generate_cron_entry(12).unwrap();
+-        assert!(entry.contains("0 */12 * * *"));
+-        assert!(entry.contains("update"));
+-    }
+-
+-    #[test]
+-    fn test_generate_crontab() {
+-        let crontab = generate_crontab(6).unwrap();
+-        assert!(crontab.contains("0 */6 * * *"));
++    fn test_generate_cron_line() {
++        let line = generate_cron_line(12).unwrap();
++        assert!(line.contains("0 */12 * * *"));
++        assert!(line.contains("update"));
++    }
++
++    #[test]
++    fn test_generate_managed_block() {
++        let block = generate_managed_block(6).unwrap();
++        assert!(block.contains(MIHORO_CRON_START_MARKER));
++        assert!(block.contains("0 */6 * * *"));
++        assert!(block.contains(MIHORO_CRON_END_MARKER));
++    }
++
++    #[test]
++    fn test_format_datetime_from_unix_secs() {
++        let formatted = format_datetime(1_700_000_000);
++        assert!(!formatted.is_empty());
++        assert!(formatted.contains('-'));
++        assert!(formatted.contains(':'));
++    }
++
++    #[test]
++    fn test_resolve_runtime_root_macos_uses_tmpdir() {
++        let root = resolve_runtime_root("macos", Some("/run/user/1000"), Some("/var/tmp"));
++        assert_eq!(root, PathBuf::from("/var/tmp"));
++    }
++
++    #[test]
++    fn test_resolve_runtime_root_macos_fallback_to_tmp() {
++        let root = resolve_runtime_root("macos", None, None);
++        assert_eq!(root, PathBuf::from("/tmp"));
++    }
++
++    #[test]
++    fn test_strip_mihoro_block_keeps_unrelated_entries() {
++        let input = "MAILTO=user@example.com\n# >>> mihoro auto-update >>>\n0 */12 * * * /usr/bin/mihoro update\n# <<< mihoro auto-update <<<\n0 1 * * * /usr/bin/backup\n";
++        let (cleaned, removed) = strip_mihoro_block(input);
++        assert!(removed);
++        assert!(cleaned.contains("MAILTO=user@example.com"));
++        assert!(cleaned.contains("0 1 * * * /usr/bin/backup"));
++        assert!(!cleaned.contains("mihoro update"));
++    }
++
++    #[test]
++    fn test_merge_with_mihoro_block_is_idempotent() {
++        let block = generate_managed_block(12).unwrap();
++        let first = merge_with_mihoro_block("0 1 * * * /usr/bin/backup\n", &block);
++        let second = merge_with_mihoro_block(&first, &block);
++        assert_eq!(first, second);
++    }
++
++    #[test]
++    fn test_find_mihoro_entry_from_block() {
++        let block = generate_managed_block(12).unwrap();
++        let content = format!("0 1 * * * /usr/bin/backup\n\n{block}");
++        let entry = find_mihoro_entry(&content);
++        assert!(entry.is_some());
++        assert!(entry.unwrap_or_default().contains("mihoro"));
+     }
+ }
+diff --git a/src/main.rs b/src/main.rs
+index 56d05ca740..4fab0c2ea2 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,7 +4,7 @@
+ mod mihoro;
+ mod proxy;
+ mod resolve_mihomo_bin;
+-mod systemctl;
++mod service;
+ #[cfg(feature = "self_update")]
+ mod upgrade;
+ mod utils;
+@@ -17,11 +17,10 @@
+ };
+ use colored::Colorize;
+ use reqwest::Client;
+-use std::{io, process::Command};
++use std::io;
+ 
+ use cmd::{Args, ClapShell, Commands};
+ use mihoro::Mihoro;
+-use systemctl::Systemctl;
+ 
+ #[tokio::main]
+ async fn main() {
+@@ -74,10 +73,13 @@
+                 }
+                 // Restart service once at the end
+                 println!(
+-                    "{} Restarting mihomo.service...",
+-                    mihoro.prefix.green().bold().italic()
++                    "{} Restarting {}...",
++                    mihoro.prefix.green().bold().italic(),
++                    mihoro.mihomo_service_name
+                 );
+-                Systemctl::new().restart("mihomo.service").execute()?;
++                mihoro
++                    .service_manager()?
++                    .restart(&mihoro.mihomo_service_name)?;
+             } else if *core {
+                 mihoro.update_core(&client, arch.as_deref(), true).await?;
+             } else if *geodata {
+@@ -91,41 +93,49 @@
+         Some(Commands::Uninstall) => mihoro.uninstall()?,
+         Some(Commands::Proxy { proxy }) => mihoro.proxy_commands(proxy)?,
+ 
+-        Some(Commands::Start) => Systemctl::new()
+-            .start("mihomo.service")
+-            .execute()
++        Some(Commands::Start) => mihoro
++            .service_manager()?
++            .start(&mihoro.mihomo_service_name)
+             .map(|_| {
+-                println!("{} Started mihomo.service", mihoro.prefix.green());
++                println!(
++                    "{} Started {}",
++                    mihoro.prefix.green(),
++                    mihoro.mihomo_service_name
++                );
+             })?,
+ 
+         Some(Commands::Status) => {
+-            Systemctl::new().status("mihomo.service").execute()?;
++            mihoro
++                .service_manager()?
++                .status(&mihoro.mihomo_service_name)?;
+         }
+ 
+-        Some(Commands::Stop) => Systemctl::new().stop("mihomo.service").execute().map(|_| {
+-            println!("{} Stopped mihomo.service", mihoro.prefix.green());
+-        })?,
++        Some(Commands::Stop) => mihoro
++            .service_manager()?
++            .stop(&mihoro.mihomo_service_name)
++            .map(|_| {
++                println!(
++                    "{} Stopped {}",
++                    mihoro.prefix.green(),
++                    mihoro.mihomo_service_name
++                );
++            })?,
+ 
+-        Some(Commands::Restart) => {
+-            Systemctl::new()
+-                .restart("mihomo.service")
+-                .execute()
+-                .map(|_| {
+-                    println!("{} Restarted mihomo.service", mihoro.prefix.green());
+-                })?
+-        }
++        Some(Commands::Restart) => mihoro
++            .service_manager()?
++            .restart(&mihoro.mihomo_service_name)
++            .map(|_| {
++                println!(
++                    "{} Restarted {}",
++                    mihoro.prefix.green(),
++                    mihoro.mihomo_service_name
++                );
++            })?,
+ 
+         Some(Commands::Log) => {
+-            Command::new("journalctl")
+-                .arg("--user")
+-                .arg("-xeu")
+-                .arg("mihomo.service")
+-                .arg("-n")
+-                .arg("10")
+-                .arg("-f")
+-                .spawn()
+-                .expect("failed to execute process")
+-                .wait()?;
++            mihoro
++                .service_manager()?
++                .logs(&mihoro.mihomo_service_name)?;
+         }
+ 
+         Some(Commands::Completions { shell }) => match shell {
+diff --git a/src/mihoro.rs b/src/mihoro.rs
+index 23089610ff..c916c74b41 100644
+--- a/src/mihoro.rs
++++ b/src/mihoro.rs
+@@ -3,7 +3,7 @@
+ use crate::cron;
+ use crate::proxy::{proxy_export_cmd, proxy_unset_cmd};
+ use crate::resolve_mihomo_bin;
+-use crate::systemctl::Systemctl;
++use crate::service::{launchd, ServiceManager, ServiceManagerKind};
+ use crate::utils::{
+     create_parent_dir, delete_file, download_file, extract_gzip, try_decode_base64_file_inplace,
+ };
+@@ -29,12 +29,14 @@
+     pub mihomo_target_binary_path: String,
+     pub mihomo_target_config_root: String,
+     pub mihomo_target_config_path: String,
++    pub mihomo_service_name: String,
+     pub mihomo_target_service_path: String,
+ }
+ 
+ impl Mihoro {
+     pub fn new(config_path: &String) -> Result<Mihoro> {
+         let config = parse_config(tilde(&config_path).as_ref())?;
++        let service_name = normalize_service_name(&config.service_name);
+         Ok(Mihoro {
+             prefix: String::from("mihoro:"),
+             config: config.clone(),
+@@ -42,14 +44,17 @@
+             mihomo_target_config_root: tilde(&config.mihomo_config_root).to_string(),
+             mihomo_target_config_path: tilde(&format!("{}/config.yaml", config.mihomo_config_root))
+                 .to_string(),
+-            mihomo_target_service_path: tilde(&format!(
+-                "{}/mihomo.service",
+-                config.user_systemd_root
+-            ))
+-            .to_string(),
++            mihomo_service_name: service_name.clone(),
++            mihomo_target_service_path: resolve_service_path(&config, &service_name),
+         })
+     }
+ 
++    pub fn service_manager(&self) -> Result<ServiceManager> {
++        let kind_str = self.config.service_manager.as_deref().unwrap_or("auto");
++        let kind = ServiceManagerKind::from_str(kind_str)?;
++        ServiceManager::new(kind)
++    }
++
+     pub async fn setup(
+         &self,
+         client: Client,
+@@ -57,7 +62,7 @@
+         arch_override: Option<&str>,
+     ) -> Result<()> {
+         println!(
+-            "{} Setting up mihomo's binary, config, and systemd service...",
++            "{} Setting up mihomo binary, config, and service...",
+             &self.prefix.cyan()
+         );
+ 
+@@ -135,16 +140,18 @@
+         // Download geodata
+         self.update_geodata(&client).await?;
+ 
+-        // Create mihomo.service systemd file
+-        create_mihomo_service(
++        // Create platform-specific service file
++        create_mihomo_service_for_platform(
++            &self.mihomo_service_name,
+             &self.mihomo_target_binary_path,
+             &self.mihomo_target_config_root,
+             &self.mihomo_target_service_path,
+             &self.prefix,
+         )?;
+ 
+-        Systemctl::new().enable("mihomo.service").execute()?;
+-        Systemctl::new().start("mihomo.service").execute()?;
++        let service_manager = self.service_manager()?;
++        service_manager.enable(&self.mihomo_service_name)?;
++        service_manager.start(&self.mihomo_service_name)?;
+         Ok(())
+     }
+ 
+@@ -189,10 +196,11 @@
+ 
+         // Stop the service before overwriting binary to avoid "Text file busy" error
+         println!(
+-            "{} Stopping mihomo.service before overwriting...",
+-            self.prefix.yellow()
++            "{} Stopping {} before overwriting...",
++            self.prefix.yellow(),
++            self.mihomo_service_name
+         );
+-        Systemctl::new().stop("mihomo.service").execute()?;
++        self.service_manager()?.stop(&self.mihomo_service_name)?;
+ 
+         // Extract and overwrite the binary
+         extract_gzip(temp_path, &self.mihomo_target_binary_path, &self.prefix)?;
+@@ -209,8 +217,12 @@
+ 
+         // Restart the service if requested
+         if restart {
+-            println!("{} Restarting mihomo.service...", self.prefix.green());
+-            Systemctl::new().start("mihomo.service").execute()?;
++            println!(
++                "{} Restarting {}...",
++                self.prefix.green(),
++                self.mihomo_service_name
++            );
++            self.service_manager()?.start(&self.mihomo_service_name)?;
+         }
+ 
+         Ok(())
+@@ -235,10 +247,14 @@
+             self.prefix.yellow()
+         );
+ 
+-        // Restart mihomo systemd service if requested
++        // Restart service if requested
+         if restart {
+-            println!("{} Restart mihomo.service", self.prefix.green());
+-            Systemctl::new().restart("mihomo.service").execute()?;
++            println!(
++                "{} Restart {}",
++                self.prefix.green(),
++                self.mihomo_service_name
++            );
++            self.service_manager()?.restart(&self.mihomo_service_name)?;
+         }
+         Ok(())
+     }
+@@ -296,28 +312,32 @@
+             },
+         )?;
+ 
+-        // Restart mihomo systemd service
+-        Systemctl::new()
+-            .restart("mihomo.service")
+-            .execute()
++        // Restart service
++        self.service_manager()?
++            .restart(&self.mihomo_service_name)
+             .map(|_| {
+-                println!("{} Restarted mihomo.service", self.prefix.green().bold());
++                println!(
++                    "{} Restarted {}",
++                    self.prefix.green().bold(),
++                    self.mihomo_service_name
++                );
+             })?;
+         Ok(())
+     }
+ 
+     pub fn uninstall(&self) -> Result<()> {
+-        Systemctl::new().stop("mihomo.service").execute()?;
+-        Systemctl::new().disable("mihomo.service").execute()?;
++        let service_manager = self.service_manager()?;
++        service_manager.stop(&self.mihomo_service_name)?;
++        service_manager.disable(&self.mihomo_service_name)?;
+ 
+         delete_file(&self.mihomo_target_service_path, &self.prefix)?;
+         delete_file(&self.mihomo_target_config_path, &self.prefix)?;
+ 
+-        Systemctl::new().daemon_reload().execute()?;
+-        Systemctl::new().reset_failed().execute()?;
++        service_manager.daemon_reload()?;
++        service_manager.reset_failed()?;
+         println!(
+-            "{} Disabled and reloaded systemd services",
+-            self.prefix.green()
++            "{} Disabled and reloaded service manager state",
++            self.prefix.green().bold()
+         );
+ 
+         // Disable and remove cron job
+@@ -436,6 +456,82 @@
+     Ok(())
+ }
+ 
++fn create_mihomo_launchd_service(
++    service_name: &str,
++    mihomo_binary_path: &str,
++    mihomo_config_root: &str,
++    mihomo_service_path: &str,
++    prefix: &str,
++) -> Result<()> {
++    let plist = launchd::build_plist(service_name, mihomo_binary_path, mihomo_config_root);
++
++    create_parent_dir(Path::new(mihomo_service_path))?;
++    fs::write(mihomo_service_path, plist)?;
++
++    println!(
++        "{} Created launchd plist at {}",
++        prefix.green(),
++        mihomo_service_path.underline().yellow()
++    );
++    Ok(())
++}
++
++fn create_mihomo_service_for_platform(
++    service_name: &str,
++    mihomo_binary_path: &str,
++    mihomo_config_root: &str,
++    mihomo_service_path: &str,
++    prefix: &str,
++) -> Result<()> {
++    match std::env::consts::OS {
++        "macos" => create_mihomo_launchd_service(
++            service_name,
++            mihomo_binary_path,
++            mihomo_config_root,
++            mihomo_service_path,
++            prefix,
++        ),
++        _ => create_mihomo_service(
++            mihomo_binary_path,
++            mihomo_config_root,
++            mihomo_service_path,
++            prefix,
++        ),
++    }
++}
++
++fn normalize_service_name(service_name: &str) -> String {
++    if service_name.ends_with(".service") {
++        service_name.to_string()
++    } else {
++        format!("{service_name}.service")
++    }
++}
++
++fn resolve_service_path(config: &Config, service_name: &str) -> String {
++    match std::env::consts::OS {
++        "macos" => {
++            let root = config
++                .service_root
++                .clone()
++                .unwrap_or_else(|| String::from("~/Library/LaunchAgents"));
++            tilde(&format!(
++                "{}/{}.plist",
++                root,
++                launchd::service_stem(service_name)
++            ))
++            .to_string()
++        }
++        _ => {
++            let root = config
++                .service_root
++                .clone()
++                .unwrap_or_else(|| config.user_systemd_root.clone());
++            tilde(&format!("{}/{}", root, service_name)).to_string()
++        }
++    }
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+@@ -465,10 +561,17 @@
+             mihoro.mihomo_target_config_path,
+             "/tmp/test/mihomo/config.yaml"
+         );
+-        assert_eq!(
+-            mihoro.mihomo_target_service_path,
+-            "/tmp/test/systemd/mihomo.service"
+-        );
++        if std::env::consts::OS == "macos" {
++            assert!(mihoro
++                .mihomo_target_service_path
++                .ends_with("/Library/LaunchAgents/mihomo.plist"));
++        } else {
++            assert_eq!(
++                mihoro.mihomo_target_service_path,
++                "/tmp/test/systemd/mihomo.service"
++            );
++        }
++        assert_eq!(mihoro.mihomo_service_name, "mihomo.service");
+ 
+         Ok(())
+     }
+@@ -575,4 +678,67 @@
+ 
+         Ok(())
+     }
++
++    #[test]
++    fn test_create_mihomo_service_linux_contract() -> Result<()> {
++        let dir = tempdir()?;
++        let service_path = dir.path().join("systemd/user/mihomo.service");
++        let mihomo_binary_path = "/tmp/test/mihomo";
++        let mihomo_config_root = "/tmp/test/mihomo-config";
++
++        create_mihomo_service(
++            mihomo_binary_path,
++            mihomo_config_root,
++            service_path.to_str().unwrap(),
++            "mihoro:",
++        )?;
++
++        let content = fs::read_to_string(service_path)?;
++        assert!(content.contains("Description=mihomo Daemon, Another Clash Kernel."));
++        assert!(content.contains("After=network.target NetworkManager.service"));
++        assert!(content.contains("Type=simple"));
++        assert!(content.contains("Restart=always"));
++        assert!(content.contains(&format!(
++            "ExecStart={} -d {}",
++            mihomo_binary_path, mihomo_config_root
++        )));
++        assert!(content.contains("WantedBy=default.target"));
++        Ok(())
++    }
++
++    #[test]
++    fn test_create_mihomo_launchd_service_contract() -> Result<()> {
++        let dir = tempdir()?;
++        let service_path = dir.path().join("LaunchAgents/mihomo.plist");
++        let mihomo_binary_path = "/tmp/test/mihomo";
++        let mihomo_config_root = "/tmp/test/mihomo-config";
++
++        create_mihomo_launchd_service(
++            "mihomo.service",
++            mihomo_binary_path,
++            mihomo_config_root,
++            service_path.to_str().unwrap(),
++            "mihoro:",
++        )?;
++
++        let content = fs::read_to_string(service_path)?;
++        assert!(content.contains("<key>Label</key>"));
++        assert!(content.contains("<string>mihomo</string>"));
++        assert!(content.contains("<key>ProgramArguments</key>"));
++        assert!(content.contains("<string>/bin/sh</string>"));
++        assert!(content.contains("<string>-c</string>"));
++        assert!(content.contains(&format!(
++            "<string>{} -d {} 2>&1 | logger</string>",
++            mihomo_binary_path, mihomo_config_root
++        )));
++        assert!(content.contains("<key>RunAtLoad</key>"));
++        assert!(content.contains("<key>KeepAlive</key>"));
++        Ok(())
++    }
++
++    #[test]
++    fn test_normalize_service_name() {
++        assert_eq!(normalize_service_name("mihomo"), "mihomo.service");
++        assert_eq!(normalize_service_name("mihomo.service"), "mihomo.service");
++    }
+ }
+diff --git a/src/resolve_mihomo_bin.rs b/src/resolve_mihomo_bin.rs
+index 89c7cdb887..0ce6048391 100644
+--- a/src/resolve_mihomo_bin.rs
++++ b/src/resolve_mihomo_bin.rs
+@@ -55,7 +55,22 @@
+ /// - MIPS: mips-hardfloat, mips-softfloat, mips64, mips64le, mipsle-hardfloat, mipsle-softfloat
+ /// - Others: loong64-abi1, loong64-abi2, ppc64le, riscv64, s390x
+ pub fn detect_arch() -> Result<String> {
+-    let arch = std::env::consts::ARCH;
++    detect_arch_for_os(std::env::consts::OS, std::env::consts::ARCH)
++}
++
++fn detect_arch_for_os(os: &str, arch: &str) -> Result<String> {
++    if os == "darwin" {
++        return match arch {
++            "x86_64" => Ok("amd64-compatible".to_string()),
++            "aarch64" => Ok("arm64".to_string()),
++            _ => bail!(
++                "unsupported architecture for {}: {} (use --arch to specify manually)",
++                os,
++                arch
++            ),
++        };
++    }
++
+     match arch {
+         // x86_64: Default to amd64-compatible for maximum compatibility
+         "x86_64" => Ok("amd64-compatible".to_string()),
+@@ -88,8 +103,16 @@
+     }
+ }
+ 
++fn detect_os() -> Result<String> {
++    match std::env::consts::OS {
++        "linux" => Ok("linux".to_string()),
++        "macos" => Ok("darwin".to_string()),
++        os => bail!("unsupported operating system for mihomo binary auto-resolution: {os}"),
++    }
++}
++
+ /// List of all supported Mihomo architectures.
+-const SUPPORTED_ARCHS: &[&str] = &[
++const SUPPORTED_LINUX_ARCHS: &[&str] = &[
+     "386",
+     "386-go120",
+     "386-go123",
+@@ -122,16 +145,44 @@
+     "s390x",
+ ];
+ 
++/// List of supported architectures on macOS.
++const SUPPORTED_DARWIN_ARCHS: &[&str] = &[
++    "amd64",
++    "amd64-compatible",
++    "amd64-v1",
++    "amd64-v1-go120",
++    "amd64-v1-go122",
++    "amd64-v1-go124",
++    "amd64-v2",
++    "amd64-v2-go120",
++    "amd64-v2-go122",
++    "amd64-v2-go124",
++    "amd64-v3",
++    "amd64-v3-go120",
++    "amd64-v3-go122",
++    "amd64-v3-go124",
++    "arm64",
++    "arm64-go120",
++    "arm64-go122",
++    "arm64-go124",
++];
++
+ /// Validates that the architecture is supported by Mihomo.
+ ///
+ /// Returns the architecture if valid, or an error with suggestions if invalid.
+-pub fn validate_arch(arch: &str) -> Result<String> {
+-    if SUPPORTED_ARCHS.contains(&arch) {
++pub fn validate_arch(arch: &str, os: &str) -> Result<String> {
++    let supported_archs: &[&str] = match os {
++        "linux" => SUPPORTED_LINUX_ARCHS,
++        "darwin" => SUPPORTED_DARWIN_ARCHS,
++        _ => bail!("unsupported operating system: {os}"),
++    };
++
++    if supported_archs.contains(&arch) {
+         return Ok(arch.to_string());
+     }
+ 
+     // Find similar architectures for helpful error message
+-    let suggestions: Vec<&str> = SUPPORTED_ARCHS
++    let suggestions: Vec<&str> = supported_archs
+         .iter()
+         .filter(|a| a.starts_with(&arch[..arch.len().min(3)]))
+         .copied()
+@@ -141,7 +192,7 @@
+         bail!(
+             "unsupported architecture: '{}'\nSupported: {}",
+             arch,
+-            SUPPORTED_ARCHS.join(", ")
++            supported_archs.join(", ")
+         );
+     } else {
+         bail!(
+@@ -153,14 +204,14 @@
+ }
+ 
+ /// Constructs the download URL for a specific Mihomo version and architecture.
+-pub fn build_download_url(version: &str, arch: &str, channel: &MihomoChannel) -> String {
++pub fn build_download_url(version: &str, os: &str, arch: &str, channel: &MihomoChannel) -> String {
+     let base = match channel {
+         MihomoChannel::Stable => "https://github.com/MetaCubeX/mihomo/releases/latest/download",
+         MihomoChannel::Alpha => {
+             "https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha"
+         }
+     };
+-    format!("{}/mihomo-linux-{}-{}.gz", base, arch, version)
++    format!("{}/mihomo-{}-{}-{}.gz", base, os, arch, version)
+ }
+ 
+ /// Resolves the Mihomo binary download URL.
+@@ -185,11 +236,13 @@
+         }
+     }
+ 
++    let os = detect_os()?;
++
+     // Determine architecture: CLI override > config override > auto-detect
+     let arch = if let Some(arch) = arch_override {
+-        validate_arch(arch)?
++        validate_arch(arch, &os)?
+     } else if let Some(ref arch) = config.mihomo_arch {
+-        validate_arch(arch)?
++        validate_arch(arch, &os)?
+     } else {
+         detect_arch()?
+     };
+@@ -204,7 +257,7 @@
+         "{} Fetching latest mihomo {} release for {}...",
+         prefix.cyan(),
+         channel_name.bold(),
+-        format!("linux-{}", arch).bold()
++        format!("{}-{}", os, arch).bold()
+     );
+ 
+     let version = fetch_latest_version(client, channel, &config.mihoro_user_agent).await?;
+@@ -215,13 +268,14 @@
+         version.bold()
+     );
+ 
+-    let url = build_download_url(&version, &arch, channel);
++    let url = build_download_url(&version, &os, &arch, channel);
+     Ok(url)
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use reqwest::Client;
+ 
+     #[test]
+     fn test_detect_arch_returns_valid_value() {
+@@ -229,13 +283,17 @@
+         let result = detect_arch();
+         assert!(result.is_ok());
+         let arch = result.unwrap();
+-        // Updated to include amd64-compatible as the new default for x86_64
+-        assert!(SUPPORTED_ARCHS.contains(&arch.as_str()));
++        if std::env::consts::OS == "macos" {
++            assert!(SUPPORTED_DARWIN_ARCHS.contains(&arch.as_str()));
++        } else {
++            // Updated to include amd64-compatible as the new default for x86_64
++            assert!(SUPPORTED_LINUX_ARCHS.contains(&arch.as_str()));
++        }
+     }
+ 
+     #[test]
+     fn test_build_download_url_stable() {
+-        let url = build_download_url("v1.19.0", "amd64", &MihomoChannel::Stable);
++        let url = build_download_url("v1.19.0", "linux", "amd64", &MihomoChannel::Stable);
+         assert_eq!(
+ 			url,
+ 			"https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-linux-amd64-v1.19.0.gz"
+@@ -244,7 +302,7 @@
+ 
+     #[test]
+     fn test_build_download_url_alpha() {
+-        let url = build_download_url("alpha-abc123", "arm64", &MihomoChannel::Alpha);
++        let url = build_download_url("alpha-abc123", "linux", "arm64", &MihomoChannel::Alpha);
+         assert_eq!(
+ 			url,
+ 			"https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-arm64-alpha-abc123.gz"
+@@ -253,7 +311,12 @@
+ 
+     #[test]
+     fn test_build_download_url_compatible_arch() {
+-        let url = build_download_url("v1.19.0", "amd64-compatible", &MihomoChannel::Stable);
++        let url = build_download_url(
++            "v1.19.0",
++            "linux",
++            "amd64-compatible",
++            &MihomoChannel::Stable,
++        );
+         assert_eq!(
+ 			url,
+ 			"https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-linux-amd64-compatible-v1.19.0.gz"
+@@ -261,29 +324,55 @@
+     }
+ 
+     #[test]
++    fn test_build_download_url_darwin() {
++        let url = build_download_url("v1.19.0", "darwin", "arm64", &MihomoChannel::Stable);
++        assert_eq!(
++            url,
++            "https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-darwin-arm64-v1.19.0.gz"
++        );
++    }
++
++    #[test]
+     fn test_validate_arch_accepts_valid_archs() {
+-        assert!(validate_arch("amd64").is_ok());
+-        assert!(validate_arch("amd64-compatible").is_ok());
+-        assert!(validate_arch("amd64-v3").is_ok());
+-        assert!(validate_arch("arm64").is_ok());
+-        assert!(validate_arch("armv7").is_ok());
+-        assert!(validate_arch("riscv64").is_ok());
+-        assert!(validate_arch("loong64-abi2").is_ok());
++        assert!(validate_arch("amd64", "linux").is_ok());
++        assert!(validate_arch("amd64-compatible", "linux").is_ok());
++        assert!(validate_arch("amd64-v3", "linux").is_ok());
++        assert!(validate_arch("arm64", "linux").is_ok());
++        assert!(validate_arch("armv7", "linux").is_ok());
++        assert!(validate_arch("riscv64", "linux").is_ok());
++        assert!(validate_arch("loong64-abi2", "linux").is_ok());
++        assert!(validate_arch("arm64", "darwin").is_ok());
++        assert!(validate_arch("amd64", "darwin").is_ok());
+     }
+ 
+     #[test]
+     fn test_validate_arch_rejects_invalid_archs() {
+-        assert!(validate_arch("invalid").is_err());
+-        assert!(validate_arch("x86_64").is_err());
+-        assert!(validate_arch("aarch64").is_err());
++        assert!(validate_arch("invalid", "linux").is_err());
++        assert!(validate_arch("x86_64", "linux").is_err());
++        assert!(validate_arch("aarch64", "linux").is_err());
++        assert!(validate_arch("armv7", "darwin").is_err());
+     }
+ 
+     #[test]
+     fn test_validate_arch_provides_suggestions() {
+-        let result = validate_arch("amd");
++        let result = validate_arch("amd", "linux");
+         assert!(result.is_err());
+         let error = result.unwrap_err().to_string();
+         assert!(error.contains("Did you mean"));
+         assert!(error.contains("amd64"));
+     }
++
++    #[tokio::test]
++    async fn test_resolve_binary_url_prefers_configured_remote_url() {
++        let client = Client::new();
++        let config = Config {
++            remote_mihomo_binary_url: Some("https://example.com/mihomo.gz".to_string()),
++            ..Config::default()
++        };
++
++        let url = resolve_binary_url(&client, &config, None, "mihoro:")
++            .await
++            .unwrap();
++        assert_eq!(url, "https://example.com/mihomo.gz");
++    }
+ }
+diff --git a/src/service/launchd.rs b/src/service/launchd.rs
+new file mode 100644
+index 0000000000..bffac5c8cf
+--- /dev/null
++++ b/src/service/launchd.rs
+@@ -0,0 +1,235 @@
++use std::env;
++use std::os::unix::process::ExitStatusExt;
++use std::path::PathBuf;
++use std::process::{Command, ExitStatus};
++
++use anyhow::{anyhow, bail, Context, Result};
++
++pub fn default_plist_path(service: &str) -> Result<PathBuf> {
++    let home = env::var("HOME").with_context(|| "HOME is not set")?;
++    Ok(PathBuf::from(home)
++        .join("Library")
++        .join("LaunchAgents")
++        .join(format!("{}.plist", service_stem(service))))
++}
++
++pub fn service_stem(service: &str) -> &str {
++    service.strip_suffix(".service").unwrap_or(service)
++}
++
++pub fn service_label(service: &str) -> String {
++    service_stem(service).to_string()
++}
++
++pub fn build_plist(service: &str, mihomo_binary_path: &str, mihomo_config_root: &str) -> String {
++    let label = service_label(service);
++    format!(
++        r#"<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++  <key>Label</key>
++  <string>{label}</string>
++  <key>ProgramArguments</key>
++  <array>
++    <string>/bin/sh</string>
++    <string>-c</string>
++    <string>{mihomo_binary_path} -d {mihomo_config_root} 2>&1 | logger</string>
++  </array>
++  <key>RunAtLoad</key>
++  <true/>
++  <key>KeepAlive</key>
++  <true/>
++  <key>WorkingDirectory</key>
++  <string>{mihomo_config_root}</string>
++</dict>
++</plist>
++"#
++    )
++}
++
++fn current_uid() -> Result<String> {
++    if let Ok(uid) = env::var("UID") {
++        if !uid.is_empty() {
++            return Ok(uid);
++        }
++    }
++
++    let output = Command::new("id")
++        .arg("-u")
++        .output()
++        .with_context(|| "failed to run `id -u` for launchctl domain target")?;
++    if !output.status.success() {
++        bail!("failed to resolve uid for launchctl domain target");
++    }
++    let uid = String::from_utf8_lossy(&output.stdout).trim().to_string();
++    if uid.is_empty() {
++        bail!("received empty uid from `id -u`");
++    }
++    Ok(uid)
++}
++
++fn domain_target() -> Result<String> {
++    Ok(format!("gui/{}", current_uid()?))
++}
++
++fn service_target(service: &str) -> Result<String> {
++    Ok(format!("{}/{}", domain_target()?, service_label(service)))
++}
++
++fn run_launchctl(args: &[&str]) -> Result<ExitStatus> {
++    Command::new("launchctl")
++        .args(args)
++        .spawn()?
++        .wait()
++        .with_context(|| "failed to execute launchctl")
++}
++
++fn run_launchctl_output(args: &[&str]) -> Result<std::process::Output> {
++    Command::new("launchctl")
++        .args(args)
++        .output()
++        .with_context(|| "failed to execute launchctl")
++}
++
++fn stderr_contains(output: &std::process::Output, pattern: &str) -> bool {
++    String::from_utf8_lossy(&output.stderr)
++        .to_lowercase()
++        .contains(&pattern.to_lowercase())
++}
++
++fn is_loaded(service: &str) -> bool {
++    let target = match service_target(service) {
++        Ok(t) => t,
++        Err(_) => return false,
++    };
++    match run_launchctl_output(&["print", &target]) {
++        Ok(output) => output.status.success(),
++        Err(_) => false,
++    }
++}
++
++pub fn enable(service: &str) -> Result<ExitStatus> {
++    if is_loaded(service) {
++        return Ok(ExitStatus::from_raw(0));
++    }
++    let domain = domain_target()?;
++    let plist = default_plist_path(service)?;
++    let plist_str = plist
++        .to_str()
++        .ok_or_else(|| anyhow!("invalid plist path: {}", plist.display()))?;
++    let output = run_launchctl_output(&["bootstrap", &domain, plist_str])?;
++    if output.status.success() {
++        return Ok(output.status);
++    }
++
++    bail!(
++        "launchctl bootstrap failed: {}",
++        String::from_utf8_lossy(&output.stderr).trim()
++    )
++}
++
++#[inline(always)]
++pub fn start(service: &str) -> Result<ExitStatus> {
++    enable(service)
++}
++
++#[inline(always)]
++pub fn stop(service: &str) -> Result<ExitStatus> {
++    disable(service)
++}
++
++pub fn restart(service: &str) -> Result<ExitStatus> {
++    if !is_loaded(service) {
++        return start(service);
++    }
++
++    let target = service_target(service)?;
++    run_launchctl(&["kickstart", "-k", &target])
++}
++
++pub fn status(service: &str) -> Result<ExitStatus> {
++    let target = service_target(service)?;
++    run_launchctl(&["print", &target])
++}
++
++pub fn disable(service: &str) -> Result<ExitStatus> {
++    if !is_loaded(service) {
++        return Ok(ExitStatus::from_raw(0));
++    }
++
++    let domain = domain_target()?;
++    let target = service_target(service)?;
++    let plist = default_plist_path(service)?;
++    let plist_str = plist
++        .to_str()
++        .ok_or_else(|| anyhow!("invalid plist path: {}", plist.display()))?;
++
++    let output = run_launchctl_output(&["bootout", &target])?;
++    if output.status.success() {
++        return Ok(output.status);
++    }
++
++    let fallback = run_launchctl_output(&["bootout", &domain, plist_str])?;
++    if fallback.status.success() {
++        return Ok(fallback.status);
++    }
++
++    let missing_target = stderr_contains(&output, "could not find service")
++        || stderr_contains(&output, "not loaded")
++        || stderr_contains(&output, "no such process");
++    let missing_fallback = stderr_contains(&fallback, "could not find service")
++        || stderr_contains(&fallback, "not loaded")
++        || stderr_contains(&fallback, "no such process");
++    if missing_target || missing_fallback {
++        return Ok(fallback.status);
++    }
++
++    bail!(
++        "launchctl bootout failed: {}",
++        String::from_utf8_lossy(&fallback.stderr).trim()
++    )
++}
++
++pub fn logs(_: &str) -> Result<ExitStatus> {
++    Command::new("log")
++        .arg("stream")
++        .arg("--style")
++        .arg("syslog")
++        .arg("--predicate")
++        .arg("process == \"logger\" AND composedMessage CONTAINS \"time=\" AND composedMessage CONTAINS \"msg=\"")
++        .spawn()?
++        .wait()
++        .with_context(|| "failed to execute `log stream`")
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn test_service_stem_and_label() {
++        assert_eq!(service_stem("mihomo.service"), "mihomo");
++        assert_eq!(service_stem("mihomo"), "mihomo");
++        assert_eq!(service_label("mihomo.service"), "mihomo");
++    }
++
++    #[test]
++    fn test_build_plist_contains_required_keys() {
++        let plist = build_plist(
++            "mihomo.service",
++            "/tmp/test/mihomo",
++            "/tmp/test/mihomo-config",
++        );
++        assert!(plist.contains("<key>Label</key>"));
++        assert!(plist.contains("<string>mihomo</string>"));
++        assert!(plist.contains("<key>ProgramArguments</key>"));
++        assert!(plist.contains("<string>/bin/sh</string>"));
++        assert!(plist.contains("<string>-c</string>"));
++        assert!(plist.contains(
++            "<string>/tmp/test/mihomo -d /tmp/test/mihomo-config 2>&1 | logger</string>"
++        ));
++        assert!(plist.contains("<key>RunAtLoad</key>"));
++        assert!(plist.contains("<key>KeepAlive</key>"));
++    }
++}
+diff --git a/src/service/mod.rs b/src/service/mod.rs
+new file mode 100644
+index 0000000000..4cb5089c95
+--- /dev/null
++++ b/src/service/mod.rs
+@@ -0,0 +1,158 @@
++pub mod launchd;
++pub mod systemd;
++
++use std::process::ExitStatus;
++
++use anyhow::{bail, Result};
++
++use self::systemd::Systemctl;
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum ServiceManagerKind {
++    Auto,
++    Systemd,
++    Launchd,
++}
++
++impl ServiceManagerKind {
++    pub fn from_str(value: &str) -> Result<Self> {
++        match value {
++            "auto" => Ok(Self::Auto),
++            "systemd" => Ok(Self::Systemd),
++            "launchd" => Ok(Self::Launchd),
++            _ => bail!("unsupported service manager: {value}"),
++        }
++    }
++}
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++enum SelectedServiceManager {
++    Systemd,
++    Launchd,
++}
++
++pub struct ServiceManager {
++    selected: SelectedServiceManager,
++}
++
++impl ServiceManager {
++    pub fn new(kind: ServiceManagerKind) -> Result<Self> {
++        let selected = select_service_manager(kind, std::env::consts::OS)?;
++        Ok(Self { selected })
++    }
++
++    pub fn enable(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().enable(service).execute(),
++            SelectedServiceManager::Launchd => launchd::enable(service),
++        }
++    }
++
++    pub fn start(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().start(service).execute(),
++            SelectedServiceManager::Launchd => launchd::start(service),
++        }
++    }
++
++    pub fn stop(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().stop(service).execute(),
++            SelectedServiceManager::Launchd => launchd::stop(service),
++        }
++    }
++
++    pub fn restart(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().restart(service).execute(),
++            SelectedServiceManager::Launchd => launchd::restart(service),
++        }
++    }
++
++    pub fn status(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().status(service).execute(),
++            SelectedServiceManager::Launchd => launchd::status(service),
++        }
++    }
++
++    pub fn disable(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().disable(service).execute(),
++            SelectedServiceManager::Launchd => launchd::disable(service),
++        }
++    }
++
++    pub fn daemon_reload(&self) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().daemon_reload().execute(),
++            SelectedServiceManager::Launchd => Ok(std::process::Command::new("true").status()?),
++        }
++    }
++
++    pub fn reset_failed(&self) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().reset_failed().execute(),
++            SelectedServiceManager::Launchd => Ok(std::process::Command::new("true").status()?),
++        }
++    }
++
++    pub fn logs(&self, service: &str) -> Result<ExitStatus> {
++        match self.selected {
++            SelectedServiceManager::Systemd => systemd::journalctl_logs(service),
++            SelectedServiceManager::Launchd => launchd::logs(service),
++        }
++    }
++}
++
++fn select_service_manager(kind: ServiceManagerKind, os: &str) -> Result<SelectedServiceManager> {
++    match kind {
++        ServiceManagerKind::Systemd => Ok(SelectedServiceManager::Systemd),
++        ServiceManagerKind::Launchd => Ok(SelectedServiceManager::Launchd),
++        ServiceManagerKind::Auto => match os {
++            "linux" => Ok(SelectedServiceManager::Systemd),
++            "macos" => Ok(SelectedServiceManager::Launchd),
++            _ => bail!("unsupported operating system for auto service manager: {os}"),
++        },
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn test_parse_service_manager_kind() {
++        assert_eq!(
++            ServiceManagerKind::from_str("auto").unwrap(),
++            ServiceManagerKind::Auto
++        );
++        assert_eq!(
++            ServiceManagerKind::from_str("systemd").unwrap(),
++            ServiceManagerKind::Systemd
++        );
++        assert_eq!(
++            ServiceManagerKind::from_str("launchd").unwrap(),
++            ServiceManagerKind::Launchd
++        );
++        assert!(ServiceManagerKind::from_str("invalid").is_err());
++    }
++
++    #[test]
++    fn test_select_explicit_launchd_succeeds() {
++        let result = ServiceManager::new(ServiceManagerKind::Launchd);
++        assert!(result.is_ok());
++    }
++
++    #[test]
++    fn test_select_auto_linux() {
++        let selected = select_service_manager(ServiceManagerKind::Auto, "linux").unwrap();
++        assert_eq!(selected, SelectedServiceManager::Systemd);
++    }
++
++    #[test]
++    fn test_select_auto_macos() {
++        let selected = select_service_manager(ServiceManagerKind::Auto, "macos").unwrap();
++        assert_eq!(selected, SelectedServiceManager::Launchd);
++    }
++}
+diff --git a/src/service/systemd.rs b/src/service/systemd.rs
+new file mode 100644
+index 0000000000..7461e888d2
+--- /dev/null
++++ b/src/service/systemd.rs
+@@ -0,0 +1,157 @@
++use std::process::{Command, ExitStatus};
++
++use anyhow::{Context, Result};
++
++pub struct Systemctl {
++    systemctl: Command,
++    args: Vec<String>,
++}
++
++impl Systemctl {
++    pub fn new() -> Self {
++        Self {
++            systemctl: Command::new("systemctl"),
++            args: Vec::new(),
++        }
++    }
++
++    pub fn enable(&mut self, service: &str) -> &mut Self {
++        self.systemctl.arg("--user").arg("enable").arg(service);
++        self.args
++            .extend(["--user", "enable", service].map(String::from));
++        self
++    }
++
++    pub fn start(&mut self, service: &str) -> &mut Self {
++        self.systemctl.arg("--user").arg("start").arg(service);
++        self.args
++            .extend(["--user", "start", service].map(String::from));
++        self
++    }
++
++    pub fn stop(&mut self, service: &str) -> &mut Self {
++        self.systemctl.arg("--user").arg("stop").arg(service);
++        self.args
++            .extend(["--user", "stop", service].map(String::from));
++        self
++    }
++
++    pub fn restart(&mut self, service: &str) -> &mut Self {
++        self.systemctl.arg("--user").arg("restart").arg(service);
++        self.args
++            .extend(["--user", "restart", service].map(String::from));
++        self
++    }
++
++    pub fn status(&mut self, service: &str) -> &mut Self {
++        self.systemctl.arg("--user").arg("status").arg(service);
++        self.args
++            .extend(["--user", "status", service].map(String::from));
++        self
++    }
++
++    pub fn disable(&mut self, service: &str) -> &mut Self {
++        self.systemctl.arg("--user").arg("disable").arg(service);
++        self.args
++            .extend(["--user", "disable", service].map(String::from));
++        self
++    }
++
++    pub fn daemon_reload(&mut self) -> &mut Self {
++        self.systemctl.arg("--user").arg("daemon-reload");
++        self.args
++            .extend(["--user", "daemon-reload"].map(String::from));
++        self
++    }
++
++    pub fn reset_failed(&mut self) -> &mut Self {
++        self.systemctl.arg("--user").arg("reset-failed");
++        self.args
++            .extend(["--user", "reset-failed"].map(String::from));
++        self
++    }
++
++    #[allow(unused)]
++    pub fn command_parts(&self) -> (&str, &[String]) {
++        ("systemctl", &self.args)
++    }
++
++    pub fn execute(&mut self) -> Result<ExitStatus> {
++        self.systemctl
++            .spawn()?
++            .wait()
++            .with_context(|| "failed to execute systemctl")
++    }
++}
++
++pub fn journalctl_logs(service: &str) -> Result<ExitStatus> {
++    Command::new("journalctl")
++        .arg("--user")
++        .arg("-xeu")
++        .arg(service)
++        .arg("-n")
++        .arg("10")
++        .arg("-f")
++        .spawn()?
++        .wait()
++        .with_context(|| "failed to execute journalctl")
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn test_start_command_contract() {
++        let mut systemctl = Systemctl::new();
++        systemctl.start("mihomo.service");
++        let (program, args) = systemctl.command_parts();
++        assert_eq!(program, "systemctl");
++        assert_eq!(args, &["--user", "start", "mihomo.service"]);
++    }
++
++    #[test]
++    fn test_status_command_contract() {
++        let mut systemctl = Systemctl::new();
++        systemctl.status("mihomo.service");
++        let (program, args) = systemctl.command_parts();
++        assert_eq!(program, "systemctl");
++        assert_eq!(args, &["--user", "status", "mihomo.service"]);
++    }
++
++    #[test]
++    fn test_restart_command_contract() {
++        let mut systemctl = Systemctl::new();
++        systemctl.restart("mihomo.service");
++        let (program, args) = systemctl.command_parts();
++        assert_eq!(program, "systemctl");
++        assert_eq!(args, &["--user", "restart", "mihomo.service"]);
++    }
++
++    #[test]
++    fn test_uninstall_related_commands_contract() {
++        let mut systemctl = Systemctl::new();
++        systemctl
++            .stop("mihomo.service")
++            .disable("mihomo.service")
++            .daemon_reload()
++            .reset_failed();
++        let (program, args) = systemctl.command_parts();
++        assert_eq!(program, "systemctl");
++        assert_eq!(
++            args,
++            &[
++                "--user",
++                "stop",
++                "mihomo.service",
++                "--user",
++                "disable",
++                "mihomo.service",
++                "--user",
++                "daemon-reload",
++                "--user",
++                "reset-failed",
++            ]
++        );
++    }
++}
+diff --git a/src/systemctl.rs b/src/systemctl.rs
+deleted file mode 100644
+index 8f2cc1bb9b..0000000000
+--- a/src/systemctl.rs
++++ /dev/null
+@@ -1,62 +0,0 @@
+-use std::process::{Command, ExitStatus};
+-
+-use anyhow::{Context, Result};
+-
+-pub struct Systemctl {
+-    systemctl: Command,
+-}
+-
+-impl Systemctl {
+-    pub fn new() -> Self {
+-        Self {
+-            systemctl: Command::new("systemctl"),
+-        }
+-    }
+-
+-    pub fn enable(&mut self, service: &str) -> &mut Self {
+-        self.systemctl.arg("--user").arg("enable").arg(service);
+-        self
+-    }
+-
+-    pub fn start(&mut self, service: &str) -> &mut Self {
+-        self.systemctl.arg("--user").arg("start").arg(service);
+-        self
+-    }
+-
+-    pub fn stop(&mut self, service: &str) -> &mut Self {
+-        self.systemctl.arg("--user").arg("stop").arg(service);
+-        self
+-    }
+-
+-    pub fn restart(&mut self, service: &str) -> &mut Self {
+-        self.systemctl.arg("--user").arg("restart").arg(service);
+-        self
+-    }
+-
+-    pub fn status(&mut self, service: &str) -> &mut Self {
+-        self.systemctl.arg("--user").arg("status").arg(service);
+-        self
+-    }
+-
+-    pub fn disable(&mut self, service: &str) -> &mut Self {
+-        self.systemctl.arg("--user").arg("disable").arg(service);
+-        self
+-    }
+-
+-    pub fn daemon_reload(&mut self) -> &mut Self {
+-        self.systemctl.arg("--user").arg("daemon-reload");
+-        self
+-    }
+-
+-    pub fn reset_failed(&mut self) -> &mut Self {
+-        self.systemctl.arg("--user").arg("reset-failed");
+-        self
+-    }
+-
+-    pub fn execute(&mut self) -> Result<ExitStatus> {
+-        self.systemctl
+-            .spawn()?
+-            .wait()
+-            .with_context(|| "failed to execute systemctl")
+-    }
+-}

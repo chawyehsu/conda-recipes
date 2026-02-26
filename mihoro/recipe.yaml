@@ -9,14 +9,17 @@ package:
   version: ${{ version }}
 
 source:
-  url: https://github.com/spencerwooo/mihoro/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 0bd82a4a0d68a77d0ee7f4c49df3256eaca844293752075016d32d5f1eff920e
+  - url: https://github.com/spencerwooo/mihoro/archive/refs/tags/v${{ version }}.tar.gz
+    sha256: 0bd82a4a0d68a77d0ee7f4c49df3256eaca844293752075016d32d5f1eff920e
+    patches:
+    - if: osx
+      then:
+        - 0001-macos-support.patch
 
 build:
   number: 0
   skip:
     - win
-    - osx
   script:
     # Disable `self_update` feature for conda variant builds
     - cargo install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
