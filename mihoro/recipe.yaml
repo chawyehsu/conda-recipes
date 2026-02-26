@@ -38,8 +38,8 @@ about:
   homepage: https://github.com/spencerwooo/mihoro
   license: MIT
   license_file: LICENSE
-  summary: Mihomo CLI client on Linux
-  description: Mihomo CLI client on Linux
+  summary: Mihomo CLI client
+  description: Mihomo CLI client, no more, no less
   repository: https://github.com/spencerwooo/mihoro
 
 extra:
