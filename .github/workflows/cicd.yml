@@ -174,7 +174,7 @@ jobs:
             $deps = Get-Content -Path $unpublishedDepsPath | Where-Object { $_ -and -not $_.StartsWith('#') }
             foreach ($dep in $deps) {
               Write-Host "Building unpublished dependency $dep for $dir..."
-              pixi run build build --recipe-dir $dep `
+              pixi run build --recipe-dir $dep `
                 --target-platform ${{ matrix.target }} `
                 --log-style plain `
                 --skip-existing all `
@@ -187,7 +187,7 @@ jobs:
           }
 
           Write-Host "Building $dir..."
-          pixi run build build --recipe-dir $dir `
+          pixi run build --recipe-dir $dir `
             --target-platform ${{ matrix.target }} `
             --log-style plain `
             --skip-existing all `

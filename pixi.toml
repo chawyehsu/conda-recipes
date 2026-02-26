@@ -8,10 +8,10 @@ platforms = ["linux-aarch64", "linux-64", "win-64", "osx-64", "osx-arm64"]
 license = "BSD-3-Clause"
 
 [tasks]
-build = "rattler-build"
+build = "rattler-build build"
 
 [dependencies]
-rattler-build = ">=0.55.0,<0.56"
+rattler-build = ">=0.57.2,<0.58"
 
 [target.win-64.dependencies]
 m2-patch = ">=2.7.6.2,<3"
