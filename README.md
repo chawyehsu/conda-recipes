@@ -17,7 +17,7 @@ pixi global install <package> -c chawyehsu -c conda-forge
 
 ```
 pixi install
-pixi run build build --recipe-dir <package_dir>
+pixi run build --recipe-dir <package_dir>
 ```
 
 ## License

@@ -178,9 +178,9 @@ jobs:
                 --target-platform ${{ matrix.target }} `
                 --log-style plain `
                 --skip-existing all `
-                --extra-meta flow_run_id="github_$GITHUB_RUN_ID" `
-                --extra-meta remote_url="https://github.com/$GITHUB_REPOSITORY" `
-                --extra-meta sha="$GITHUB_SHA"
+                --extra-meta flow_run_id="github_$env:GITHUB_RUN_ID" `
+                --extra-meta remote_url="https://github.com/$env:GITHUB_REPOSITORY" `
+                --extra-meta sha="$env:GITHUB_SHA"
                 -c conda-forge -c chawyehsu
               Assert-LastExitCode "Dependency build $dep"
             }
@@ -191,9 +191,9 @@ jobs:
             --target-platform ${{ matrix.target }} `
             --log-style plain `
             --skip-existing all `
-            --extra-meta flow_run_id="github_$GITHUB_RUN_ID" `
-            --extra-meta remote_url="https://github.com/$GITHUB_REPOSITORY" `
-            --extra-meta sha="$GITHUB_SHA"
+            --extra-meta flow_run_id="github_$env:GITHUB_RUN_ID" `
+            --extra-meta remote_url="https://github.com/$env:GITHUB_REPOSITORY" `
+            --extra-meta sha="$env:GITHUB_SHA"
             -c conda-forge -c chawyehsu
           Assert-LastExitCode "Package build $dir"
         }
