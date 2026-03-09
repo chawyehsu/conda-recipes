@@ -1,5 +1,0 @@
-{
-  "include": [
-    { "target": "linux-64", "os": "ubuntu-latest" }
-  ]
-}
