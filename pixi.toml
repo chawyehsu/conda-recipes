@@ -1,7 +1,6 @@
 [workspace]
 name = "conda-recipes"
-version = "0.0.0"
-description = "Conda Recipes"
+description = "Recipes for chawyehsu's own conda forge"
 authors = ["Chawye Hsu <su+git@chawyehsu.com>"]
 channels = ["chawyehsu", "conda-forge"]
 platforms = ["linux-aarch64", "linux-64", "win-64", "osx-64", "osx-arm64"]
@@ -11,7 +10,4 @@ license = "BSD-3-Clause"
 build = "rattler-build build"
 
 [dependencies]
-rattler-build = ">=0.57.2,<0.58"
-
-[target.win-64.dependencies]
-m2-patch = ">=2.7.6.2,<3"
+rattler-build = ">=0.61.4,<0.62"
