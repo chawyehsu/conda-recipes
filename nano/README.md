@@ -1,5 +1,7 @@
 # GNU nano for Windows
 
+[![Conda Downloads](https://img.shields.io/conda/dn/chawyehsu/nano.svg)](https://anaconda.org/chawyehsu/nano) [![Conda Version](https://img.shields.io/conda/vn/chawyehsu/nano.svg)](https://anaconda.org/chawyehsu/nano)
+
 This is the Windows port of the GNU nano text editor, based on the conda-forge build system.
 
 ## Project Overview
