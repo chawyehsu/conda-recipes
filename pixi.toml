@@ -7,11 +7,10 @@ platforms = ["linux-aarch64", "linux-64", "win-64", "osx-64", "osx-arm64"]
 license = "BSD-3-Clause"
 
 [tasks]
-build = "rattler-build build"
+build = "rattler-build build --env-isolation 'none'"
 
 [dependencies]
 rattler-build = ">=0.63.1,<0.64"
 
 [activation.env]
-SCCACHE_GHA_ENABLED = "1"
 RUSTC_WRAPPER = "sccache"
