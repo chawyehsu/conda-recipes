@@ -178,6 +178,7 @@ jobs:
             '-c','chawyehsu'
           )
 
+          $collectedDeps = @()
           function Build-UnpublishedDependency($dir) {
             $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.json"
             if (Test-Path -Path $unpublishedDepsPath) {
@@ -185,6 +186,11 @@ jobs:
               foreach ($dep in $deps) {
                 if ($dep.targets -and -not ($dep.targets -contains $target)) {
                   Write-Host "Skipping dependency $($dep.name) for target $target" -ForegroundColor Yellow
+                  continue
+                }
+
+                if ($collectedDeps -contains $dep.name) {
+                  Write-Host "Already built dependency $($dep.name), skipping." -ForegroundColor Green
                   continue
                 }
 
@@ -200,6 +206,7 @@ jobs:
                 }
                 pixi run build --recipe-dir $dep.name @buildDepArgs
                 Assert-LastExitCode "Dependency build $($dep.name)"
+                $collectedDeps += $dep.name
               }
             }
           }
