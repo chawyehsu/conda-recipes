@@ -289,8 +289,8 @@ jobs:
             Write-Host "Changed package to upload: $_ $($files.Count) files."
             foreach ($file in $files) {
               Write-Host "Uploading $($file.Name)"
-              pixi run rattler-build upload --log-style plain --skip-existing anaconda "$file"
-              pixi run rattler-build upload --log-style plain --skip-existing prefix "$file" `
+              pixi run rattler-build upload --log-style plain anaconda "$file"
+              pixi run rattler-build upload --log-style plain prefix "$file" `
                 --attestation ${{ steps.attest.outputs.bundle-path }}
             }
           }
