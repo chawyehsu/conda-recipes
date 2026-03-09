@@ -182,7 +182,7 @@ jobs:
           function Build-UnpublishedDependency([string]$depPkgName) {
             $unpublishedDepsPath = Join-Path -Path $depPkgName -ChildPath "_deps.json"
             if (Test-Path -Path $unpublishedDepsPath) {
-              $deps = ,(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
+              $deps = @(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
               foreach ($dep in $deps) {
                 if ($dep.targets -and -not ($dep.targets -contains $target)) {
                   Write-Host "Skipping dependency $($dep.name) for target $target" -ForegroundColor Yellow
