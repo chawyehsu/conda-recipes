@@ -242,7 +242,7 @@ jobs:
     permissions:
       # Trusted publishing
       id-token: write
-      # Artifact attestations
+      # Attestations store
       attestations: write
     steps:
     - name: Checkout Source
@@ -270,6 +270,8 @@ jobs:
         # Prefix.dev
         PREFIX_CHANNEL: chawyehsu
         CHANGED_PACKAGES: ${{ needs.ci_check.outputs.changed_dirs }}
+        # For attestation storage
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: pwsh
       run: |
         if (-not $env:ANACONDA_API_KEY -or $env:ANACONDA_API_KEY -eq '') {
