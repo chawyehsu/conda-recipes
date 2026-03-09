@@ -10,7 +10,7 @@ package:
 
 source:
   - url: https://www.nano-editor.org/dist/v${{ (version | split('.'))[0] }}/nano-${{ version }}.tar.xz
-    sha256: 76f0dcb248f2e2f1251d4ecd20fd30fb400a360a3a37c6c340e0a52c2d1cdedf
+    sha256: 9f384374b496110a25b73ad5a5febb384783c6e3188b37063f677ac908013fde
     patches:
       - if: win
         then:
@@ -92,7 +92,7 @@ about:
     line numbers, softwrapping, multiple buffers, selecting text by
     holding Shift, search-and-replace with regular expressions, and
     several other conveniences.
-  documentation: https://github.com/chawyehsu/conda-recipes/blob/main/nano/README.md
+  documentation: https://github.com/chawyehsu/nano-for-windows
 
 extra:
   recipe-maintainers:
