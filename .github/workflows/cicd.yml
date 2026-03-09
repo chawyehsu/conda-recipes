@@ -158,12 +158,12 @@ jobs:
             foreach ($entry in $matrixContent.include) {
               if ($entry.target -eq $target -and $entry.os -eq "${{ matrix.os }}") {
                 $shouldTriggerBuild = $true
-                Write-Host "Explicit build $dir for target $target on OS runner ${{ matrix.os }}"
+                Write-Host "Explicit build $dir for target $target on OS runner ${{ matrix.os }}" -ForegroundColor Cyan
                 break
               }
             }
             if (-not $shouldTriggerBuild) {
-              Write-Host "Skipping $dir for target $target on OS runner ${{ matrix.os }}"
+              Write-Host "Skipping $dir for target $target on OS runner ${{ matrix.os }}" -ForegroundColor Yellow
               continue
             }
           }
@@ -184,15 +184,15 @@ jobs:
             $deps = ,(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
             foreach ($dep in $deps) {
               if ($dep.targets -and -not ($dep.targets -contains $target)) {
-                Write-Host "Skipping dependency $($dep.name) for target $target"
+                Write-Host "Skipping dependency $($dep.name) for target $target" -ForegroundColor Yellow
                 continue
               }
 
               $buildDepArgs = $buildArgs
               if ($dep.type -eq 'build') {
-                Write-Host "Building unpublished build-phase dependency $($dep.name) for $dir..."
+                Write-Host "Building unpublished build-phase dependency $($dep.name) for $dir..." -ForegroundColor Blue
               } else {
-                Write-Host "Building unpublished dependency $($dep.name) for $dir..."
+                Write-Host "Building unpublished dependency $($dep.name) for $dir..." -ForegroundColor Blue
                 $buildDepArgs = $buildArgs + @('--target-platform', $target)
               }
               pixi run build --recipe-dir $dep.name @buildDepArgs
@@ -200,7 +200,7 @@ jobs:
             }
           }
 
-          Write-Host "Building $dir..."
+          Write-Host "Building $dir..." -ForegroundColor Magenta
           $packageArgs = $buildArgs + @('--target-platform', $target)
           pixi run build --recipe-dir $dir @packageArgs
           Assert-LastExitCode "Package build $dir"
