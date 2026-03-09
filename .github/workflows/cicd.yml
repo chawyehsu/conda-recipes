@@ -147,6 +147,7 @@ jobs:
           }
         }
 
+        $target = '${{ matrix.target }}'
         $changed_dirs = $env:CHANGED_FILES -split ','
         foreach ($dir in $changed_dirs) {
           # Check matrix.json and skip if target not found
@@ -155,46 +156,54 @@ jobs:
             $matrixContent = Get-Content -Path $matrixPath | Out-String | ConvertFrom-Json
             $shouldTriggerBuild = $false
             foreach ($entry in $matrixContent.include) {
-              if ($entry.target -eq "${{ matrix.target }}" -and $entry.os -eq "${{ matrix.os }}") {
+              if ($entry.target -eq $target -and $entry.os -eq "${{ matrix.os }}") {
                 $shouldTriggerBuild = $true
-                Write-Host "Explicit build $dir for target ${{ matrix.target }} on OS runner ${{ matrix.os }}"
+                Write-Host "Explicit build $dir for target $target on OS runner ${{ matrix.os }}"
                 break
               }
             }
             if (-not $shouldTriggerBuild) {
-              Write-Host "Skipping $dir for target ${{ matrix.target }} on OS runner ${{ matrix.os }}"
+              Write-Host "Skipping $dir for target $target on OS runner ${{ matrix.os }}"
               continue
             }
           }
 
+          # Common build arguments
+          $buildArgs = @(
+            '--log-style','plain',
+            '--skip-existing','all',
+            '--extra-meta', "flow_run_id=github_$env:GITHUB_RUN_ID",
+            '--extra-meta', "remote_url=https://github.com/$env:GITHUB_REPOSITORY",
+            '--extra-meta', "sha=$env:GITHUB_SHA",
+            '-c','conda-forge',
+            '-c','chawyehsu'
+          )
+
           # Build unpublished dependencies if any
-          $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.txt"
+          $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.json"
           if (Test-Path -Path $unpublishedDepsPath) {
-            # read each line in _deps.txt and build the dependency
-            $deps = Get-Content -Path $unpublishedDepsPath | Where-Object { $_ -and -not $_.StartsWith('#') }
+            $deps = ,(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
             foreach ($dep in $deps) {
-              Write-Host "Building unpublished dependency $dep for $dir..."
-              pixi run build --recipe-dir $dep `
-                --target-platform ${{ matrix.target }} `
-                --log-style plain `
-                --skip-existing all `
-                --extra-meta flow_run_id="github_$env:GITHUB_RUN_ID" `
-                --extra-meta remote_url="https://github.com/$env:GITHUB_REPOSITORY" `
-                --extra-meta sha="$env:GITHUB_SHA" `
-                -c conda-forge -c chawyehsu
-              Assert-LastExitCode "Dependency build $dep"
+              if ($dep.targets -and -not ($dep.targets -contains $target)) {
+                Write-Host "Skipping dependency $($dep.name) for target $target"
+                continue
+              }
+
+              $buildDepArgs = $buildArgs
+              if ($dep.type -eq 'build') {
+                Write-Host "Building unpublished build-phase dependency $($dep.name) for $dir..."
+              } else {
+                Write-Host "Building unpublished dependency $($dep.name) for $dir..."
+                $buildDepArgs = $buildArgs + @('--target-platform', $target)
+              }
+              pixi run build --recipe-dir $dep.name @buildDepArgs
+              Assert-LastExitCode "Dependency build $($dep.name)"
             }
           }
 
           Write-Host "Building $dir..."
-          pixi run build --recipe-dir $dir `
-            --target-platform ${{ matrix.target }} `
-            --log-style plain `
-            --skip-existing all `
-            --extra-meta flow_run_id="github_$env:GITHUB_RUN_ID" `
-            --extra-meta remote_url="https://github.com/$env:GITHUB_REPOSITORY" `
-            --extra-meta sha="$env:GITHUB_SHA" `
-            -c conda-forge -c chawyehsu
+          $packageArgs = $buildArgs + @('--target-platform', $target)
+          pixi run build --recipe-dir $dir @packageArgs
           Assert-LastExitCode "Package build $dir"
         }
 
