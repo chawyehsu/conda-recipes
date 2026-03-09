@@ -295,16 +295,18 @@ jobs:
           $env:CHANGED_PACKAGES -split ',' | ForEach-Object {
             $files = Get-ChildItem -Path "./uploads/*/$_*.conda"
             if ($files.Count) {
-              Write-Host "Upload $($files.Count) files for package $_"
+              Write-Host "Collected $($files.Count) files for package $_"
               $allFiles += $files
             }
           }
 
           if ($allFiles.Count) {
-            $paths = ($allFiles | ForEach-Object { $_.FullName }) -join ' '
-            pixi run rattler-build upload --log-style plain anaconda $paths
+            $paths = $allFiles | ForEach-Object { $_.FullName }
+            Write-Host "Publishing ${paths.Count} files:"
+            $paths | ForEach-Object { Write-Host "- $_" }
+            pixi run rattler-build upload --log-style plain anaconda @paths
             Assert-LastExitCode "Anaconda upload"
-            pixi run rattler-build upload --log-style plain prefix $paths `
+            pixi run rattler-build upload --log-style plain prefix @paths `
               --attestation ${{ steps.attest.outputs.bundle-path }}
             Assert-LastExitCode "Prefix upload"
           }
