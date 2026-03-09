@@ -178,27 +178,34 @@ jobs:
             '-c','chawyehsu'
           )
 
-          # Build unpublished dependencies if any
-          $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.json"
-          if (Test-Path -Path $unpublishedDepsPath) {
-            $deps = ,(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
-            foreach ($dep in $deps) {
-              if ($dep.targets -and -not ($dep.targets -contains $target)) {
-                Write-Host "Skipping dependency $($dep.name) for target $target" -ForegroundColor Yellow
-                continue
-              }
+          function Build-UnpublishedDependency($dir) {
+            $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.json"
+            if (Test-Path -Path $unpublishedDepsPath) {
+              $deps = ,(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
+              foreach ($dep in $deps) {
+                if ($dep.targets -and -not ($dep.targets -contains $target)) {
+                  Write-Host "Skipping dependency $($dep.name) for target $target" -ForegroundColor Yellow
+                  continue
+                }
 
-              $buildDepArgs = $buildArgs
-              if ($dep.type -eq 'build') {
-                Write-Host "Building unpublished build-phase dependency $($dep.name) for $dir..." -ForegroundColor Blue
-              } else {
-                Write-Host "Building unpublished dependency $($dep.name) for $dir..." -ForegroundColor Blue
-                $buildDepArgs = $buildArgs + @('--target-platform', $target)
+                # Recursive build for unpublished dependencies
+                Build-UnpublishedDependency $dep.name
+
+                $buildDepArgs = $buildArgs
+                if ($dep.type -eq 'build') {
+                  Write-Host "Building unpublished build-phase dependency $($dep.name) for $dir..." -ForegroundColor Blue
+                } else {
+                  Write-Host "Building unpublished dependency $($dep.name) for $dir..." -ForegroundColor Blue
+                  $buildDepArgs = $buildArgs + @('--target-platform', $target)
+                }
+                pixi run build --recipe-dir $dep.name @buildDepArgs
+                Assert-LastExitCode "Dependency build $($dep.name)"
               }
-              pixi run build --recipe-dir $dep.name @buildDepArgs
-              Assert-LastExitCode "Dependency build $($dep.name)"
             }
           }
+
+          # Build unpublished dependencies if any
+          Build-UnpublishedDependency $dir
 
           Write-Host "Building $dir..." -ForegroundColor Magenta
           $packageArgs = $buildArgs + @('--target-platform', $target)
