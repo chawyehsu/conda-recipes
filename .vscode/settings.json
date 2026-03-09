@@ -1,5 +1,4 @@
 {
-  "git.ignoreLimitWarning": true,
   "yaml.schemas": {
     "https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json": "**/recipe.yaml"
   }

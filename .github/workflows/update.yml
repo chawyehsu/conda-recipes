@@ -11,6 +11,9 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -18,14 +21,16 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
 
+      - name: Install and cache test dependencies
+        uses: potatoqualitee/psmodulecache@ee5e9494714abf56f6efbfa51527b2aec5c761b8 # v6.2.1
+        with:
+          modules-to-cache: powershell-yaml
+          shell: pwsh
+
       - name: Run update script
-        shell: pwsh
-        run: |
-          Install-Module powershell-yaml -Scope CurrentUser -Force -AllowClobber -Confirm:$false
-          ./update.ps1
+        run: ./update.ps1
 
       - name: Commit and push changes
-        shell: pwsh
         run: |
           $changes = git status --porcelain
           if ($changes) {
