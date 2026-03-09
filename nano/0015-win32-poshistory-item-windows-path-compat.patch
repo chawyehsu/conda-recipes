@@ -1,4 +1,4 @@
-From b857c99d0fb2177b78af8f3ad95bda437d1fde48 Mon Sep 17 00:00:00 2001
+From c63518bbe197b247fb25a335fe4e2f26c147264b Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 00:44:16 +0800
 Subject: [PATCH 15/16] win32: poshistory-item-windows-path-compat

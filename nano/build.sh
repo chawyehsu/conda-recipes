@@ -29,10 +29,10 @@ if [[ "${target_platform}" =~ win-* ]]; then
     )
 
     if [[ ! "${build_platform}" =~ win-* ]]; then
-        ./configure "${common_configure_args[@]}" --disable-{nls,speller}
+        ./configure "${common_configure_args[@]}" --disable-nls
     else
         # disable `browser` feature when building on win
-        ./configure "${common_configure_args[@]}" --disable-{nls,speller,browser}
+        ./configure "${common_configure_args[@]}" --disable-{nls,browser}
     fi
 else
     ./configure \

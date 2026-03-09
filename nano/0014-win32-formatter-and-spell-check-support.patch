@@ -1,4 +1,4 @@
-From 597c256ffe0bb587db5005a77b985172f20e171e Mon Sep 17 00:00:00 2001
+From ea11835c47dfe689d77560d562c42fc0dc302221 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 03:48:29 +0800
 Subject: [PATCH 14/16] win32: formatter-and-spell-check-support
@@ -7,13 +7,15 @@ Instead of `struct stat fileinfo`, `WIN32_FILE_ATTRIBUTE_DATA attrs`
 is used to get high-resolution `FILETIME` for file change detection,
 as `st_mtime` is only second-resolution.
 
+Internal spell checker is not supported.
+
 Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
 ---
- src/text.c | 166 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 166 insertions(+)
+ src/text.c | 173 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 171 insertions(+), 2 deletions(-)
 
 diff --git a/src/text.c b/src/text.c
-index b8899da..aa33888 100644
+index b8899da..e4bff6b 100644
 --- a/src/text.c
 +++ b/src/text.c
 @@ -2237,6 +2237,172 @@ void treat(char *tempfile_name, char *theprogram, bool spelling)
@@ -189,6 +191,20 @@ index b8899da..aa33888 100644
  #endif
  }
  #endif /* ENABLE_SPELLER || ENABLE_FORMATTER */
+@@ -2572,8 +2738,11 @@ void do_spell(void)
+ 
+ 	if (alt_speller && *alt_speller)
+ 		treat(temp_name, alt_speller, TRUE);
+-	else
+-		do_int_speller(temp_name);
++	else {
++		// do_int_speller(temp_name);
++		statusline(ALERT, _("Internal spell checker is not supported in this build"));
++		return;
++	}
+ 
+ 	unlink(temp_name);
+ 	free(temp_name);
 -- 
 2.53.0.windows.3
 
