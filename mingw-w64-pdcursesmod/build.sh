@@ -9,7 +9,6 @@ PDC_TARGET=_w64
 # shellcheck disable=SC2154
 if [[ "${target_platform}" == "win-arm64" ]]; then
     PDC_TARGET=_a64
-# shellcheck disable=SC2154
 elif [[ "${target_platform}" == "win-32" ]]; then
     PDC_TARGET=_w32
 fi

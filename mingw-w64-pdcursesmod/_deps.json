@@ -1,0 +1,10 @@
+[
+  {
+    "name": "llvm-mingw",
+    "type": "build",
+    "targets": [
+      "win-arm64",
+      "win-32"
+    ]
+  }
+]
