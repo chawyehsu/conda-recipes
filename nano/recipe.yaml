@@ -40,7 +40,7 @@ source:
   - path: branding.sh
 
 build:
-  number: 6
+  number: 0
 
 requirements:
   build:
