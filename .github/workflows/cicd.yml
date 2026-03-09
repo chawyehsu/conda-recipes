@@ -119,9 +119,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix: ${{ fromJson(needs.ci_matrix.outputs.matrix) }}
-
     runs-on: ${{ matrix.os }}
     if: needs.ci_check.outputs.should_build == 'true'
+    outputs:
+      pattern: ${{ steps.run_build.outputs.pattern }}
     steps:
     - name: Checkout Source
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -265,7 +266,7 @@ jobs:
       id: attest
       uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
       with:
-        subject-path: "uploads/**/*.conda"
+        subject-path: "uploads/**/${{ needs.ci_build.outputs.pattern }}*.conda"
         predicate-type: "https://schemas.conda.org/attestations-publish-1.schema.json"
         predicate: '{"targetChannel": "https://prefix.dev/chawyehsu"}'
 
@@ -278,20 +279,33 @@ jobs:
         PREFIX_CHANNEL: chawyehsu
         CHANGED_PACKAGES: ${{ needs.ci_check.outputs.changed_dirs }}
       shell: pwsh
-      run: | # commit message format: chore(main): release pkg_name v1.2.3
+      run: |
         if (-not $env:ANACONDA_API_KEY -or $env:ANACONDA_API_KEY -eq '') {
           Write-Error "ANACONDA_API_KEY is not set."
           exit 1
         }
+        function Assert-LastExitCode([string]$Context) {
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "$Context failed with exit code $LASTEXITCODE."
+            exit $LASTEXITCODE
+          }
+        }
         if ($env:CHANGED_PACKAGES) {
+          $allFiles = @()
           $env:CHANGED_PACKAGES -split ',' | ForEach-Object {
             $files = Get-ChildItem -Path "./uploads/*/$_*.conda"
-            Write-Host "Changed package to upload: $_ $($files.Count) files."
-            foreach ($file in $files) {
-              Write-Host "Uploading $($file.Name)"
-              pixi run rattler-build upload --log-style plain anaconda "$file"
-              pixi run rattler-build upload --log-style plain prefix "$file" `
-                --attestation ${{ steps.attest.outputs.bundle-path }}
+            if ($files.Count) {
+              Write-Host "Upload $($files.Count) files for package $_"
+              $allFiles += $files
             }
+          }
+
+          if ($allFiles.Count) {
+            $paths = ($allFiles | ForEach-Object { $_.FullName }) -join ' '
+            pixi run rattler-build upload --log-style plain anaconda $paths
+            Assert-LastExitCode "Anaconda upload"
+            pixi run rattler-build upload --log-style plain prefix $paths `
+              --attestation ${{ steps.attest.outputs.bundle-path }}
+            Assert-LastExitCode "Prefix upload"
           }
         }
