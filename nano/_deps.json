@@ -1,0 +1,14 @@
+[
+  {
+    "name": "llvm-mingw",
+    "type": "build",
+    "targets": [
+      "win-arm64",
+      "win-32"
+    ]
+  },
+  {
+    "name": "mingw-w64-pdcursesmod",
+    "type": "host"
+  }
+]

@@ -44,7 +44,11 @@ build:
 
 requirements:
   build:
-    - ${{ compiler('c') }}
+    - if: target_platform == 'win-arm64' or target_platform == 'win-32'
+      then:
+        - llvm-mingw
+      else:
+        - ${{ compiler('c') }}
     - make
     - pkg-config
     - if: build_platform == 'win-64' or build_platform == 'win-arm64'

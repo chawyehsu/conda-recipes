@@ -16,6 +16,8 @@ if [[ "${target_platform}" =~ win-* ]]; then
     export HOST=x86_64-w64-mingw32
     if [[ "${target_platform}" == 'win-arm64' ]]; then
         export HOST=aarch64-w64-mingw32
+    elif [[ "${target_platform}" == 'win-32' ]]; then
+        export HOST=i686-w64-mingw32
     fi
 
     ./branding.sh
