@@ -1,4 +1,4 @@
-From 401c6b892f0122aee631745e227210bb84e04b49 Mon Sep 17 00:00:00 2001
+From 98fe0c074eb82150e1155fb04796e350dd27e456 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 00:41:05 +0800
 Subject: [PATCH 06/16] win32: homedir-tempdir-compat
@@ -10,7 +10,7 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  2 files changed, 6 insertions(+), 10 deletions(-)
 
 diff --git a/src/files.c b/src/files.c
-index c23525d..bdf0131 100644
+index da9b110..4464486 100644
 --- a/src/files.c
 +++ b/src/files.c
 @@ -1461,7 +1461,7 @@ char *check_writable_directory(const char *path)
@@ -30,7 +30,7 @@ index c23525d..bdf0131 100644
 +		tempdir = copy_of("~/AppData/Local/Temp/");
  
  	extension = strrchr(openfile->filename, '.');
- 
+ 	normalize_slashes(extension);
 diff --git a/src/utils.c b/src/utils.c
 index 529bfab..e6b421a 100644
 --- a/src/utils.c

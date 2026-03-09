@@ -1,4 +1,4 @@
-From 3b7f88f2ed4da9a54662c0f01993f49cc881b8db Mon Sep 17 00:00:00 2001
+From f803c81e91c190784f1bf9c0866e4b3139b154e4 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 00:44:35 +0800
 Subject: [PATCH 16/16] win32: pdcursesmod-ctrlv-passthrough

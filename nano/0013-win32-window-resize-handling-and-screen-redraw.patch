@@ -1,4 +1,4 @@
-From 970b61b406646e52b6c152e26b5e277053374132 Mon Sep 17 00:00:00 2001
+From 05a6369f8bfc377871cd7bca9b13deab08d3b34d Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 03:48:29 +0800
 Subject: [PATCH 13/16] win32: window resize handling and screen redraw
