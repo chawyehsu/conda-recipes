@@ -5,8 +5,8 @@ context:
   version: "4.5.4"
 
 source:
-  url: https://github.com/Bill-Gray/PDCursesMod/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: d5efc7f2b7107abe382bdf8bac0a9bfd8e716facbca2bb9cf12dfeb8e1122c4b
+  - url: https://github.com/Bill-Gray/PDCursesMod/archive/refs/tags/v${{ version }}.tar.gz
+    sha256: d5efc7f2b7107abe382bdf8bac0a9bfd8e716facbca2bb9cf12dfeb8e1122c4b
 
 build:
   number: 0
@@ -27,7 +27,7 @@ outputs:
 
     requirements:
       build:
-        - if: target_platform == 'win-arm64'
+        - if: target_platform == 'win-arm64' or target_platform == 'win-32'
           then:
             - llvm-mingw
           else:
@@ -56,7 +56,7 @@ outputs:
 
     requirements:
       build:
-        - if: target_platform == 'win-arm64'
+        - if: target_platform == 'win-arm64' or target_platform == 'win-32'
           then:
             - llvm-mingw
           else:
