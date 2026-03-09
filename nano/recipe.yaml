@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: nano
-  version: "8.7.1"
+  version: "9.0"
 
 package:
   name: ${{ name|lower }}
@@ -34,7 +34,7 @@ source:
     then:
       - path: autogen.sh
       - git: https://github.com/coreutils/gnulib.git
-        rev: "9b20d162b9cb002c3205921af2838c58996926b7"
+        rev: "b75134c814c38876f04029ffc3fae4e90035dc34"
         depth: 2222
         target_directory: gnulib
   - path: branding.sh

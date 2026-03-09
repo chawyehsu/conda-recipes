@@ -1,4 +1,4 @@
-From dd2fb51a005bec4272ef6d9a9566e46b58c21d20 Mon Sep 17 00:00:00 2001
+From 5152d3cea83b4d0c56285feb123b1ddbaa1f5ca3 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 00:32:39 +0800
 Subject: [PATCH 01/16] win32: include windows header
@@ -9,10 +9,10 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/src/definitions.h b/src/definitions.h
-index 8c54ca8..b5cf6b8 100644
+index 265bad6..7fa372b 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -662,3 +662,8 @@ typedef struct completionstruct {
+@@ -668,3 +668,8 @@ typedef struct completionstruct {
  	struct completionstruct *next;
  } completionstruct;
  #endif

@@ -1,4 +1,4 @@
-From cb4c52eef56f82f3a7e09757d13e546c7deda38a Mon Sep 17 00:00:00 2001
+From 6175edd8339adf39d20423f6b92679e4ea227347 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 03:48:29 +0800
 Subject: [PATCH 13/16] win32: window resize handling and screen redraw
@@ -9,10 +9,10 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  1 file changed, 8 insertions(+)
 
 diff --git a/src/winio.c b/src/winio.c
-index 91a582b..dd3d541 100644
+index 7818a7b..c507570 100644
 --- a/src/winio.c
 +++ b/src/winio.c
-@@ -211,6 +211,14 @@ void read_keys_from(WINDOW *frame)
+@@ -223,6 +223,14 @@ void read_keys_from(WINDOW *frame)
  #else
  		if (!the_window_resized)
  			input = wgetch(frame);

@@ -3,9 +3,9 @@
 set -ex
 
 gnulib_url="https://github.com/coreutils/gnulib.git"
-gnulib_hash="9b20d162b9cb002c3205921af2838c58996926b7"
+gnulib_hash="b75134c814c38876f04029ffc3fae4e90035dc34"
 
-# add rewinddir modules for `browser` feature
+# modules diff: added rewinddir modules for `browser` feature
 modules="
 	canonicalize-lgpl
 	futimens
@@ -22,13 +22,13 @@ modules="
 	rewinddir
 	sigaction
 	snprintf-posix
-	stdarg
+	stdarg-h
 	strcase
 	strcasestr-simple
 	strnlen
 	sys_wait
 	vsnprintf-posix
-	wchar
+	wchar-h
 	wctype-h
 	wcwidth
 "
@@ -48,7 +48,7 @@ cd .. >/dev/null || exit 1
 
 rm -rf lib
 echo "Gnulib-tool..."
-./gnulib/gnulib-tool --import ${modules}
+./gnulib/gnulib-tool --import "${modules}"
 echo
 
 echo "Autoreconf..."

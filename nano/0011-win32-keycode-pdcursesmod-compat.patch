@@ -1,4 +1,4 @@
-From bbede03a1433bf5de90f71db09cced8c3862b1b3 Mon Sep 17 00:00:00 2001
+From 03315f3ffd1d64af13881293c41f40258c8f6b84 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 00:43:48 +0800
 Subject: [PATCH 11/16] win32: keycode pdcursesmod compat
@@ -11,10 +11,10 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  3 files changed, 65 insertions(+), 39 deletions(-)
 
 diff --git a/src/definitions.h b/src/definitions.h
-index b5cf6b8..859d09f 100644
+index 7fa372b..18cd28e 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -174,13 +174,13 @@
+@@ -177,13 +177,13 @@
  #define DEL_CODE  0x7F
  
  /* Codes for "modified" Arrow keys, beyond KEY_MAX of ncurses. */
@@ -35,7 +35,7 @@ index b5cf6b8..859d09f 100644
  #define SHIFT_CONTROL_LEFT    0x411
  #define SHIFT_CONTROL_RIGHT   0x412
  #define SHIFT_CONTROL_UP      0x413
-@@ -188,16 +188,10 @@
+@@ -191,16 +191,10 @@
  #define SHIFT_CONTROL_HOME    0x415
  #define SHIFT_CONTROL_END     0x416
  #define CONTROL_SHIFT_DELETE  0x41D
@@ -57,10 +57,10 @@ index b5cf6b8..859d09f 100644
  #define SHIFT_ALT_RIGHT  0x432
  #define SHIFT_ALT_UP     0x433
 diff --git a/src/global.c b/src/global.c
-index f0889ec..1dfd272 100644
+index b93f035..8a6b985 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -376,8 +376,28 @@ int keycode_from_string(const char *keystring)
+@@ -378,8 +378,28 @@ int keycode_from_string(const char *keystring)
  			return -1;
  	} else if (keystring[0] == 'M') {
  		if (keystring[1] == '-' && keystring[3] == '\0') {
@@ -91,7 +91,7 @@ index f0889ec..1dfd272 100644
  			else
  				return keystring[2];
  		}
-@@ -1337,7 +1357,7 @@ void shortcut_init(void)
+@@ -1357,7 +1377,7 @@ void shortcut_init(void)
  	add_to_sclist(MMAIN, "M-;", 0, run_macro, 0);
  	add_to_sclist(MMAIN, "M-U", 0, do_undo, 0);
  	add_to_sclist(MMAIN, "M-E", 0, do_redo, 0);
@@ -101,10 +101,10 @@ index f0889ec..1dfd272 100644
  	add_to_sclist(MMAIN, "^Del", CONTROL_DELETE, chop_next_word, 0);
  	add_to_sclist(MMAIN, "M-Del", ALT_DELETE, zap_text, 0);
 diff --git a/src/winio.c b/src/winio.c
-index 088b91c..91a582b 100644
+index 42225df..7818a7b 100644
 --- a/src/winio.c
 +++ b/src/winio.c
-@@ -254,10 +254,13 @@ void read_keys_from(WINDOW *frame)
+@@ -266,10 +266,13 @@ void read_keys_from(WINDOW *frame)
  	if (!key_buffer)
  		reserve_space_for(capacity);
  
@@ -121,7 +121,7 @@ index 088b91c..91a582b 100644
  
  #ifndef NANO_TINY
  	/* Cancel the highlighting of a search match, if there still is one. */
-@@ -294,9 +297,12 @@ void read_keys_from(WINDOW *frame)
+@@ -306,9 +309,12 @@ void read_keys_from(WINDOW *frame)
  			break;
  
  		/* When the keystroke buffer is full, extend it. */
@@ -135,7 +135,7 @@ index 088b91c..91a582b 100644
  		key_buffer[waiting_codes++] = input;
  	}
  
-@@ -1008,6 +1014,7 @@ int parse_kbinput(WINDOW *frame)
+@@ -1020,6 +1026,7 @@ int parse_kbinput(WINDOW *frame)
  
  	/* Get one code from the input stream. */
  	keycode = get_input(frame);
@@ -143,7 +143,7 @@ index 088b91c..91a582b 100644
  
  	/* For an Esc, remember whether the last two arrived by themselves.
  	 * Then increment the counter, rolling around on three escapes. */
-@@ -1024,8 +1031,15 @@ int parse_kbinput(WINDOW *frame)
+@@ -1036,8 +1043,15 @@ int parse_kbinput(WINDOW *frame)
  		return ERR;
  
  	if (escapes == 0) {
@@ -160,7 +160,7 @@ index 088b91c..91a582b 100644
  			return keycode;
  	} else if (escapes == 1) {
  		escapes = 0;
-@@ -1193,27 +1207,24 @@ int parse_kbinput(WINDOW *frame)
+@@ -1205,27 +1219,24 @@ int parse_kbinput(WINDOW *frame)
  		return FOREIGN_SEQUENCE;
  #endif
  
@@ -196,7 +196,7 @@ index 088b91c..91a582b 100644
  			switch (keycode) {
  				case KEY_UP:    return ALT_UP;
  				case KEY_DOWN:  return ALT_DOWN;
-@@ -1227,7 +1238,7 @@ int parse_kbinput(WINDOW *frame)
+@@ -1239,7 +1250,7 @@ int parse_kbinput(WINDOW *frame)
  		}
  #endif
  		/* Is Ctrl being held? */
@@ -205,7 +205,7 @@ index 088b91c..91a582b 100644
  			switch (keycode) {
  				case KEY_UP:    return CONTROL_UP;
  				case KEY_DOWN:  return CONTROL_DOWN;
-@@ -1237,10 +1248,12 @@ int parse_kbinput(WINDOW *frame)
+@@ -1249,10 +1260,12 @@ int parse_kbinput(WINDOW *frame)
  				case KEY_END:   return CONTROL_END;
  				case KEY_DC:    return CONTROL_DELETE;
  			}
@@ -219,7 +219,7 @@ index 088b91c..91a582b 100644
  			switch (keycode) {
  				case KEY_UP:    return KEY_PPAGE;
  				case KEY_DOWN:  return KEY_NPAGE;
-@@ -1250,7 +1263,6 @@ int parse_kbinput(WINDOW *frame)
+@@ -1262,7 +1275,6 @@ int parse_kbinput(WINDOW *frame)
  		}
  #endif
  	}

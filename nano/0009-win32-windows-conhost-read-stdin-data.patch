@@ -1,4 +1,4 @@
-From 278096e5d15b5d734a5b08040e6b9b73bb750ba0 Mon Sep 17 00:00:00 2001
+From ef8e4579c7221d52378142cadba687db2c53da42 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Thu, 16 Apr 2026 00:43:16 +0800
 Subject: [PATCH 09/16] win32: windows conhost read stdin data
@@ -9,10 +9,10 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  1 file changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/src/nano.c b/src/nano.c
-index 16165e0..17aacb1 100644
+index c11048e..72c25f4 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -844,7 +844,7 @@ void restore_handler_for_Ctrl_C(void)
+@@ -845,7 +845,7 @@ void restore_handler_for_Ctrl_C(void)
  /* Reconnect standard input to the tty, and store its state. */
  void reconnect_and_store_state(void)
  {
@@ -21,7 +21,7 @@ index 16165e0..17aacb1 100644
  
  	if (thetty < 0 || dup2(thetty, STDIN_FILENO) < 0)
  		die(_("Could not reconnect stdin to keyboard\n"));
-@@ -860,18 +860,22 @@ void reconnect_and_store_state(void)
+@@ -861,18 +861,22 @@ void reconnect_and_store_state(void)
  bool scoop_stdin(void)
  {
  	FILE *stream;
