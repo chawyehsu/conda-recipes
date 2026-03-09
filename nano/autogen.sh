@@ -48,7 +48,8 @@ cd .. >/dev/null || exit 1
 
 rm -rf lib
 echo "Gnulib-tool..."
-./gnulib/gnulib-tool --import "${modules}"
+# shellcheck disable=SC2086
+./gnulib/gnulib-tool --import ${modules}
 echo
 
 echo "Autoreconf..."
