@@ -179,8 +179,8 @@ jobs:
           )
 
           $collectedDeps = @()
-          function Build-UnpublishedDependency($dir) {
-            $unpublishedDepsPath = Join-Path -Path $dir -ChildPath "_deps.json"
+          function Build-UnpublishedDependency([string]$depPkgName) {
+            $unpublishedDepsPath = Join-Path -Path $depPkgName -ChildPath "_deps.json"
             if (Test-Path -Path $unpublishedDepsPath) {
               $deps = ,(Get-Content -Raw -Path $unpublishedDepsPath | ConvertFrom-Json)
               foreach ($dep in $deps) {
@@ -199,9 +199,9 @@ jobs:
 
                 $buildDepArgs = $buildArgs
                 if ($dep.type -eq 'build') {
-                  Write-Host "Building unpublished build-phase dependency $($dep.name) for $dir..." -ForegroundColor Blue
+                  Write-Host "Building unpublished build-phase dependency $($dep.name) for $depPkgName..." -ForegroundColor Blue
                 } else {
-                  Write-Host "Building unpublished dependency $($dep.name) for $dir..." -ForegroundColor Blue
+                  Write-Host "Building unpublished dependency $($dep.name) for $depPkgName..." -ForegroundColor Blue
                   $buildDepArgs = $buildArgs + @('--target-platform', $target)
                 }
                 pixi run build --recipe-dir $dep.name @buildDepArgs
