@@ -3,7 +3,7 @@
 set -ex
 
 gnulib_url="https://github.com/coreutils/gnulib.git"
-gnulib_hash="b75134c814c38876f04029ffc3fae4e90035dc34"
+gnulib_hash="88592a2880cf39a2f597cd0294a90d8dd7faa2df"
 
 # modules diff: added rewinddir modules for `browser` feature
 modules="
