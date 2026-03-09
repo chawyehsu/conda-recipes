@@ -73,9 +73,7 @@ tests:
       then: nano -h
   - package_contents:
       bin:
-        - if: win
-          then: nano.exe
-          else: nano
+        - nano
       files:
         - etc/nanorc
 
