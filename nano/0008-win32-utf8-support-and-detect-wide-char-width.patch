@@ -1,5 +1,17 @@
+From 7d11c552117d60a27b0acd1b71e88233dd5a4b58 Mon Sep 17 00:00:00 2001
+From: Chawye Hsu <su+git@chawyehsu.com>
+Date: Thu, 16 Apr 2026 00:42:53 +0800
+Subject: [PATCH 08/16] win32: utf8-support-and-detect-wide-char-width
+
+Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
+---
+ src/chars.c | 7 ++++---
+ src/nano.c  | 2 +-
+ src/winio.c | 3 ++-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
 diff --git a/src/chars.c b/src/chars.c
-index a0ebaec517..59998ddef1 100644
+index e6b5783..3fad6fb 100644
 --- a/src/chars.c
 +++ b/src/chars.c
 @@ -20,6 +20,7 @@
@@ -10,7 +22,7 @@ index a0ebaec517..59998ddef1 100644
  
  #include <ctype.h>
  #include <string.h>
-@@ -219,7 +220,7 @@
+@@ -219,7 +220,7 @@ bool is_doublewidth(const char *ch)
  	if (mbtowide(&wc, ch) < 0)
  		return FALSE;
  
@@ -19,7 +31,7 @@ index a0ebaec517..59998ddef1 100644
  }
  
  /* Return TRUE when the given character occupies zero cells. */
-@@ -240,7 +241,7 @@
+@@ -240,7 +241,7 @@ bool is_zerowidth(const char *ch)
  		return FALSE;
  #endif
  
@@ -28,7 +40,7 @@ index a0ebaec517..59998ddef1 100644
  }
  #endif /* ENABLE_UTF8 */
  
-@@ -325,7 +326,7 @@
+@@ -325,7 +326,7 @@ int advance_over(const char *string, size_t *column)
  				return 1;
  			}
  
@@ -38,10 +50,10 @@ index a0ebaec517..59998ddef1 100644
  #if defined(__OpenBSD__)
  			*column += (width < 0 || wc >= 0xF0000) ? 1 : width;
 diff --git a/src/nano.c b/src/nano.c
-index bc73cea203..bea36afd32 100644
+index db54275..16165e0 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -1859,7 +1859,7 @@
+@@ -1859,7 +1859,7 @@ int main(int argc, char **argv)
  #ifdef ENABLE_UTF8
  	/* If setting the locale is successful and it uses UTF-8, we will
  	 * need to use the multibyte functions for text processing. */
@@ -51,7 +63,7 @@ index bc73cea203..bea36afd32 100644
  #else
  	setlocale(LC_ALL, "");
 diff --git a/src/winio.c b/src/winio.c
-index 4f5ac17889..3f88af1160 100644
+index 8d86d73..9e925f0 100644
 --- a/src/winio.c
 +++ b/src/winio.c
 @@ -21,6 +21,7 @@
@@ -62,7 +74,7 @@ index 4f5ac17889..3f88af1160 100644
  
  #include <ctype.h>
  #ifdef __linux__
-@@ -1896,7 +1897,7 @@
+@@ -1896,7 +1897,7 @@ char *display_string(const char *text, size_t column, size_t span,
  		}
  
  		/* Determine whether the character takes zero, one, or two columns. */
@@ -71,3 +83,6 @@ index 4f5ac17889..3f88af1160 100644
  
  		/* Watch the number of zero-widths, to keep ample memory reserved. */
  		if (charwidth == 0 && --stowaways == 0) {
+-- 
+2.53.0.windows.3
+

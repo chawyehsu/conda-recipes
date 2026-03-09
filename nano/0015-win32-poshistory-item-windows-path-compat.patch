@@ -1,5 +1,15 @@
+From b857c99d0fb2177b78af8f3ad95bda437d1fde48 Mon Sep 17 00:00:00 2001
+From: Chawye Hsu <su+git@chawyehsu.com>
+Date: Thu, 16 Apr 2026 00:44:16 +0800
+Subject: [PATCH 15/16] win32: poshistory-item-windows-path-compat
+
+Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
+---
+ src/history.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
 diff --git a/src/history.c b/src/history.c
-index a2fc95bbee..c1f84c3e16 100644
+index a2fc95b..c1f84c3 100644
 --- a/src/history.c
 +++ b/src/history.c
 @@ -23,6 +23,7 @@
@@ -10,7 +20,7 @@ index a2fc95bbee..c1f84c3e16 100644
  #include <errno.h>
  #include <string.h>
  
-@@ -417,6 +418,14 @@
+@@ -417,6 +418,14 @@ void load_poshistory(void)
  	while (count++ < 200 && (length = getline(&phrase, &dummy, histfile)) > 1) {
  		normalize_slashes(phrase);
  		stanza = strchr(phrase, '/');
@@ -25,3 +35,6 @@ index a2fc95bbee..c1f84c3e16 100644
  		length -= (stanza ? stanza - phrase : 0);
  
  		/* Decode NULs as embedded newlines. */
+-- 
+2.53.0.windows.3
+

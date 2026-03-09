@@ -20,38 +20,26 @@ This project provides a complete build environment for the GNU nano editor, spec
 - Syntax highlighting
 - RC file lookup compatibility
 - Position history compatibility
+- Spell check and formatter support
 
 ## Windows Compatibility Patches
 
-This project includes the following Windows platform compatibility patches:
-
-### Core Compatibility
-
-- **0000-include-windows-header.patch**: Include Windows headers
-- **0001-drop-bracketed-paste-mode-escape-sequences.patch**: Remove bracketed paste mode escape sequences
-- **0002-system-wide-rcfile-compat.patch**: System-wide configuration file compatibility
-- **0003-fix-file-parentdir-access.patch**: Fix file parent directory access
-
-### File System Compatibility
-
-- **0004-replace-slashes-and-invalid-filename-chars.patch**: Replace slashes and invalid filename characters
-- **0012-poshistory-item-windows-path-compat.patch**: Position history item Windows path compatibility
-
-### System Integration
-
-- **0005-homedir-tempdir-compat.patch**: Home directory and temporary directory compatibility
-- **0006-file-io-to-binary-mode.patch**: File I/O to binary mode
-- **0008-windows-conhost-read-stdin-data.patch**: Windows console host read stdin data
-
-### Unicode and Display
-
-- **0007-utf8-support-and-wide-char-width-detection-fix.patch**: UTF-8 support and wide character width detection fix
-- **0009-remove-halfdelay-for-unicode.patch**: Remove halfdelay for Unicode
-
-### Terminal Compatibility
-
-- **0010-meta-keycode-pdcurses-compat.patch**: Meta keycode PDCurses compatibility
-- **0011-colortype-pdcursesmod-compat.patch**: Color type PDCursesmod compatibility
+- 0001-win32-include-windows-header.patch
+- 0002-win32-drop-bracketed-paste-mode-escape-sequences.patch
+- 0003-win32-system-wide-rcfile-compat.patch
+- 0004-win32-fix-file-parentdir-access.patch
+- 0005-win32-replace-slashes-and-invalid-filename-chars.patch
+- 0006-win32-homedir-tempdir-compat.patch
+- 0007-win32-file-io-to-binary-mode.patch
+- 0008-win32-utf8-support-and-detect-wide-char-width.patch
+- 0009-win32-windows-conhost-read-stdin-data.patch
+- 0010-win32-remove-halfdelay-for-unicode.patch
+- 0011-win32-keycode-pdcursesmod-compat.patch
+- 0012-win32-colortype-pdcursesmod-compat.patch
+- 0013-win32-window-resize-handling-and-screen-redraw.patch
+- 0014-win32-formatter-and-spell-check-support.patch
+- 0015-win32-poshistory-item-windows-path-compat.patch # v8.5+
+- 0016-win32-pdcursesmod-ctrlv-passthrough.patch
 
 ## Build Requirements
 

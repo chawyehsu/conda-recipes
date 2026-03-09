@@ -1,8 +1,19 @@
+From 4bd66333e64717652bd3ee95e61c7005b1eaf190 Mon Sep 17 00:00:00 2001
+From: Chawye Hsu <su+git@chawyehsu.com>
+Date: Thu, 16 Apr 2026 00:35:54 +0800
+Subject: [PATCH 02/16] win32: drop-bracketed-paste-mode-escape-sequences
+
+Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
+---
+ src/nano.c  | 12 ------------
+ src/winio.c | 10 ----------
+ 2 files changed, 22 deletions(-)
+
 diff --git a/src/nano.c b/src/nano.c
-index bbfb226f34..bde26aa72e 100644
+index b2abff7..4a495f7 100644
 --- a/src/nano.c
 +++ b/src/nano.c
-@@ -230,10 +230,6 @@
+@@ -230,10 +230,6 @@ void restore_terminal(void)
  {
  	curs_set(1);
  	endwin();
@@ -13,7 +24,7 @@ index bbfb226f34..bde26aa72e 100644
  	tcsetattr(STDIN_FILENO, TCSANOW, &original_state);
  }
  
-@@ -1241,11 +1237,6 @@
+@@ -1241,11 +1237,6 @@ void terminal_init(void)
  
  	disable_kb_interrupt();
  
@@ -25,7 +36,7 @@ index bbfb226f34..bde26aa72e 100644
  }
  
  /* Ask ncurses for a keycode, or assign a default one. */
-@@ -2485,9 +2476,6 @@
+@@ -2485,9 +2476,6 @@ int main(int argc, char **argv)
  	shiftaltup = get_keycode("kUP4", SHIFT_ALT_UP);
  	shiftaltdown = get_keycode("kDN4", SHIFT_ALT_DOWN);
  
@@ -36,10 +47,10 @@ index bbfb226f34..bde26aa72e 100644
  	mousefocusin = get_keycode("kxIN", FOCUS_IN);
  	mousefocusout = get_keycode("kxOUT", FOCUS_OUT);
 diff --git a/src/winio.c b/src/winio.c
-index d74c6fe8e5..4f5ac17889 100644
+index be2fc30..8d86d73 100644
 --- a/src/winio.c
 +++ b/src/winio.c
-@@ -1520,11 +1520,6 @@
+@@ -1520,11 +1520,6 @@ char *get_verbatim_kbinput(WINDOW *frame, size_t *count)
  	if (!ISSET(RAW_SEQUENCES))
  		keypad(frame, FALSE);
  
@@ -51,7 +62,7 @@ index d74c6fe8e5..4f5ac17889 100644
  
  	linger_after_escape = TRUE;
  
-@@ -1543,11 +1538,6 @@
+@@ -1543,11 +1538,6 @@ char *get_verbatim_kbinput(WINDOW *frame, size_t *count)
  
  	linger_after_escape = FALSE;
  
@@ -63,3 +74,6 @@ index d74c6fe8e5..4f5ac17889 100644
  
  	/* Turn flow control characters back on if necessary and turn the
  	 * keypad back on if necessary now that we're done. */
+-- 
+2.53.0.windows.3
+

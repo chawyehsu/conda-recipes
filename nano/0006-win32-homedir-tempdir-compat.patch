@@ -1,8 +1,19 @@
+From 401c6b892f0122aee631745e227210bb84e04b49 Mon Sep 17 00:00:00 2001
+From: Chawye Hsu <su+git@chawyehsu.com>
+Date: Thu, 16 Apr 2026 00:41:05 +0800
+Subject: [PATCH 06/16] win32: homedir-tempdir-compat
+
+Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
+---
+ src/files.c |  4 ++--
+ src/utils.c | 12 ++++--------
+ 2 files changed, 6 insertions(+), 10 deletions(-)
+
 diff --git a/src/files.c b/src/files.c
-index ec4d832a1b..3c7d60dc16 100644
+index c23525d..bdf0131 100644
 --- a/src/files.c
 +++ b/src/files.c
-@@ -1458,7 +1458,7 @@
+@@ -1461,7 +1461,7 @@ char *check_writable_directory(const char *path)
   * file stream opened in read-write mode.  On error, return NULL. */
  char *safe_tempfile(FILE **stream)
  {
@@ -11,7 +22,7 @@ index ec4d832a1b..3c7d60dc16 100644
  	char *tempdir = NULL, *tempfile_name = NULL;
  	char *extension;
  	int descriptor;
-@@ -1472,7 +1472,7 @@
+@@ -1475,7 +1475,7 @@ char *safe_tempfile(FILE **stream)
  		tempdir = check_writable_directory(P_tmpdir);
  
  	if (tempdir == NULL)
@@ -21,10 +32,10 @@ index ec4d832a1b..3c7d60dc16 100644
  	extension = strrchr(openfile->filename, '.');
  
 diff --git a/src/utils.c b/src/utils.c
-index 50ee9badba..796d5b27d5 100644
+index 529bfab..e6b421a 100644
 --- a/src/utils.c
 +++ b/src/utils.c
-@@ -35,15 +35,11 @@
+@@ -35,15 +35,11 @@ void get_homedir(void)
  	if (homedir == NULL) {
  		const char *homenv = getenv("HOME");
  
@@ -44,3 +55,6 @@ index 50ee9badba..796d5b27d5 100644
  
  		/* Only set `homedir` if a home directory could be determined. */
  		if (homenv != NULL && *homenv != '\0')
+-- 
+2.53.0.windows.3
+

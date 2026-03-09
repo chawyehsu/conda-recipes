@@ -1,8 +1,21 @@
+From 624f3f27c379c618dadcd355d9a6c9d4e25e755f Mon Sep 17 00:00:00 2001
+From: Chawye Hsu <su+git@chawyehsu.com>
+Date: Thu, 16 Apr 2026 00:44:02 +0800
+Subject: [PATCH 12/16] win32: colortype-pdcursesmod-compat
+
+Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
+---
+ src/definitions.h |  2 +-
+ src/global.c      |  2 +-
+ src/prototypes.h  |  2 +-
+ src/rcfile.c      | 10 +++++++---
+ 4 files changed, 10 insertions(+), 6 deletions(-)
+
 diff --git a/src/definitions.h b/src/definitions.h
-index 26b94149f7..c178a345b4 100644
+index 859d09f..27a7685 100644
 --- a/src/definitions.h
 +++ b/src/definitions.h
-@@ -390,7 +390,7 @@
+@@ -384,7 +384,7 @@ typedef struct colortype {
  		/* This combo's background color. */
  	short pairnum;
  		/* The pair number for this foreground/background color combination. */
@@ -12,10 +25,10 @@ index 26b94149f7..c178a345b4 100644
  	regex_t *start;
  		/* The compiled regular expression for 'start=', or the only one. */
 diff --git a/src/global.c b/src/global.c
-index 68c4f0f4e8..d804616452 100644
+index 1dfd272..03caf72 100644
 --- a/src/global.c
 +++ b/src/global.c
-@@ -267,7 +267,7 @@
+@@ -267,7 +267,7 @@ int hilite_attribute = A_REVERSE;
  colortype* color_combo[NUMBER_OF_ELEMENTS] = {NULL};
  		/* The color combinations for interface elements given in the rcfile. */
  #endif
@@ -25,10 +38,10 @@ index 68c4f0f4e8..d804616452 100644
  
  char *homedir = NULL;
 diff --git a/src/prototypes.h b/src/prototypes.h
-index e1cd8f6162..dec46714ab 100644
+index 6f9ca69..8749c79 100644
 --- a/src/prototypes.h
 +++ b/src/prototypes.h
-@@ -179,7 +179,7 @@
+@@ -179,7 +179,7 @@ extern int hilite_attribute;
  #ifdef ENABLE_COLOR
  extern colortype *color_combo[NUMBER_OF_ELEMENTS];
  #endif
@@ -38,10 +51,10 @@ index e1cd8f6162..dec46714ab 100644
  extern char *homedir;
  extern char *statedir;
 diff --git a/src/rcfile.c b/src/rcfile.c
-index d139f473f9..832eee0d20 100644
+index 17a0121..2293b30 100644
 --- a/src/rcfile.c
 +++ b/src/rcfile.c
-@@ -1015,7 +1015,11 @@
+@@ -1015,7 +1015,11 @@ short closest_index_color(short red, short green, short blue)
  	/* Translation table, from 14 intended gray levels to 24 available levels. */
  	static const short gray[] = { 1, 2, 3, 4, 5, 6, 7, 9, 11, 13, 15, 18, 21, 23 };
  
@@ -54,7 +67,7 @@ index d139f473f9..832eee0d20 100644
  		return THE_DEFAULT;
  	else if (red == green && green == blue && 0 < red && red < 0xF)
  		return 232 + gray[red - 1];
-@@ -1093,7 +1097,7 @@
+@@ -1093,7 +1097,7 @@ short color_to_short(const char *colorname, bool *vivid, bool *thick)
  
  /* Parse the color name (or pair of color names) in the given string.
   * Return FALSE when any color name is invalid; otherwise return TRUE. */
@@ -63,7 +76,7 @@ index d139f473f9..832eee0d20 100644
  {
  	bool vivid, thick;
  	char *comma;
-@@ -1155,7 +1159,7 @@
+@@ -1155,7 +1159,7 @@ void parse_rule(char *ptr, int rex_flags)
  {
  	char *names, *regexstring;
  	short fg, bg;
@@ -72,3 +85,6 @@ index d139f473f9..832eee0d20 100644
  
  	if (*ptr == '\0') {
  		jot_error(N_("Missing color name"));
+-- 
+2.53.0.windows.3
+
