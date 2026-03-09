@@ -228,13 +228,25 @@ jobs:
           Assert-LastExitCode "Package build $dir"
         }
 
-        # Generate glob pattern for artifact upload based on changed package names
-        $pattern = "[$($changed_dirs -join ',')]"
-        echo "pattern=$pattern" >> $env:GITHUB_OUTPUT
+        # Remove all .conda files in output directory that do not match changed package names to avoid uploading irrelevant artifacts
+        $condaFiles = Get-ChildItem -Path ".output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue
+        foreach ($file in $condaFiles) {
+          $fileName = $file.Name
+          $matchesPackage = $false
+          foreach ($dir in $changed_dirs) {
+            if ($fileName -like "$dir-*.conda") {
+              $matchesPackage = $true
+              break
+            }
+          }
+          if (-not $matchesPackage) {
+            Write-Host "Removing irrelevant artifact: $($file.Name)" -ForegroundColor Yellow
+            Remove-Item -Path $file.FullName -ErrorAction SilentlyContinue
+          }
+        }
 
     - name: List Artifacts
       run: |
-        Write-Host "Pattern for artifact upload: ${{ steps.run_build.outputs.pattern }}"
         (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue) | ForEach-Object { $_.FullName }
 
     - name: Upload Artifacts
@@ -242,8 +254,8 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.target }}-builds
         path: |
-          output/${{ matrix.target }}/${{ steps.run_build.outputs.pattern }}*.conda
-          output/noarch/${{ steps.run_build.outputs.pattern }}*.conda
+          output/${{ matrix.target }}/*.conda
+          output/noarch/*.conda
 
   cd_release:
     name: Release
