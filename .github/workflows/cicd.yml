@@ -302,12 +302,12 @@ jobs:
 
           if ($allFiles.Count) {
             $paths = $allFiles | ForEach-Object { $_.FullName }
-            Write-Host "Publishing ${paths.Count} files:"
+            Write-Host "Publishing $($allFiles.Count) files:"
             $paths | ForEach-Object { Write-Host "- $_" }
             pixi run rattler-build upload --log-style plain anaconda @paths
             Assert-LastExitCode "Anaconda upload"
             pixi run rattler-build upload --log-style plain prefix @paths `
-              --attestation ${{ steps.attest.outputs.bundle-path }}
+              --attestation ${{ steps.attest.outputs.bundle-path }} -vvvv
             Assert-LastExitCode "Prefix upload"
           }
         }
