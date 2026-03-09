@@ -31,6 +31,7 @@ source:
         - 0015-win32-poshistory-item-windows-path-compat.patch # v8.5+
         - 0016-win32-pdcursesmod-ctrlv-passthrough.patch
         - 0017-win32-abort-unsupported-suspend-function.patch
+        - 0018-win32-windows-file-timestamp-struct.patch # v9.1
   - if: win and build_platform != 'win-64' and build_platform != 'win-arm64'
     then:
       - path: autogen.sh
