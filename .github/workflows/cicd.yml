@@ -262,14 +262,6 @@ jobs:
         path: uploads
         merge-multiple: true
 
-    - name: Attest Artifacts
-      id: attest
-      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
-      with:
-        subject-path: "uploads/**/${{ needs.ci_build.outputs.pattern }}*.conda"
-        predicate-type: "https://schemas.conda.org/attestations-publish-1.schema.json"
-        predicate: '{"targetChannel": "https://prefix.dev/chawyehsu"}'
-
     - name: Publish
       env:
         # Anaconda
@@ -304,10 +296,10 @@ jobs:
             $paths = $allFiles | ForEach-Object { $_.FullName }
             Write-Host "Publishing $($allFiles.Count) files:"
             $paths | ForEach-Object { Write-Host "- $_" }
-            # pixi run rattler-build upload --log-style plain anaconda @paths
-            # Assert-LastExitCode "Anaconda upload"
+            pixi run rattler-build upload --log-style plain anaconda @paths
+            Assert-LastExitCode "Anaconda upload"
             pixi run rattler-build upload --log-style plain prefix @paths `
-              --attestation ${{ steps.attest.outputs.bundle-path }} -vvvv
+              --generate-attestation --store-github-attestation --skip-existing
             Assert-LastExitCode "Prefix upload"
           }
         }
