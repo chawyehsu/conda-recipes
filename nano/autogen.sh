@@ -2,9 +2,6 @@
 # Derived from GNU nano autogen.sh
 set -ex
 
-gnulib_url="https://github.com/coreutils/gnulib.git"
-gnulib_hash="88592a2880cf39a2f597cd0294a90d8dd7faa2df"
-
 # modules diff: added rewinddir modules for `browser` feature
 modules="
 	canonicalize-lgpl
@@ -35,15 +32,12 @@ modules="
 
 # Make sure the local gnulib git repo is up-to-date.
 if [ ! -d "gnulib" ]; then
-	git clone --depth=2222 ${gnulib_url}
+    echo "gnulib not found, exiting..."
+	exit 1
 fi
 cd gnulib >/dev/null || exit 1
 curr_hash=$(git log -1 --format=%H)
-if [ "${gnulib_hash}" != "${curr_hash}" ]; then
-	echo "Pulling..."
-	git pull
-	git checkout --force ${gnulib_hash}
-fi
+echo "Current gnulib hash: ${curr_hash}"
 cd .. >/dev/null || exit 1
 
 rm -rf lib
