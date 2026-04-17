@@ -1,11 +1,38 @@
+From 04e43cfe28cf01b195b9dadc2aaceaeb8234232b Mon Sep 17 00:00:00 2001
+From: Chawye Hsu <su+git@chawyehsu.com>
+Date: Fri, 17 Apr 2026 19:10:35 +0800
+Subject: [PATCH] feat: macos support
+
+Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
+---
+ Cargo.lock                |  95 ++++++++++++
+ Cargo.toml                |   3 +-
+ README.md                 |  21 +--
+ src/cmd.rs                |  30 +++-
+ src/config.rs             |  71 ++++++++-
+ src/cron.rs               | 306 ++++++++++++++++++++++++++++----------
+ src/main.rs               |  74 +++++----
+ src/mihoro.rs             | 234 ++++++++++++++++++++++++-----
+ src/resolve_mihomo_bin.rs | 145 ++++++++++++++----
+ src/service/launchd.rs    | 235 +++++++++++++++++++++++++++++
+ src/service/mod.rs        | 158 ++++++++++++++++++++
+ src/service/systemd.rs    | 157 +++++++++++++++++++
+ src/systemctl.rs          |  62 --------
+ 13 files changed, 1338 insertions(+), 253 deletions(-)
+ create mode 100644 src/service/launchd.rs
+ create mode 100644 src/service/mod.rs
+ create mode 100644 src/service/systemd.rs
+ delete mode 100644 src/systemctl.rs
+
 diff --git a/Cargo.lock b/Cargo.lock
-index 00c37f2237..574aa4ed54 100644
+index 3955f08..afbae3d 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
-@@ -18,6 +18,15 @@
+@@ -17,6 +17,15 @@ dependencies = [
+  "memchr",
  ]
  
- [[package]]
++[[package]]
 +name = "android_system_properties"
 +version = "0.1.5"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -14,27 +41,27 @@ index 00c37f2237..574aa4ed54 100644
 + "libc",
 +]
 +
-+[[package]]
+ [[package]]
  name = "anstream"
- version = "0.6.21"
+ version = "1.0.0"
+@@ -79,6 +88,12 @@ version = "1.1.2"
  source = "registry+https://github.com/rust-lang/crates.io-index"
-@@ -80,6 +89,12 @@
  checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
  
- [[package]]
++[[package]]
 +name = "autocfg"
 +version = "1.5.0"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
 +checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 +
-+[[package]]
+ [[package]]
  name = "base64"
  version = "0.22.1"
+@@ -146,6 +161,17 @@ version = "0.2.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
-@@ -147,6 +162,17 @@
  checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
  
- [[package]]
++[[package]]
 +name = "chrono"
 +version = "0.4.44"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -45,14 +72,14 @@ index 00c37f2237..574aa4ed54 100644
 + "windows-link",
 +]
 +
-+[[package]]
+ [[package]]
  name = "clap"
- version = "4.5.53"
- source = "registry+https://github.com/rust-lang/crates.io-index"
-@@ -813,6 +839,30 @@
+ version = "4.6.0"
+@@ -845,6 +871,30 @@ dependencies = [
+  "windows-registry",
  ]
  
- [[package]]
++[[package]]
 +name = "iana-time-zone"
 +version = "0.1.65"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -76,11 +103,10 @@ index 00c37f2237..574aa4ed54 100644
 + "cc",
 +]
 +
-+[[package]]
+ [[package]]
  name = "icu_collections"
- version = "2.1.1"
- source = "registry+https://github.com/rust-lang/crates.io-index"
-@@ -1055,6 +1105,7 @@
+ version = "2.2.0"
+@@ -1105,6 +1155,7 @@ version = "0.11.0"
  dependencies = [
   "anyhow",
   "base64",
@@ -88,10 +114,11 @@ index 00c37f2237..574aa4ed54 100644
   "clap",
   "clap_complete",
   "colored",
-@@ -1148,6 +1199,15 @@
+@@ -1198,6 +1249,15 @@ dependencies = [
+  "syn",
  ]
  
- [[package]]
++[[package]]
 +name = "num-traits"
 +version = "0.2.19"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -100,14 +127,14 @@ index 00c37f2237..574aa4ed54 100644
 + "autocfg",
 +]
 +
-+[[package]]
+ [[package]]
  name = "number_prefix"
  version = "0.4.0"
- source = "registry+https://github.com/rust-lang/crates.io-index"
-@@ -2401,6 +2461,41 @@
+@@ -2514,6 +2574,41 @@ dependencies = [
+  "rustls-pki-types",
  ]
  
- [[package]]
++[[package]]
 +name = "windows-core"
 +version = "0.62.2"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,12 +169,11 @@ index 00c37f2237..574aa4ed54 100644
 + "syn",
 +]
 +
-+[[package]]
+ [[package]]
  name = "windows-link"
  version = "0.2.1"
- source = "registry+https://github.com/rust-lang/crates.io-index"
 diff --git a/Cargo.toml b/Cargo.toml
-index 0a8044112c..8bcdbdb0af 100644
+index 494b801..bc3e151 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -1,6 +1,6 @@
@@ -155,19 +181,19 @@ index 0a8044112c..8bcdbdb0af 100644
  name = "mihoro"
 -description = "Mihomo CLI client on Linux."
 +description = "Mihomo CLI client, no more, no less."
- version = "0.10.0"
+ version = "0.11.0"
  edition = "2021"
  readme = "README.md"
-@@ -34,6 +34,7 @@
+@@ -34,6 +34,7 @@ truncatable = "0.1"
  anyhow = "1.0"
  base64 = "0.22"
  tempfile = "3.18"
 +chrono = { version = "0.4", default-features = false, features = ["clock"] }
+ tar = "0.4"
  self_update = { version = "0.42", default-features = false, features = [
      "archive-tar",
-     "compression-flate2",
 diff --git a/README.md b/README.md
-index dcae835442..7d4c305482 100644
+index e74927a..61ee7eb 100644
 --- a/README.md
 +++ b/README.md
 @@ -14,9 +14,9 @@
@@ -182,8 +208,8 @@ index dcae835442..7d4c305482 100644
  - No root privilege required. Maintains per-user instance.
  - First-class support for config subscription.
  
-@@ -54,6 +54,9 @@
- mihomo_channel = "stable"
+@@ -56,6 +56,9 @@ mihomo_channel = "stable"
+ # mihomo_arch = ""  # optional: override auto-detected CPU architecture
  mihomo_binary_path = "~/.local/bin/mihomo"
  mihomo_config_root = "~/.config/mihomo"
 +service_manager = "auto"
@@ -192,7 +218,7 @@ index dcae835442..7d4c305482 100644
  user_systemd_root = "~/.config/systemd/user"
  mihoro_user_agent = "mihoro"
  auto_update_interval = 12
-@@ -196,19 +199,19 @@
+@@ -201,19 +204,19 @@ Full list of commands:
  
  ```console
  $ mihoro --help
@@ -220,10 +246,10 @@ index dcae835442..7d4c305482 100644
    uninstall    Uninstall and remove mihoro and config
    completions  Generate shell completions for mihoro
 diff --git a/src/cmd.rs b/src/cmd.rs
-index 998963f38d..771254c11f 100644
+index d9657e9..5d3bdfe 100644
 --- a/src/cmd.rs
 +++ b/src/cmd.rs
-@@ -56,17 +56,17 @@
+@@ -60,17 +60,17 @@ pub enum Commands {
          #[arg(long)]
          arch: Option<String>,
      },
@@ -247,16 +273,12 @@ index 998963f38d..771254c11f 100644
      #[clap(visible_alias("logs"))]
      Log,
      /// Output proxy export commands
-@@ -139,3 +139,27 @@
-     /// Show auto-update cron job status
-     Status,
- }
-+
-+#[cfg(test)]
-+mod tests {
-+    use super::*;
+@@ -147,7 +147,25 @@ pub enum CronCommands {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
 +    use clap::Parser;
-+
+ 
 +    #[test]
 +    fn test_service_subcommands_parse_contract() {
 +        let start = Args::parse_from(["mihoro", "start"]);
@@ -274,12 +296,14 @@ index 998963f38d..771254c11f 100644
 +        let log = Args::parse_from(["mihoro", "log"]);
 +        assert!(matches!(log.command, Some(Commands::Log)));
 +    }
-+}
+     #[test]
+     fn test_parse_update_ui_flag() {
+         let args = Args::parse_from(["mihoro", "update", "--ui"]);
 diff --git a/src/config.rs b/src/config.rs
-index 68066f1252..eebf855eb5 100644
+index dfc7ff9..13df337 100644
 --- a/src/config.rs
 +++ b/src/config.rs
-@@ -28,6 +28,16 @@
+@@ -31,6 +31,16 @@ pub struct Config {
      pub mihomo_arch: Option<String>,
      pub mihomo_binary_path: String,
      pub mihomo_config_root: String,
@@ -296,7 +320,7 @@ index 68066f1252..eebf855eb5 100644
      pub user_systemd_root: String,
      pub mihoro_user_agent: String,
      pub auto_update_interval: u16,
-@@ -44,6 +54,9 @@
+@@ -48,6 +58,9 @@ impl Default for Config {
              remote_config_url: String::from(""),
              mihomo_binary_path: String::from("~/.local/bin/mihomo"),
              mihomo_config_root: String::from("~/.config/mihomo"),
@@ -306,7 +330,7 @@ index 68066f1252..eebf855eb5 100644
              user_systemd_root: String::from("~/.config/systemd/user"),
              mihoro_user_agent: String::from("mihoro"),
              auto_update_interval: 12,
-@@ -176,20 +189,26 @@
+@@ -182,20 +195,26 @@ pub fn parse_config(path: &str) -> Result<Config> {
  
      // Parse config file
      let config = Config::setup_from(path)?;
@@ -337,10 +361,11 @@ index 68066f1252..eebf855eb5 100644
      Ok(config)
  }
  
-@@ -324,6 +343,50 @@
+@@ -334,6 +353,50 @@ mod tests {
+         Ok(())
      }
  
-     #[test]
++    #[test]
 +    fn test_parse_config_accepts_legacy_user_systemd_root() -> Result<()> {
 +        let dir = tempdir()?;
 +        let config_path = dir.path().join("legacy.toml");
@@ -384,12 +409,11 @@ index 68066f1252..eebf855eb5 100644
 +        Ok(())
 +    }
 +
-+    #[test]
+     #[test]
      fn test_parse_config_validates_required_fields() -> Result<()> {
          let dir = tempdir()?;
-         let config_path = dir.path().join("test.toml");
 diff --git a/src/cron.rs b/src/cron.rs
-index 6bcef68f0d..dd66360bce 100644
+index 6bcef68..dd66360 100644
 --- a/src/cron.rs
 +++ b/src/cron.rs
 @@ -1,4 +1,5 @@
@@ -398,7 +422,7 @@ index 6bcef68f0d..dd66360bce 100644
  use colored::Colorize;
  use std::env;
  use std::fs;
-@@ -6,15 +7,39 @@
+@@ -6,15 +7,39 @@ use std::os::unix::fs::MetadataExt;
  use std::path::Path;
  use std::path::PathBuf;
  use std::process::Command;
@@ -444,7 +468,7 @@ index 6bcef68f0d..dd66360bce 100644
  }
  
  /// Get the mihoro binary path from current executable
-@@ -25,19 +50,124 @@
+@@ -25,19 +50,124 @@ fn mihoro_bin_path() -> Result<String> {
          .ok_or_else(|| anyhow!("Failed to get mihoro binary path"))
  }
  
@@ -577,7 +601,7 @@ index 6bcef68f0d..dd66360bce 100644
  }
  
  /// Enable auto-update by installing cron job
-@@ -54,20 +184,11 @@
+@@ -54,20 +184,11 @@ pub fn enable_auto_update(interval_hours: u16, prefix: &str) -> Result<()> {
          anyhow::bail!("Auto-update interval must be between 1 and 24 hours");
      }
  
@@ -602,7 +626,7 @@ index 6bcef68f0d..dd66360bce 100644
  
      println!(
          "{} Auto-update enabled with interval: {} hours",
-@@ -77,7 +198,7 @@
+@@ -77,7 +198,7 @@ pub fn enable_auto_update(interval_hours: u16, prefix: &str) -> Result<()> {
      println!(
          "{} Cron entry: {}",
          "->".dimmed(),
@@ -611,17 +635,28 @@ index 6bcef68f0d..dd66360bce 100644
      );
  
      Ok(())
-@@ -85,69 +206,51 @@
+@@ -85,69 +206,51 @@ pub fn enable_auto_update(interval_hours: u16, prefix: &str) -> Result<()> {
  
  /// Disable auto-update by removing cron job
  pub fn disable_auto_update(prefix: &str) -> Result<()> {
 -    let crontab_file = crontab_path();
--
++    let existing = read_installed_crontab()?;
++    let (without_mihoro, had_mihoro_block) = strip_mihoro_block(&existing);
+ 
 -    // Remove our crontab reference file
 -    if crontab_file.exists() {
 -        fs::remove_file(&crontab_file)?;
--    }
--
++    if had_mihoro_block {
++        let crontab_file = crontab_path();
++        install_crontab(&without_mihoro, &crontab_file)?;
++        println!("{} Auto-update disabled", prefix.green().bold());
++    } else {
++        println!(
++            "{} Auto-update disabled (no active cron job)",
++            prefix.yellow()
++        );
+     }
+ 
 -    // Install empty crontab to remove all entries
 -    let status = std::process::Command::new("crontab").arg("-r").status();
 -
@@ -640,20 +675,6 @@ index 6bcef68f0d..dd66360bce 100644
 -        }
 -        Err(e) => Err(anyhow!("Failed to disable crontab: {}", e)),
 -    }
-+    let existing = read_installed_crontab()?;
-+    let (without_mihoro, had_mihoro_block) = strip_mihoro_block(&existing);
-+
-+    if had_mihoro_block {
-+        let crontab_file = crontab_path();
-+        install_crontab(&without_mihoro, &crontab_file)?;
-+        println!("{} Auto-update disabled", prefix.green().bold());
-+    } else {
-+        println!(
-+            "{} Auto-update disabled (no active cron job)",
-+            prefix.yellow()
-+        );
-+    }
-+
 +    Ok(())
  }
  
@@ -708,7 +729,7 @@ index 6bcef68f0d..dd66360bce 100644
              if let Ok(duration) = modified.duration_since(UNIX_EPOCH) {
                  let secs = duration.as_secs();
                  let datetime = format_datetime(secs);
-@@ -164,15 +267,64 @@
+@@ -164,15 +267,64 @@ mod tests {
      use super::*;
  
      #[test]
@@ -716,12 +737,6 @@ index 6bcef68f0d..dd66360bce 100644
 -        let entry = generate_cron_entry(12).unwrap();
 -        assert!(entry.contains("0 */12 * * *"));
 -        assert!(entry.contains("update"));
--    }
--
--    #[test]
--    fn test_generate_crontab() {
--        let crontab = generate_crontab(6).unwrap();
--        assert!(crontab.contains("0 */6 * * *"));
 +    fn test_generate_cron_line() {
 +        let line = generate_cron_line(12).unwrap();
 +        assert!(line.contains("0 */12 * * *"));
@@ -772,9 +787,12 @@ index 6bcef68f0d..dd66360bce 100644
 +        let first = merge_with_mihoro_block("0 1 * * * /usr/bin/backup\n", &block);
 +        let second = merge_with_mihoro_block(&first, &block);
 +        assert_eq!(first, second);
-+    }
-+
-+    #[test]
+     }
+ 
+     #[test]
+-    fn test_generate_crontab() {
+-        let crontab = generate_crontab(6).unwrap();
+-        assert!(crontab.contains("0 */6 * * *"));
 +    fn test_find_mihoro_entry_from_block() {
 +        let block = generate_managed_block(12).unwrap();
 +        let content = format!("0 1 * * * /usr/bin/backup\n\n{block}");
@@ -784,19 +802,19 @@ index 6bcef68f0d..dd66360bce 100644
      }
  }
 diff --git a/src/main.rs b/src/main.rs
-index 56d05ca740..4fab0c2ea2 100644
+index cd2760d..fa5ab14 100644
 --- a/src/main.rs
 +++ b/src/main.rs
-@@ -4,7 +4,7 @@
+@@ -4,7 +4,7 @@ mod cron;
  mod mihoro;
  mod proxy;
  mod resolve_mihomo_bin;
 -mod systemctl;
 +mod service;
+ mod ui;
  #[cfg(feature = "self_update")]
  mod upgrade;
- mod utils;
-@@ -17,11 +17,10 @@
+@@ -18,11 +18,10 @@ use clap_complete::{
  };
  use colored::Colorize;
  use reqwest::Client;
@@ -809,7 +827,7 @@ index 56d05ca740..4fab0c2ea2 100644
  
  #[tokio::main]
  async fn main() {
-@@ -74,10 +73,13 @@
+@@ -80,10 +79,13 @@ async fn cli() -> Result<()> {
                  }
                  // Restart service once at the end
                  println!(
@@ -825,8 +843,8 @@ index 56d05ca740..4fab0c2ea2 100644
 +                    .restart(&mihoro.mihomo_service_name)?;
              } else if *core {
                  mihoro.update_core(&client, arch.as_deref(), true).await?;
-             } else if *geodata {
-@@ -91,41 +93,49 @@
+             } else if *ui {
+@@ -99,41 +101,49 @@ async fn cli() -> Result<()> {
          Some(Commands::Uninstall) => mihoro.uninstall()?,
          Some(Commands::Proxy { proxy }) => mihoro.proxy_commands(proxy)?,
  
@@ -903,19 +921,19 @@ index 56d05ca740..4fab0c2ea2 100644
  
          Some(Commands::Completions { shell }) => match shell {
 diff --git a/src/mihoro.rs b/src/mihoro.rs
-index 23089610ff..c916c74b41 100644
+index df2c61c..956d69b 100644
 --- a/src/mihoro.rs
 +++ b/src/mihoro.rs
-@@ -3,7 +3,7 @@
+@@ -3,7 +3,7 @@ use crate::config::{apply_mihomo_override, parse_config, Config};
  use crate::cron;
  use crate::proxy::{proxy_export_cmd, proxy_unset_cmd};
  use crate::resolve_mihomo_bin;
 -use crate::systemctl::Systemctl;
 +use crate::service::{launchd, ServiceManager, ServiceManagerKind};
+ use crate::ui::{install_ui, resolve_external_ui_path};
  use crate::utils::{
      create_parent_dir, delete_file, download_file, extract_gzip, try_decode_base64_file_inplace,
- };
-@@ -29,12 +29,14 @@
+@@ -30,12 +30,14 @@ pub struct Mihoro {
      pub mihomo_target_binary_path: String,
      pub mihomo_target_config_root: String,
      pub mihomo_target_config_path: String,
@@ -930,7 +948,7 @@ index 23089610ff..c916c74b41 100644
          Ok(Mihoro {
              prefix: String::from("mihoro:"),
              config: config.clone(),
-@@ -42,14 +44,17 @@
+@@ -43,14 +45,17 @@ impl Mihoro {
              mihomo_target_config_root: tilde(&config.mihomo_config_root).to_string(),
              mihomo_target_config_path: tilde(&format!("{}/config.yaml", config.mihomo_config_root))
                  .to_string(),
@@ -953,7 +971,7 @@ index 23089610ff..c916c74b41 100644
      pub async fn setup(
          &self,
          client: Client,
-@@ -57,7 +62,7 @@
+@@ -58,7 +63,7 @@ impl Mihoro {
          arch_override: Option<&str>,
      ) -> Result<()> {
          println!(
@@ -962,9 +980,9 @@ index 23089610ff..c916c74b41 100644
              &self.prefix.cyan()
          );
  
-@@ -135,16 +140,18 @@
-         // Download geodata
-         self.update_geodata(&client).await?;
+@@ -139,16 +144,18 @@ impl Mihoro {
+         // Install external UI assets if configured
+         self.update_ui(&client).await?;
  
 -        // Create mihomo.service systemd file
 -        create_mihomo_service(
@@ -985,7 +1003,7 @@ index 23089610ff..c916c74b41 100644
          Ok(())
      }
  
-@@ -189,10 +196,11 @@
+@@ -193,10 +200,11 @@ impl Mihoro {
  
          // Stop the service before overwriting binary to avoid "Text file busy" error
          println!(
@@ -1000,7 +1018,7 @@ index 23089610ff..c916c74b41 100644
  
          // Extract and overwrite the binary
          extract_gzip(temp_path, &self.mihomo_target_binary_path, &self.prefix)?;
-@@ -209,8 +217,12 @@
+@@ -213,8 +221,12 @@ impl Mihoro {
  
          // Restart the service if requested
          if restart {
@@ -1015,7 +1033,7 @@ index 23089610ff..c916c74b41 100644
          }
  
          Ok(())
-@@ -235,10 +247,14 @@
+@@ -239,10 +251,14 @@ impl Mihoro {
              self.prefix.yellow()
          );
  
@@ -1033,7 +1051,7 @@ index 23089610ff..c916c74b41 100644
          }
          Ok(())
      }
-@@ -296,28 +312,32 @@
+@@ -328,28 +344,32 @@ impl Mihoro {
              },
          )?;
  
@@ -1077,7 +1095,7 @@ index 23089610ff..c916c74b41 100644
          );
  
          // Disable and remove cron job
-@@ -436,6 +456,82 @@
+@@ -478,6 +498,82 @@ WantedBy=default.target",
      Ok(())
  }
  
@@ -1160,7 +1178,7 @@ index 23089610ff..c916c74b41 100644
  #[cfg(test)]
  mod tests {
      use super::*;
-@@ -465,10 +561,17 @@
+@@ -507,10 +603,17 @@ mod tests {
              mihoro.mihomo_target_config_path,
              "/tmp/test/mihomo/config.yaml"
          );
@@ -1182,7 +1200,7 @@ index 23089610ff..c916c74b41 100644
  
          Ok(())
      }
-@@ -575,4 +678,67 @@
+@@ -642,4 +745,67 @@ mod tests {
  
          Ok(())
      }
@@ -1251,10 +1269,10 @@ index 23089610ff..c916c74b41 100644
 +    }
  }
 diff --git a/src/resolve_mihomo_bin.rs b/src/resolve_mihomo_bin.rs
-index 89c7cdb887..0ce6048391 100644
+index 89c7cdb..0ce6048 100644
 --- a/src/resolve_mihomo_bin.rs
 +++ b/src/resolve_mihomo_bin.rs
-@@ -55,7 +55,22 @@
+@@ -55,7 +55,22 @@ pub async fn fetch_latest_version(
  /// - MIPS: mips-hardfloat, mips-softfloat, mips64, mips64le, mipsle-hardfloat, mipsle-softfloat
  /// - Others: loong64-abi1, loong64-abi2, ppc64le, riscv64, s390x
  pub fn detect_arch() -> Result<String> {
@@ -1278,7 +1296,7 @@ index 89c7cdb887..0ce6048391 100644
      match arch {
          // x86_64: Default to amd64-compatible for maximum compatibility
          "x86_64" => Ok("amd64-compatible".to_string()),
-@@ -88,8 +103,16 @@
+@@ -88,8 +103,16 @@ pub fn detect_arch() -> Result<String> {
      }
  }
  
@@ -1296,7 +1314,7 @@ index 89c7cdb887..0ce6048391 100644
      "386",
      "386-go120",
      "386-go123",
-@@ -122,16 +145,44 @@
+@@ -122,16 +145,44 @@ const SUPPORTED_ARCHS: &[&str] = &[
      "s390x",
  ];
  
@@ -1344,7 +1362,7 @@ index 89c7cdb887..0ce6048391 100644
          .iter()
          .filter(|a| a.starts_with(&arch[..arch.len().min(3)]))
          .copied()
-@@ -141,7 +192,7 @@
+@@ -141,7 +192,7 @@ pub fn validate_arch(arch: &str) -> Result<String> {
          bail!(
              "unsupported architecture: '{}'\nSupported: {}",
              arch,
@@ -1353,7 +1371,7 @@ index 89c7cdb887..0ce6048391 100644
          );
      } else {
          bail!(
-@@ -153,14 +204,14 @@
+@@ -153,14 +204,14 @@ pub fn validate_arch(arch: &str) -> Result<String> {
  }
  
  /// Constructs the download URL for a specific Mihomo version and architecture.
@@ -1370,7 +1388,7 @@ index 89c7cdb887..0ce6048391 100644
  }
  
  /// Resolves the Mihomo binary download URL.
-@@ -185,11 +236,13 @@
+@@ -185,11 +236,13 @@ pub async fn resolve_binary_url(
          }
      }
  
@@ -1386,7 +1404,7 @@ index 89c7cdb887..0ce6048391 100644
      } else {
          detect_arch()?
      };
-@@ -204,7 +257,7 @@
+@@ -204,7 +257,7 @@ pub async fn resolve_binary_url(
          "{} Fetching latest mihomo {} release for {}...",
          prefix.cyan(),
          channel_name.bold(),
@@ -1395,7 +1413,7 @@ index 89c7cdb887..0ce6048391 100644
      );
  
      let version = fetch_latest_version(client, channel, &config.mihoro_user_agent).await?;
-@@ -215,13 +268,14 @@
+@@ -215,13 +268,14 @@ pub async fn resolve_binary_url(
          version.bold()
      );
  
@@ -1411,7 +1429,7 @@ index 89c7cdb887..0ce6048391 100644
  
      #[test]
      fn test_detect_arch_returns_valid_value() {
-@@ -229,13 +283,17 @@
+@@ -229,13 +283,17 @@ mod tests {
          let result = detect_arch();
          assert!(result.is_ok());
          let arch = result.unwrap();
@@ -1432,7 +1450,7 @@ index 89c7cdb887..0ce6048391 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-linux-amd64-v1.19.0.gz"
-@@ -244,7 +302,7 @@
+@@ -244,7 +302,7 @@ mod tests {
  
      #[test]
      fn test_build_download_url_alpha() {
@@ -1441,7 +1459,7 @@ index 89c7cdb887..0ce6048391 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-arm64-alpha-abc123.gz"
-@@ -253,7 +311,12 @@
+@@ -253,37 +311,68 @@ mod tests {
  
      #[test]
      fn test_build_download_url_compatible_arch() {
@@ -1455,10 +1473,10 @@ index 89c7cdb887..0ce6048391 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-linux-amd64-compatible-v1.19.0.gz"
-@@ -261,29 +324,55 @@
+ 		);
      }
  
-     #[test]
++    #[test]
 +    fn test_build_download_url_darwin() {
 +        let url = build_download_url("v1.19.0", "darwin", "arm64", &MihomoChannel::Stable);
 +        assert_eq!(
@@ -1467,7 +1485,7 @@ index 89c7cdb887..0ce6048391 100644
 +        );
 +    }
 +
-+    #[test]
+     #[test]
      fn test_validate_arch_accepts_valid_archs() {
 -        assert!(validate_arch("amd64").is_ok());
 -        assert!(validate_arch("amd64-compatible").is_ok());
@@ -1524,7 +1542,7 @@ index 89c7cdb887..0ce6048391 100644
  }
 diff --git a/src/service/launchd.rs b/src/service/launchd.rs
 new file mode 100644
-index 0000000000..bffac5c8cf
+index 0000000..bffac5c
 --- /dev/null
 +++ b/src/service/launchd.rs
 @@ -0,0 +1,235 @@
@@ -1765,7 +1783,7 @@ index 0000000000..bffac5c8cf
 +}
 diff --git a/src/service/mod.rs b/src/service/mod.rs
 new file mode 100644
-index 0000000000..4cb5089c95
+index 0000000..4cb5089
 --- /dev/null
 +++ b/src/service/mod.rs
 @@ -0,0 +1,158 @@
@@ -1929,7 +1947,7 @@ index 0000000000..4cb5089c95
 +}
 diff --git a/src/service/systemd.rs b/src/service/systemd.rs
 new file mode 100644
-index 0000000000..7461e888d2
+index 0000000..7461e88
 --- /dev/null
 +++ b/src/service/systemd.rs
 @@ -0,0 +1,157 @@
@@ -2092,7 +2110,7 @@ index 0000000000..7461e888d2
 +}
 diff --git a/src/systemctl.rs b/src/systemctl.rs
 deleted file mode 100644
-index 8f2cc1bb9b..0000000000
+index 8f2cc1b..0000000
 --- a/src/systemctl.rs
 +++ /dev/null
 @@ -1,62 +0,0 @@
@@ -2158,3 +2176,6 @@ index 8f2cc1bb9b..0000000000
 -            .with_context(|| "failed to execute systemctl")
 -    }
 -}
+-- 
+2.53.0
+
