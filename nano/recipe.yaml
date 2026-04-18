@@ -34,7 +34,7 @@ source:
   - path: branding.sh
 
 build:
-  number: 4
+  number: 5
 
 requirements:
   build:
