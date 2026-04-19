@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: cargo-binstall
-  version: "1.17.9"
+  version: "1.18.1"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://github.com/cargo-bins/cargo-binstall/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: 33ffb0260d498dbc8aa1cc933bd4cf3087099897caedc976448391826562207f
+  sha256: f6c676221a2f6136fade1504864f8d87c49e793155517ed4d88409ee9a5af605
   patches:
     - if: win and build_platform != target_platform
       then: 0001-cross-compile-rc.patch
