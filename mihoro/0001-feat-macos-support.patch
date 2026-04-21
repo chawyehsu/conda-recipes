@@ -1,6 +1,6 @@
-From 04e43cfe28cf01b195b9dadc2aaceaeb8234232b Mon Sep 17 00:00:00 2001
+From 0be8b0c41a4d44502e626546a29bd3eb9f59b052 Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
-Date: Fri, 17 Apr 2026 19:10:35 +0800
+Date: Sun, 22 Mar 2026 16:13:25 +0800
 Subject: [PATCH] feat: macos support
 
 Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
@@ -8,24 +8,25 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  Cargo.lock                |  95 ++++++++++++
  Cargo.toml                |   3 +-
  README.md                 |  21 +--
- src/cmd.rs                |  30 +++-
- src/config.rs             |  71 ++++++++-
+ src/cmd.rs                |  32 +++-
+ src/config.rs             |  66 ++++++++
  src/cron.rs               | 306 ++++++++++++++++++++++++++++----------
- src/main.rs               |  74 +++++----
- src/mihoro.rs             | 234 ++++++++++++++++++++++++-----
+ src/init.rs               |   4 +-
+ src/main.rs               |  65 ++++----
+ src/mihoro.rs             | 171 ++++++++++++++-------
  src/resolve_mihomo_bin.rs | 145 ++++++++++++++----
- src/service/launchd.rs    | 235 +++++++++++++++++++++++++++++
- src/service/mod.rs        | 158 ++++++++++++++++++++
- src/service/systemd.rs    | 157 +++++++++++++++++++
- src/systemctl.rs          |  62 --------
- 13 files changed, 1338 insertions(+), 253 deletions(-)
+ src/service/launchd.rs    | 246 ++++++++++++++++++++++++++++++
+ src/service/mod.rs        | 211 ++++++++++++++++++++++++++
+ src/service/systemd.rs    | 205 +++++++++++++++++++++++++
+ src/systemctl.rs          |  86 -----------
+ 14 files changed, 1360 insertions(+), 296 deletions(-)
  create mode 100644 src/service/launchd.rs
  create mode 100644 src/service/mod.rs
  create mode 100644 src/service/systemd.rs
  delete mode 100644 src/systemctl.rs
 
 diff --git a/Cargo.lock b/Cargo.lock
-index 3955f08..afbae3d 100644
+index 50b97bd..b0090b5 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
 @@ -17,6 +17,15 @@ dependencies = [
@@ -57,9 +58,9 @@ index 3955f08..afbae3d 100644
  [[package]]
  name = "base64"
  version = "0.22.1"
-@@ -146,6 +161,17 @@ version = "0.2.1"
- source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
+@@ -157,6 +172,17 @@ dependencies = [
+  "rand_core 0.10.1",
+ ]
  
 +[[package]]
 +name = "chrono"
@@ -75,7 +76,7 @@ index 3955f08..afbae3d 100644
  [[package]]
  name = "clap"
  version = "4.6.0"
-@@ -845,6 +871,30 @@ dependencies = [
+@@ -877,6 +903,30 @@ dependencies = [
   "windows-registry",
  ]
  
@@ -106,7 +107,7 @@ index 3955f08..afbae3d 100644
  [[package]]
  name = "icu_collections"
  version = "2.2.0"
-@@ -1105,6 +1155,7 @@ version = "0.11.0"
+@@ -1137,6 +1187,7 @@ version = "0.12.0"
  dependencies = [
   "anyhow",
   "base64",
@@ -114,7 +115,7 @@ index 3955f08..afbae3d 100644
   "clap",
   "clap_complete",
   "colored",
-@@ -1198,6 +1249,15 @@ dependencies = [
+@@ -1232,6 +1283,15 @@ dependencies = [
   "syn",
  ]
  
@@ -130,7 +131,7 @@ index 3955f08..afbae3d 100644
  [[package]]
  name = "number_prefix"
  version = "0.4.0"
-@@ -2514,6 +2574,41 @@ dependencies = [
+@@ -2602,6 +2662,41 @@ dependencies = [
   "rustls-pki-types",
  ]
  
@@ -173,7 +174,7 @@ index 3955f08..afbae3d 100644
  name = "windows-link"
  version = "0.2.1"
 diff --git a/Cargo.toml b/Cargo.toml
-index 494b801..bc3e151 100644
+index 1958611..dcca417 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -1,6 +1,6 @@
@@ -181,17 +182,17 @@ index 494b801..bc3e151 100644
  name = "mihoro"
 -description = "Mihomo CLI client on Linux."
 +description = "Mihomo CLI client, no more, no less."
- version = "0.11.0"
+ version = "0.12.0"
  edition = "2021"
  readme = "README.md"
-@@ -34,6 +34,7 @@ truncatable = "0.1"
+@@ -35,6 +35,7 @@ truncatable = "0.1"
  anyhow = "1.0"
  base64 = "0.22"
  tempfile = "3.18"
 +chrono = { version = "0.4", default-features = false, features = ["clock"] }
  tar = "0.4"
+ dialoguer = { version = "0.11", default-features = false }
  self_update = { version = "0.42", default-features = false, features = [
-     "archive-tar",
 diff --git a/README.md b/README.md
 index e74927a..61ee7eb 100644
 --- a/README.md
@@ -246,10 +247,19 @@ index e74927a..61ee7eb 100644
    uninstall    Uninstall and remove mihoro and config
    completions  Generate shell completions for mihoro
 diff --git a/src/cmd.rs b/src/cmd.rs
-index d9657e9..5d3bdfe 100644
+index 48ed0d6..bbe9395 100644
 --- a/src/cmd.rs
 +++ b/src/cmd.rs
-@@ -60,17 +60,17 @@ pub enum Commands {
+@@ -12,7 +12,7 @@ pub struct Args {
+ 
+ #[derive(Subcommand)]
+ pub enum Commands {
+-    /// Initialize mihoro: download binary, config, geodata, and set up the systemd service
++    /// Initialize mihoro: download binary, config, geodata, and set up the service
+     Init {
+         /// Re-download all artifacts even if they already exist
+         #[arg(long)]
+@@ -75,17 +75,17 @@ pub enum Commands {
          #[arg(long)]
          arch: Option<String>,
      },
@@ -273,7 +283,7 @@ index d9657e9..5d3bdfe 100644
      #[clap(visible_alias("logs"))]
      Log,
      /// Output proxy export commands
-@@ -147,7 +147,25 @@ pub enum CronCommands {
+@@ -162,7 +162,25 @@ pub enum CronCommands {
  #[cfg(test)]
  mod tests {
      use super::*;
@@ -300,7 +310,7 @@ index d9657e9..5d3bdfe 100644
      fn test_parse_update_ui_flag() {
          let args = Args::parse_from(["mihoro", "update", "--ui"]);
 diff --git a/src/config.rs b/src/config.rs
-index dfc7ff9..13df337 100644
+index 5587d5a..f746cbf 100644
 --- a/src/config.rs
 +++ b/src/config.rs
 @@ -31,6 +31,16 @@ pub struct Config {
@@ -330,38 +340,29 @@ index dfc7ff9..13df337 100644
              user_systemd_root: String::from("~/.config/systemd/user"),
              mihoro_user_agent: String::from("mihoro"),
              auto_update_interval: 12,
-@@ -182,20 +195,26 @@ pub fn parse_config(path: &str) -> Result<Config> {
- 
-     // Parse config file
-     let config = Config::setup_from(path)?;
--    let required_urls = [
-+    let required_fields = [
-         ("remote_config_url", &config.remote_config_url),
+@@ -190,12 +203,21 @@ pub fn validate_config(config: &Config) -> Result<()> {
          ("mihomo_binary_path", &config.mihomo_binary_path),
          ("mihomo_config_root", &config.mihomo_config_root),
--        ("user_systemd_root", &config.user_systemd_root),
+         ("user_systemd_root", &config.user_systemd_root),
 +        ("service_name", &config.service_name),
      ];
- 
--    // Validate if urls are defined
--    for (field, value) in required_urls.iter() {
 +    // Validate if required fields are defined
-+    for (field, value) in required_fields.iter() {
+     for (field, value) in required_fields.iter() {
          if value.is_empty() {
-             bail!("`{}` undefined", field)
+             bail!("`{}` undefined", field);
          }
      }
- 
++
 +    // Keep legacy compatibility: one service root path must be available.
 +    let service_root = config.service_root.as_deref().unwrap_or("");
 +    if service_root.is_empty() && config.user_systemd_root.is_empty() {
 +        bail!("`service_root` and `user_systemd_root` cannot both be empty");
 +    }
 +
-     Ok(config)
+     Ok(())
  }
  
-@@ -334,6 +353,50 @@ mod tests {
+@@ -356,6 +378,50 @@ mod tests {
          Ok(())
      }
  
@@ -801,11 +802,33 @@ index 6bcef68..dd66360 100644
 +        assert!(entry.unwrap_or_default().contains("mihoro"));
      }
  }
+diff --git a/src/init.rs b/src/init.rs
+index 4c3a3fe..b62e5f8 100644
+--- a/src/init.rs
++++ b/src/init.rs
+@@ -230,7 +230,7 @@ pub async fn run(config_path: &str, client: &Client, opts: InitOptions) -> Resul
+     if report.stage_failed("remote config") {
+         let skip = || StageStatus::Skipped("skipped: remote config stage failed".to_string());
+         report.record("install binary", skip());
+-        report.record("systemd service", skip());
++        report.record("daemon service", skip());
+         report.record("service start", skip());
+     } else {
+         report.begin(
+@@ -247,7 +247,7 @@ pub async fn run(config_path: &str, client: &Client, opts: InitOptions) -> Resul
+         report.record("install binary", install_status);
+ 
+         report
+-            .run("systemd service", None, || async {
++            .run("daemon service", None, || async {
+                 mihoro.ensure_service().await
+             })
+             .await;
 diff --git a/src/main.rs b/src/main.rs
-index cd2760d..fa5ab14 100644
+index 6378666..965d08a 100644
 --- a/src/main.rs
 +++ b/src/main.rs
-@@ -4,7 +4,7 @@ mod cron;
+@@ -5,7 +5,7 @@ mod init;
  mod mihoro;
  mod proxy;
  mod resolve_mihomo_bin;
@@ -814,37 +837,20 @@ index cd2760d..fa5ab14 100644
  mod ui;
  #[cfg(feature = "self_update")]
  mod upgrade;
-@@ -18,11 +18,10 @@ use clap_complete::{
+@@ -19,11 +19,10 @@ use clap_complete::{
  };
  use colored::Colorize;
  use reqwest::Client;
--use std::{io, process::Command};
-+use std::io;
+-use std::{future::Future, io, process::Command, time::Duration};
++use std::{future::Future, io, time::Duration};
  
  use cmd::{Args, ClapShell, Commands};
- use mihoro::Mihoro;
+ use mihoro::{Mihoro, StageStatus};
 -use systemctl::Systemctl;
  
- #[tokio::main]
- async fn main() {
-@@ -80,10 +79,13 @@ async fn cli() -> Result<()> {
-                 }
-                 // Restart service once at the end
-                 println!(
--                    "{} Restarting mihomo.service...",
--                    mihoro.prefix.green().bold().italic()
-+                    "{} Restarting {}...",
-+                    mihoro.prefix.green().bold().italic(),
-+                    mihoro.mihomo_service_name
-                 );
--                Systemctl::new().restart("mihomo.service").execute()?;
-+                mihoro
-+                    .service_manager()?
-+                    .restart(&mihoro.mihomo_service_name)?;
-             } else if *core {
-                 mihoro.update_core(&client, arch.as_deref(), true).await?;
-             } else if *ui {
-@@ -99,41 +101,49 @@ async fn cli() -> Result<()> {
+ struct StageReport {
+     entries: Vec<(&'static str, StageStatus)>,
+@@ -249,41 +248,49 @@ async fn cli() -> Result<()> {
          Some(Commands::Uninstall) => mihoro.uninstall()?,
          Some(Commands::Proxy { proxy }) => mihoro.proxy_commands(proxy)?,
  
@@ -921,19 +927,21 @@ index cd2760d..fa5ab14 100644
  
          Some(Commands::Completions { shell }) => match shell {
 diff --git a/src/mihoro.rs b/src/mihoro.rs
-index df2c61c..956d69b 100644
+index adc540c..fb86f3c 100644
 --- a/src/mihoro.rs
 +++ b/src/mihoro.rs
-@@ -3,7 +3,7 @@ use crate::config::{apply_mihomo_override, parse_config, Config};
+@@ -3,7 +3,9 @@ use crate::config::{apply_mihomo_override, parse_config, Config};
  use crate::cron;
  use crate::proxy::{proxy_export_cmd, proxy_unset_cmd};
  use crate::resolve_mihomo_bin;
 -use crate::systemctl::Systemctl;
-+use crate::service::{launchd, ServiceManager, ServiceManagerKind};
++use crate::service::{
++    render_service_definition, resolve_service_path, ServiceManager, ServiceManagerKind,
++};
  use crate::ui::{install_ui, resolve_external_ui_path};
  use crate::utils::{
      create_parent_dir, delete_file, download_file, extract_gzip, try_decode_base64_file_inplace,
-@@ -30,12 +30,14 @@ pub struct Mihoro {
+@@ -33,6 +35,7 @@ pub struct Mihoro {
      pub mihomo_target_binary_path: String,
      pub mihomo_target_config_root: String,
      pub mihomo_target_config_path: String,
@@ -941,14 +949,14 @@ index df2c61c..956d69b 100644
      pub mihomo_target_service_path: String,
  }
  
- impl Mihoro {
-     pub fn new(config_path: &String) -> Result<Mihoro> {
-         let config = parse_config(tilde(&config_path).as_ref())?;
+@@ -64,21 +67,25 @@ impl Mihoro {
+ 
+     /// Build a `Mihoro` from an already-validated `Config`.
+     pub fn from_config(config: Config) -> Mihoro {
 +        let service_name = normalize_service_name(&config.service_name);
-         Ok(Mihoro {
+         Mihoro {
              prefix: String::from("mihoro:"),
-             config: config.clone(),
-@@ -43,14 +45,17 @@ impl Mihoro {
+             mihomo_target_binary_path: tilde(&config.mihomo_binary_path).to_string(),
              mihomo_target_config_root: tilde(&config.mihomo_config_root).to_string(),
              mihomo_target_config_path: tilde(&format!("{}/config.yaml", config.mihomo_config_root))
                  .to_string(),
@@ -959,7 +967,8 @@ index df2c61c..956d69b 100644
 -            .to_string(),
 +            mihomo_service_name: service_name.clone(),
 +            mihomo_target_service_path: resolve_service_path(&config, &service_name),
-         })
+             config,
+         }
      }
  
 +    pub fn service_manager(&self) -> Result<ServiceManager> {
@@ -968,90 +977,104 @@ index df2c61c..956d69b 100644
 +        ServiceManager::new(kind)
 +    }
 +
-     pub async fn setup(
-         &self,
-         client: Client,
-@@ -58,7 +63,7 @@ impl Mihoro {
-         arch_override: Option<&str>,
-     ) -> Result<()> {
-         println!(
--            "{} Setting up mihomo's binary, config, and systemd service...",
-+            "{} Setting up mihomo binary, config, and service...",
-             &self.prefix.cyan()
-         );
+     /// Stage 1 of the binary install: resolve the URL and download to a temp file.
+     ///
+     /// Skips if the binary exists and `force` is false. The returned [`BinaryPlan`] is
+@@ -126,10 +133,10 @@ impl Mihoro {
+         let binary_exists = fs::metadata(&self.mihomo_target_binary_path).is_ok();
+         if binary_exists {
+             println!(
+-                "{} Stopping mihomo.service before overwriting binary...",
++                "{} Stopping service before overwriting binary...",
+                 DETAIL_PREFIX.cyan()
+             );
+-            Systemctl::new().stop("mihomo.service").execute()?;
++            self.service_manager()?.stop(&self.mihomo_service_name)?;
+         }
  
-@@ -139,16 +144,18 @@ impl Mihoro {
-         // Install external UI assets if configured
-         self.update_ui(&client).await?;
+         extract_gzip(
+@@ -242,10 +249,12 @@ impl Mihoro {
  
--        // Create mihomo.service systemd file
--        create_mihomo_service(
-+        // Create platform-specific service file
-+        create_mihomo_service_for_platform(
+     /// Write the systemd unit file.  Skips if the file already exists with identical content.
+     pub async fn ensure_service(&self) -> Result<StageStatus> {
+-        let service_content = render_service_string(
++        let service_content = render_service_definition(
 +            &self.mihomo_service_name,
              &self.mihomo_target_binary_path,
              &self.mihomo_target_config_root,
-             &self.mihomo_target_service_path,
-             &self.prefix,
-         )?;
- 
--        Systemctl::new().enable("mihomo.service").execute()?;
--        Systemctl::new().start("mihomo.service").execute()?;
+         );
++
+         if let Ok(existing) = fs::read_to_string(&self.mihomo_target_service_path) {
+             if existing == service_content {
+                 return Ok(StageStatus::Skipped("service file unchanged".to_string()));
+@@ -253,9 +262,9 @@ impl Mihoro {
+         }
+         create_parent_dir(Path::new(&self.mihomo_target_service_path))?;
+         fs::write(&self.mihomo_target_service_path, &service_content)?;
+-        Systemctl::new().daemon_reload().execute()?;
++        self.service_manager()?.daemon_reload()?;
+         println!(
+-            "{} Created mihomo.service at {}",
++            "{} Created service at {}",
+             DETAIL_PREFIX.cyan(),
+             self.mihomo_target_service_path.underline().yellow()
+         );
+@@ -267,8 +276,9 @@ impl Mihoro {
+     /// Always enables the service so it survives reboots, even if it was already running but
+     /// not enabled (e.g. started manually after a previous failed init).
+     pub async fn ensure_service_running(&self) -> Result<StageStatus> {
+-        let is_active = Systemctl::is_active("mihomo.service");
+-        let is_enabled = Systemctl::is_enabled("mihomo.service");
 +        let service_manager = self.service_manager()?;
-+        service_manager.enable(&self.mihomo_service_name)?;
-+        service_manager.start(&self.mihomo_service_name)?;
-         Ok(())
-     }
++        let is_active = service_manager.is_active(&self.mihomo_service_name);
++        let is_enabled = service_manager.is_enabled(&self.mihomo_service_name);
  
-@@ -193,10 +200,11 @@ impl Mihoro {
+         if is_active && is_enabled {
+             return Ok(StageStatus::Skipped(
+@@ -277,10 +287,10 @@ impl Mihoro {
+         }
+ 
+         if !is_enabled {
+-            Systemctl::new().enable("mihomo.service").execute()?;
++            service_manager.enable(&self.mihomo_service_name)?;
+         }
+         if !is_active {
+-            Systemctl::new().start("mihomo.service").execute()?;
++            service_manager.start(&self.mihomo_service_name)?;
+         }
+         Ok(StageStatus::Installed)
+     }
+@@ -323,10 +333,11 @@ impl Mihoro {
  
          // Stop the service before overwriting binary to avoid "Text file busy" error
          println!(
 -            "{} Stopping mihomo.service before overwriting...",
--            self.prefix.yellow()
+-            DETAIL_PREFIX.yellow()
 +            "{} Stopping {} before overwriting...",
-+            self.prefix.yellow(),
++            DETAIL_PREFIX.yellow(),
 +            self.mihomo_service_name
          );
 -        Systemctl::new().stop("mihomo.service").execute()?;
 +        self.service_manager()?.stop(&self.mihomo_service_name)?;
  
          // Extract and overwrite the binary
-         extract_gzip(temp_path, &self.mihomo_target_binary_path, &self.prefix)?;
-@@ -213,8 +221,12 @@ impl Mihoro {
- 
-         // Restart the service if requested
-         if restart {
--            println!("{} Restarting mihomo.service...", self.prefix.green());
--            Systemctl::new().start("mihomo.service").execute()?;
-+            println!(
-+                "{} Restarting {}...",
-+                self.prefix.green(),
-+                self.mihomo_service_name
-+            );
-+            self.service_manager()?.start(&self.mihomo_service_name)?;
-         }
- 
-         Ok(())
-@@ -239,10 +251,14 @@ impl Mihoro {
-             self.prefix.yellow()
-         );
- 
--        // Restart mihomo systemd service if requested
-+        // Restart service if requested
-         if restart {
--            println!("{} Restart mihomo.service", self.prefix.green());
--            Systemctl::new().restart("mihomo.service").execute()?;
-+            println!(
-+                "{} Restart {}",
-+                self.prefix.green(),
-+                self.mihomo_service_name
-+            );
-+            self.service_manager()?.restart(&self.mihomo_service_name)?;
-         }
-         Ok(())
+         extract_gzip(
+@@ -420,8 +431,12 @@ impl Mihoro {
      }
-@@ -328,28 +344,32 @@ impl Mihoro {
+ 
+     pub async fn restart_service(&self) -> Result<StageStatus> {
+-        println!("{} Restarting mihomo.service...", DETAIL_PREFIX.cyan());
+-        Systemctl::new().restart("mihomo.service").execute()?;
++        println!(
++            "{} Restarting {}...",
++            DETAIL_PREFIX.cyan(),
++            self.mihomo_service_name
++        );
++        self.service_manager()?.restart(&self.mihomo_service_name)?;
+         Ok(StageStatus::Installed)
+     }
+ 
+@@ -436,28 +451,32 @@ impl Mihoro {
              },
          )?;
  
@@ -1080,8 +1103,8 @@ index df2c61c..956d69b 100644
 +        service_manager.stop(&self.mihomo_service_name)?;
 +        service_manager.disable(&self.mihomo_service_name)?;
  
-         delete_file(&self.mihomo_target_service_path, &self.prefix)?;
-         delete_file(&self.mihomo_target_config_path, &self.prefix)?;
+         delete_file(&self.mihomo_target_service_path, self.prefix.cyan())?;
+         delete_file(&self.mihomo_target_config_path, self.prefix.cyan())?;
  
 -        Systemctl::new().daemon_reload().execute()?;
 -        Systemctl::new().reset_failed().execute()?;
@@ -1095,90 +1118,51 @@ index df2c61c..956d69b 100644
          );
  
          // Disable and remove cron job
-@@ -478,6 +498,82 @@ WantedBy=default.target",
-     Ok(())
+@@ -541,28 +560,12 @@ impl Mihoro {
+     }
  }
  
-+fn create_mihomo_launchd_service(
-+    service_name: &str,
-+    mihomo_binary_path: &str,
-+    mihomo_config_root: &str,
-+    mihomo_service_path: &str,
-+    prefix: &str,
-+) -> Result<()> {
-+    let plist = launchd::build_plist(service_name, mihomo_binary_path, mihomo_config_root);
-+
-+    create_parent_dir(Path::new(mihomo_service_path))?;
-+    fs::write(mihomo_service_path, plist)?;
-+
-+    println!(
-+        "{} Created launchd plist at {}",
-+        prefix.green(),
-+        mihomo_service_path.underline().yellow()
-+    );
-+    Ok(())
-+}
-+
-+fn create_mihomo_service_for_platform(
-+    service_name: &str,
-+    mihomo_binary_path: &str,
-+    mihomo_config_root: &str,
-+    mihomo_service_path: &str,
-+    prefix: &str,
-+) -> Result<()> {
-+    match std::env::consts::OS {
-+        "macos" => create_mihomo_launchd_service(
-+            service_name,
-+            mihomo_binary_path,
-+            mihomo_config_root,
-+            mihomo_service_path,
-+            prefix,
-+        ),
-+        _ => create_mihomo_service(
-+            mihomo_binary_path,
-+            mihomo_config_root,
-+            mihomo_service_path,
-+            prefix,
-+        ),
-+    }
-+}
-+
+-/// Render the systemd unit file content for the mihomo service.
+-///
+-/// Reference: https://wiki.metacubex.one/startup/service/
+-fn render_service_string(binary_path: &str, config_root: &str) -> String {
+-    format!(
+-        "[Unit]
+-Description=mihomo Daemon, Another Clash Kernel.
+-After=network.target NetworkManager.service systemd-networkd.service iwd.service
+-
+-[Service]
+-Type=simple
+-LimitNPROC=4096
+-LimitNOFILE=65536
+-Restart=always
+-ExecStartPre=/usr/bin/sleep 1s
+-ExecStart={} -d {}
+-ExecReload=/bin/kill -HUP $MAINPID
+-
+-[Install]
+-WantedBy=default.target",
+-        binary_path, config_root
+-    )
 +fn normalize_service_name(service_name: &str) -> String {
 +    if service_name.ends_with(".service") {
 +        service_name.to_string()
 +    } else {
 +        format!("{service_name}.service")
 +    }
-+}
-+
-+fn resolve_service_path(config: &Config, service_name: &str) -> String {
-+    match std::env::consts::OS {
-+        "macos" => {
-+            let root = config
-+                .service_root
-+                .clone()
-+                .unwrap_or_else(|| String::from("~/Library/LaunchAgents"));
-+            tilde(&format!(
-+                "{}/{}.plist",
-+                root,
-+                launchd::service_stem(service_name)
-+            ))
-+            .to_string()
-+        }
-+        _ => {
-+            let root = config
-+                .service_root
-+                .clone()
-+                .unwrap_or_else(|| config.user_systemd_root.clone());
-+            tilde(&format!("{}/{}", root, service_name)).to_string()
-+        }
-+    }
-+}
-+
+ }
+ 
  #[cfg(test)]
- mod tests {
-     use super::*;
-@@ -507,10 +603,17 @@ mod tests {
+@@ -571,6 +574,8 @@ mod tests {
+     use std::fs;
+     use tempfile::tempdir;
+ 
++    use crate::service::*;
++
+     /// Test that Mihoro::new correctly parses config and derives paths
+     #[test]
+     fn test_mihoro_new_parses_config_and_derives_paths() -> Result<()> {
+@@ -594,10 +599,17 @@ mod tests {
              mihoro.mihomo_target_config_path,
              "/tmp/test/mihomo/config.yaml"
          );
@@ -1200,26 +1184,17 @@ index df2c61c..956d69b 100644
  
          Ok(())
      }
-@@ -642,4 +745,67 @@ mod tests {
+@@ -729,4 +741,49 @@ mod tests {
  
          Ok(())
      }
 +
 +    #[test]
 +    fn test_create_mihomo_service_linux_contract() -> Result<()> {
-+        let dir = tempdir()?;
-+        let service_path = dir.path().join("systemd/user/mihomo.service");
 +        let mihomo_binary_path = "/tmp/test/mihomo";
 +        let mihomo_config_root = "/tmp/test/mihomo-config";
 +
-+        create_mihomo_service(
-+            mihomo_binary_path,
-+            mihomo_config_root,
-+            service_path.to_str().unwrap(),
-+            "mihoro:",
-+        )?;
-+
-+        let content = fs::read_to_string(service_path)?;
++        let content = systemd::render_service_string(mihomo_binary_path, mihomo_config_root);
 +        assert!(content.contains("Description=mihomo Daemon, Another Clash Kernel."));
 +        assert!(content.contains("After=network.target NetworkManager.service"));
 +        assert!(content.contains("Type=simple"));
@@ -1234,20 +1209,11 @@ index df2c61c..956d69b 100644
 +
 +    #[test]
 +    fn test_create_mihomo_launchd_service_contract() -> Result<()> {
-+        let dir = tempdir()?;
-+        let service_path = dir.path().join("LaunchAgents/mihomo.plist");
 +        let mihomo_binary_path = "/tmp/test/mihomo";
 +        let mihomo_config_root = "/tmp/test/mihomo-config";
 +
-+        create_mihomo_launchd_service(
-+            "mihomo.service",
-+            mihomo_binary_path,
-+            mihomo_config_root,
-+            service_path.to_str().unwrap(),
-+            "mihoro:",
-+        )?;
-+
-+        let content = fs::read_to_string(service_path)?;
++        let content =
++            launchd::build_plist("mihomo.service", mihomo_binary_path, mihomo_config_root);
 +        assert!(content.contains("<key>Label</key>"));
 +        assert!(content.contains("<string>mihomo</string>"));
 +        assert!(content.contains("<key>ProgramArguments</key>"));
@@ -1269,10 +1235,10 @@ index df2c61c..956d69b 100644
 +    }
  }
 diff --git a/src/resolve_mihomo_bin.rs b/src/resolve_mihomo_bin.rs
-index 89c7cdb..0ce6048 100644
+index 61e80d2..942aa79 100644
 --- a/src/resolve_mihomo_bin.rs
 +++ b/src/resolve_mihomo_bin.rs
-@@ -55,7 +55,22 @@ pub async fn fetch_latest_version(
+@@ -79,7 +79,22 @@ async fn fetch_latest_version_once(client: &Client, url: &str, user_agent: &str)
  /// - MIPS: mips-hardfloat, mips-softfloat, mips64, mips64le, mipsle-hardfloat, mipsle-softfloat
  /// - Others: loong64-abi1, loong64-abi2, ppc64le, riscv64, s390x
  pub fn detect_arch() -> Result<String> {
@@ -1296,7 +1262,7 @@ index 89c7cdb..0ce6048 100644
      match arch {
          // x86_64: Default to amd64-compatible for maximum compatibility
          "x86_64" => Ok("amd64-compatible".to_string()),
-@@ -88,8 +103,16 @@ pub fn detect_arch() -> Result<String> {
+@@ -112,8 +127,16 @@ pub fn detect_arch() -> Result<String> {
      }
  }
  
@@ -1314,7 +1280,7 @@ index 89c7cdb..0ce6048 100644
      "386",
      "386-go120",
      "386-go123",
-@@ -122,16 +145,44 @@ const SUPPORTED_ARCHS: &[&str] = &[
+@@ -146,16 +169,44 @@ const SUPPORTED_ARCHS: &[&str] = &[
      "s390x",
  ];
  
@@ -1362,7 +1328,7 @@ index 89c7cdb..0ce6048 100644
          .iter()
          .filter(|a| a.starts_with(&arch[..arch.len().min(3)]))
          .copied()
-@@ -141,7 +192,7 @@ pub fn validate_arch(arch: &str) -> Result<String> {
+@@ -165,7 +216,7 @@ pub fn validate_arch(arch: &str) -> Result<String> {
          bail!(
              "unsupported architecture: '{}'\nSupported: {}",
              arch,
@@ -1371,7 +1337,7 @@ index 89c7cdb..0ce6048 100644
          );
      } else {
          bail!(
-@@ -153,14 +204,14 @@ pub fn validate_arch(arch: &str) -> Result<String> {
+@@ -177,14 +228,14 @@ pub fn validate_arch(arch: &str) -> Result<String> {
  }
  
  /// Constructs the download URL for a specific Mihomo version and architecture.
@@ -1388,7 +1354,7 @@ index 89c7cdb..0ce6048 100644
  }
  
  /// Resolves the Mihomo binary download URL.
-@@ -185,11 +236,13 @@ pub async fn resolve_binary_url(
+@@ -209,11 +260,13 @@ pub async fn resolve_binary_url(
          }
      }
  
@@ -1404,7 +1370,7 @@ index 89c7cdb..0ce6048 100644
      } else {
          detect_arch()?
      };
-@@ -204,7 +257,7 @@ pub async fn resolve_binary_url(
+@@ -228,7 +281,7 @@ pub async fn resolve_binary_url(
          "{} Fetching latest mihomo {} release for {}...",
          prefix.cyan(),
          channel_name.bold(),
@@ -1413,7 +1379,7 @@ index 89c7cdb..0ce6048 100644
      );
  
      let version = fetch_latest_version(client, channel, &config.mihoro_user_agent).await?;
-@@ -215,13 +268,14 @@ pub async fn resolve_binary_url(
+@@ -239,13 +292,14 @@ pub async fn resolve_binary_url(
          version.bold()
      );
  
@@ -1429,7 +1395,7 @@ index 89c7cdb..0ce6048 100644
  
      #[test]
      fn test_detect_arch_returns_valid_value() {
-@@ -229,13 +283,17 @@ mod tests {
+@@ -253,13 +307,17 @@ mod tests {
          let result = detect_arch();
          assert!(result.is_ok());
          let arch = result.unwrap();
@@ -1450,7 +1416,7 @@ index 89c7cdb..0ce6048 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-linux-amd64-v1.19.0.gz"
-@@ -244,7 +302,7 @@ mod tests {
+@@ -268,7 +326,7 @@ mod tests {
  
      #[test]
      fn test_build_download_url_alpha() {
@@ -1459,7 +1425,7 @@ index 89c7cdb..0ce6048 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-arm64-alpha-abc123.gz"
-@@ -253,37 +311,68 @@ mod tests {
+@@ -277,37 +335,68 @@ mod tests {
  
      #[test]
      fn test_build_download_url_compatible_arch() {
@@ -1542,10 +1508,10 @@ index 89c7cdb..0ce6048 100644
  }
 diff --git a/src/service/launchd.rs b/src/service/launchd.rs
 new file mode 100644
-index 0000000..bffac5c
+index 0000000..0f55024
 --- /dev/null
 +++ b/src/service/launchd.rs
-@@ -0,0 +1,235 @@
+@@ -0,0 +1,246 @@
 +use std::env;
 +use std::os::unix::process::ExitStatusExt;
 +use std::path::PathBuf;
@@ -1646,7 +1612,7 @@ index 0000000..bffac5c
 +        .contains(&pattern.to_lowercase())
 +}
 +
-+fn is_loaded(service: &str) -> bool {
++pub fn is_loaded(service: &str) -> bool {
 +    let target = match service_target(service) {
 +        Ok(t) => t,
 +        Err(_) => return false,
@@ -1751,6 +1717,17 @@ index 0000000..bffac5c
 +        .with_context(|| "failed to execute `log stream`")
 +}
 +
++pub fn is_active(service: &str) -> bool {
++    let target = match service_target(service) {
++        Ok(t) => t,
++        Err(_) => return false,
++    };
++    match run_launchctl_output(&["list", &target]) {
++        Ok(output) => output.status.success(),
++        Err(_) => false,
++    }
++}
++
 +#[cfg(test)]
 +mod tests {
 +    use super::*;
@@ -1783,16 +1760,19 @@ index 0000000..bffac5c
 +}
 diff --git a/src/service/mod.rs b/src/service/mod.rs
 new file mode 100644
-index 0000000..4cb5089
+index 0000000..33cb273
 --- /dev/null
 +++ b/src/service/mod.rs
-@@ -0,0 +1,158 @@
+@@ -0,0 +1,211 @@
 +pub mod launchd;
 +pub mod systemd;
 +
 +use std::process::ExitStatus;
 +
 +use anyhow::{bail, Result};
++use shellexpand::tilde;
++
++use crate::config::Config;
 +
 +use self::systemd::Systemctl;
 +
@@ -1872,6 +1852,20 @@ index 0000000..4cb5089
 +        }
 +    }
 +
++    pub fn is_active(&self, service: &str) -> bool {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().is_active(service),
++            SelectedServiceManager::Launchd => launchd::is_active(service),
++        }
++    }
++
++    pub fn is_enabled(&self, service: &str) -> bool {
++        match self.selected {
++            SelectedServiceManager::Systemd => Systemctl::new().is_enabled(service),
++            SelectedServiceManager::Launchd => launchd::is_loaded(service),
++        }
++    }
++
 +    pub fn daemon_reload(&self) -> Result<ExitStatus> {
 +        match self.selected {
 +            SelectedServiceManager::Systemd => Systemctl::new().daemon_reload().execute(),
@@ -1903,6 +1897,42 @@ index 0000000..4cb5089
 +            "macos" => Ok(SelectedServiceManager::Launchd),
 +            _ => bail!("unsupported operating system for auto service manager: {os}"),
 +        },
++    }
++}
++
++/// Renders the service definition content for the given parameters
++pub fn render_service_definition(
++    service_name: &str,
++    binary_path: &str,
++    config_root: &str,
++) -> String {
++    match std::env::consts::OS {
++        "macos" => launchd::build_plist(service_name, binary_path, config_root),
++        _ => systemd::render_service_string(binary_path, config_root),
++    }
++}
++
++pub fn resolve_service_path(config: &Config, service_name: &str) -> String {
++    match std::env::consts::OS {
++        "macos" => {
++            let root = config
++                .service_root
++                .clone()
++                .unwrap_or_else(|| String::from("~/Library/LaunchAgents"));
++            tilde(&format!(
++                "{}/{}.plist",
++                root,
++                launchd::service_stem(service_name)
++            ))
++            .to_string()
++        }
++        _ => {
++            let root = config
++                .service_root
++                .clone()
++                .unwrap_or_else(|| config.user_systemd_root.clone());
++            tilde(&format!("{}/{}", root, service_name)).to_string()
++        }
 +    }
 +}
 +
@@ -1947,10 +1977,10 @@ index 0000000..4cb5089
 +}
 diff --git a/src/service/systemd.rs b/src/service/systemd.rs
 new file mode 100644
-index 0000000..7461e88
+index 0000000..9f5051a
 --- /dev/null
 +++ b/src/service/systemd.rs
-@@ -0,0 +1,157 @@
+@@ -0,0 +1,205 @@
 +use std::process::{Command, ExitStatus};
 +
 +use anyhow::{Context, Result};
@@ -2035,6 +2065,54 @@ index 0000000..7461e88
 +            .wait()
 +            .with_context(|| "failed to execute systemctl")
 +    }
++
++    /// Returns `true` if the given user service is currently active.
++    pub fn is_active(&mut self, service: &str) -> bool {
++        self.systemctl
++            .arg("--user")
++            .arg("is-active")
++            .arg("--quiet")
++            .arg(service)
++            .status()
++            .map(|s| s.success())
++            .unwrap_or(false)
++    }
++
++    /// Returns `true` if the given user service is enabled for autostart.
++    pub fn is_enabled(&mut self, service: &str) -> bool {
++        self.systemctl
++            .arg("--user")
++            .arg("is-enabled")
++            .arg("--quiet")
++            .arg(service)
++            .status()
++            .map(|s| s.success())
++            .unwrap_or(false)
++    }
++}
++
++/// Render the systemd unit file content for the mihomo service.
++///
++/// Reference: https://wiki.metacubex.one/startup/service/
++pub fn render_service_string(binary_path: &str, config_root: &str) -> String {
++    format!(
++        "[Unit]
++Description=mihomo Daemon, Another Clash Kernel.
++After=network.target NetworkManager.service systemd-networkd.service iwd.service
++
++[Service]
++Type=simple
++LimitNPROC=4096
++LimitNOFILE=65536
++Restart=always
++ExecStartPre=/usr/bin/sleep 1s
++ExecStart={} -d {}
++ExecReload=/bin/kill -HUP $MAINPID
++
++[Install]
++WantedBy=default.target",
++        binary_path, config_root
++    )
 +}
 +
 +pub fn journalctl_logs(service: &str) -> Result<ExitStatus> {
@@ -2110,10 +2188,10 @@ index 0000000..7461e88
 +}
 diff --git a/src/systemctl.rs b/src/systemctl.rs
 deleted file mode 100644
-index 8f2cc1b..0000000
+index 6007a8d..0000000
 --- a/src/systemctl.rs
 +++ /dev/null
-@@ -1,62 +0,0 @@
+@@ -1,86 +0,0 @@
 -use std::process::{Command, ExitStatus};
 -
 -use anyhow::{Context, Result};
@@ -2174,6 +2252,30 @@ index 8f2cc1b..0000000
 -            .spawn()?
 -            .wait()
 -            .with_context(|| "failed to execute systemctl")
+-    }
+-
+-    /// Returns `true` if the given user service is currently active.
+-    pub fn is_active(service: &str) -> bool {
+-        Command::new("systemctl")
+-            .arg("--user")
+-            .arg("is-active")
+-            .arg("--quiet")
+-            .arg(service)
+-            .status()
+-            .map(|s| s.success())
+-            .unwrap_or(false)
+-    }
+-
+-    /// Returns `true` if the given user service is enabled for autostart.
+-    pub fn is_enabled(service: &str) -> bool {
+-        Command::new("systemctl")
+-            .arg("--user")
+-            .arg("is-enabled")
+-            .arg("--quiet")
+-            .arg(service)
+-            .status()
+-            .map(|s| s.success())
+-            .unwrap_or(false)
 -    }
 -}
 -- 
