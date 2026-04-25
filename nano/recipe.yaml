@@ -30,7 +30,13 @@ source:
         - 0014-win32-formatter-and-spell-check-support.patch
         - 0015-win32-poshistory-item-windows-path-compat.patch # v8.5+
         - 0016-win32-pdcursesmod-ctrlv-passthrough.patch
-  - path: autogen.sh
+  - if: win and build_platform != 'win-64' and build_platform != 'win-arm64'
+    then:
+      - path: autogen.sh
+      - git: https://github.com/coreutils/gnulib.git
+        rev: "9b20d162b9cb002c3205921af2838c58996926b7"
+        depth: 2222
+        target_directory: gnulib
   - path: branding.sh
 
 build:
