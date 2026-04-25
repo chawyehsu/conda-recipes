@@ -1,0 +1,69 @@
+context:
+  name: llvm-mingw
+  version: 20260421
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  - if: win and x86_64
+    then:
+      - url: https://github.com/mstorsjo/llvm-mingw/releases/download/${{ version }}/llvm-mingw-${{ version }}-ucrt-x86_64.zip
+        sha256: 0c47b9fc1043b68a8d7e8e022b878f11306ed35beacf858864b36b096a0acd95
+        target_directory: llvm-mingw
+  - if: win and arm64
+    then:
+      - url: https://github.com/mstorsjo/llvm-mingw/releases/download/${{ version }}/llvm-mingw-${{ version }}-ucrt-aarch64.zip
+        sha256: ee653021bdc0d0223acc5dd8423f734a4954b87d0717f22bb0f08da4fd763eb1
+        target_directory: llvm-mingw
+  - if: linux and x86_64
+    then:
+      - url: https://github.com/mstorsjo/llvm-mingw/releases/download/${{ version }}/llvm-mingw-${{ version }}-ucrt-ubuntu-22.04-x86_64.tar.xz
+        sha256: f8b8cce779affeab47bcaec6ce6e9e768b166094a366123ef64b2d0b389cc121
+        target_directory: llvm-mingw
+  - if: linux and aarch64
+    then:
+      - url: https://github.com/mstorsjo/llvm-mingw/releases/download/${{ version }}/llvm-mingw-${{ version }}-ucrt-ubuntu-22.04-aarch64.tar.xz
+        sha256: e9cfa5a93290cb852dc5a6b90ccde255403a63332648be171470ca3c1ad37828
+        target_directory: llvm-mingw
+  - if: osx
+    then:
+      - url: https://github.com/mstorsjo/llvm-mingw/releases/download/${{ version }}/llvm-mingw-${{ version }}-ucrt-macos-universal.tar.xz
+        sha256: bd85a3975723815cef28dbbd2ca2cb0c926f6b348a12a0453f39f7af273cb3f7
+        target_directory: llvm-mingw
+
+build:
+  number: 0
+  skip:
+    - osx
+  script:
+    - if: win
+      then: |
+        xcopy llvm-mingw "%LIBRARY_PREFIX%" /E /I /F /B /Y
+        if %ERRORLEVEL% neq 0 exit 1
+    - if: unix
+      then: |
+        cp -r llvm-mingw/* $PREFIX/
+
+tests:
+  - package_contents:
+      bin:
+        - clang
+        - lldb
+      files:
+        - if: win
+          then:
+            - Library/include/windows.h
+          else:
+            - generic-w64-mingw32/include/windows.h
+
+about:
+  summary: LLVM/Clang/LLD based mingw-w64 toolchain
+  license: Apache-2.0 WITH LLVM-exception
+  license_file: llvm-mingw/LICENSE.TXT
+  homepage: https://github.com/mstorsjo/llvm-mingw
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
