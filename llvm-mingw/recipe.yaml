@@ -35,8 +35,6 @@ source:
 
 build:
   number: 0
-  skip:
-    - osx
   script:
     - if: win
       then: |
