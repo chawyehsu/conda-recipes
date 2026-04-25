@@ -9,9 +9,13 @@ if [[ "${target_platform}" =~ win-* ]]; then
     export NCURSESW_CFLAGS="-I$LIBRARY_PREFIX/include -DNCURSES_STATIC -DENABLE_MOUSE"
     export NCURSESW_LIBS="-l:pdcurses.a -lwinmm"
 
+    export BUILD=x86_64-w64-mingw32
+    if [[ "${build_platform}" == 'linux-64' ]]; then
+        export BUILD=x86_64-conda-linux-gnu
+    fi
     export HOST=x86_64-w64-mingw32
-    if [[ "${build_platform}" == 'win-64' ]]; then
-        export BUILD=x86_64-w64-mingw32
+    if [[ "${target_platform}" == 'win-arm64' ]]; then
+        export HOST=aarch64-w64-mingw32
     fi
 
     ./branding.sh
