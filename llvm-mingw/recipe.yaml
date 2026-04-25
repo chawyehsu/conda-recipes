@@ -36,10 +36,14 @@ source:
 build:
   number: 0
   script:
-    - if: win
+    - if: win and (build_platform == 'win-64' or build_platform == 'win-arm64')
       then: |
         xcopy llvm-mingw "%LIBRARY_PREFIX%" /E /I /F /B /Y
         if %ERRORLEVEL% neq 0 exit 1
+    - if: win and (build_platform != 'win-64' and build_platform != 'win-arm64')
+      then: |
+        mkdir -p $PREFIX/Library/
+        cp -r llvm-mingw/* $PREFIX/Library/
     - if: unix
       then: |
         cp -r llvm-mingw/* $PREFIX/
