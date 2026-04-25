@@ -12,6 +12,10 @@ build:
   number: 0
   skip:
     - unix
+  script:
+    - if: build_platform == 'win-64' or build_platform == 'win-arm64'
+      then: build.bat
+      else: build.sh
 
 recipe:
   name: ${{ name|lower }}
