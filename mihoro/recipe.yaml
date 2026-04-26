@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: mihoro
-  version: "0.12.0"
+  version: "0.14.0"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   - url: https://github.com/spencerwooo/mihoro/archive/refs/tags/v${{ version }}.tar.gz
-    sha256: 8002ef168357dc35a1e5df61c39e5de65f4913aba45b080f491b5b474496c5bf
+    sha256: 48268f02ab8aedf7e05ef1d6cca6c63e00d04d57dbd97adae403af265c38e61e
     patches:
     - if: osx
       then:

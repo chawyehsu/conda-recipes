@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: bear
-  version: "4.1.1"
+  version: "4.1.2"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   - url: https://github.com/rizsotto/Bear/archive/refs/tags/${{ version }}.tar.gz
-    sha256: 58665614e59f3b7f7127e6a6fe4c94ddc64b81e80a4c160ecbd7e44b9171308f
+    sha256: 34e20693d9f3f6820bf330d5dc426eeafb33092c24208f25954d401a92083673
     patches:
       - 0001-wrapper-relative-path-support.patch
 
