@@ -30,7 +30,7 @@ jobs:
 
     - name: Changed Files
       id: changed_files
-      uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v47.0.5
+      uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
       with:
         dir_names: true
         dir_names_exclude_current_dir: true
@@ -219,6 +219,8 @@ jobs:
     permissions:
       # Trusted publishing
       id-token: write
+      # Artifact attestations
+      attestations: write
     steps:
     - name: Checkout Source
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -236,6 +238,11 @@ jobs:
       with:
         path: uploads
         merge-multiple: true
+
+    - name: Attest Artifacts
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      with:
+        subject-path: "uploads/**/*.conda"
 
     - name: Publish
       env:
