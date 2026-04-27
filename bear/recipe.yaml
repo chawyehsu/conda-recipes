@@ -11,48 +11,68 @@ package:
 source:
   - url: https://github.com/rizsotto/Bear/archive/refs/tags/${{ version }}.tar.gz
     sha256: 34e20693d9f3f6820bf330d5dc426eeafb33092c24208f25954d401a92083673
-    patches:
-      - 0001-wrapper-relative-path-support.patch
 
 build:
   number: 0
   script:
-    - cargo install --locked --root ${{ PREFIX }} --path bear --no-track
-    - cargo install --locked --root ${{ PREFIX }} --path intercept-wrapper --no-track
-    - if: build_platform == 'win-64' or build_platform == 'win-arm64'
-      then:
-        - mkdir ${{ PREFIX }}\libexec\bear
-        - move ${{ PREFIX }}\bin\wrapper.exe ${{ PREFIX }}\libexec\bear
-      else:
-        - mkdir -p ${{ PREFIX }}/libexec/bear
-        - mv ${{ PREFIX }}/bin/wrapper ${{ PREFIX }}/libexec/bear
-    - if: linux
-      then:
-        - cargo build --release --lib --manifest-path=intercept-preload/Cargo.toml
-        - cp target/*/release/libexec.so ${{ PREFIX }}/libexec/bear
+    - cargo-bundle-licenses --format yaml --output ./THIRDPARTY.yml
+    - cargo auditable build --release --locked
+    - if: unix
+      then: |
+        rm -rf target/release
+        mv target/${CARGO_BUILD_TARGET}/release target/release
+    - if: win
+      then: |
+        if not exist %LIBRARY_PREFIX%\libexec\bear\bin mkdir %LIBRARY_PREFIX%\libexec\bear\bin
+        echo F | xcopy target\release\bear-driver.exe %LIBRARY_PREFIX%\libexec\bear\bin\bear-driver.exe /F /Y
+        if %ERRORLEVEL% neq 0 exit 1
+        echo F | xcopy target\release\bear-wrapper.exe %LIBRARY_PREFIX%\libexec\bear\bin\bear-wrapper.exe /F /Y
+        if %ERRORLEVEL% neq 0 exit 1
+        if not exist %LIBRARY_PREFIX%\share\man mkdir %LIBRARY_PREFIX%\share\man
+        echo F | xcopy man\bear.1 %LIBRARY_PREFIX%\share\man\bear.1 /F /Y
+        if %ERRORLEVEL% neq 0 exit 1
+        if not exist %LIBRARY_PREFIX%\share\doc\bear mkdir %LIBRARY_PREFIX%\share\doc\bear
+        echo F | xcopy README.md %LIBRARY_PREFIX%\share\doc\bear\README.md /F /Y
+        if %ERRORLEVEL% neq 0 exit 1
+        echo F | xcopy COPYING %LIBRARY_PREFIX%\share\doc\bear\COPYING /F /Y
+        if %ERRORLEVEL% neq 0 exit 1
+        if not exist %LIBRARY_BIN% mkdir %LIBRARY_BIN%
+        echo F | xcopy %RECIPE_DIR%\bear.cmd %LIBRARY_BIN%\bear.cmd /F /Y
+        if %ERRORLEVEL% neq 0 exit 1
+      else: |
+        target/release/generate-completions target/release/completions
+        PREFIX=$PREFIX scripts/install.sh
+        cp $RECIPE_DIR/bear.sh $PREFIX/bin/bear
+        chmod +x $PREFIX/bin/bear
 
 requirements:
   build:
     - ${{ compiler("rust") }}
+    - cargo-auditable
+    - cargo-bundle-licenses
 
 tests:
   - package_contents:
       bin:
-        - if: win
-          then: bear.exe
-          else: bear
+        - bear
       files:
         - if: win
-          then: libexec\bear\wrapper.exe
-          else: libexec/bear/wrapper
+          then:
+            - Library\libexec\bear\bin\bear-driver.exe
+            - Library\libexec\bear\bin\bear-wrapper.exe
+          else:
+            - libexec/bear/bin/bear-driver
+            - libexec/bear/bin/bear-wrapper
+        - if: osx
+          then: libexec/bear/lib/libexec.dylib
         - if: linux
-          then: libexec/bear/libexec.so
+          then: libexec/bear/lib/libexec.so
   - if: build_platform == target_platform
     then:
       script:
         - bear -V
         - bear -- make --version
-        - if: build_platform == 'win-64' or build_platform == 'win-arm64'
+        - if: win
           then: type compile_commands.json
           else: test -f compile_commands.json
       requirements:
@@ -62,7 +82,9 @@ tests:
 about:
   homepage: https://github.com/rizsotto/Bear
   license: GPL-3.0-or-later
-  license_file: COPYING
+  license_file:
+    - COPYING
+    - THIRDPARTY.yml
   summary: A tool that generates a compilation database for clang tooling
   description: A tool that generates a compilation database for clang tooling.
   repository: https://github.com/rizsotto/Bear
