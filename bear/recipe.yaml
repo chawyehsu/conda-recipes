@@ -15,7 +15,6 @@ source:
 build:
   number: 0
   script:
-    - cargo-bundle-licenses --format yaml --output ./THIRDPARTY.yml
     - cargo auditable build --release --locked
     - if: win
       then: |
@@ -43,6 +42,7 @@ build:
         PREFIX=$PREFIX scripts/install.sh
         cp $RECIPE_DIR/bear.sh $PREFIX/bin/bear
         chmod +x $PREFIX/bin/bear
+    - cargo-bundle-licenses --format yaml --output ./THIRDPARTY.yml
 
 requirements:
   build:
