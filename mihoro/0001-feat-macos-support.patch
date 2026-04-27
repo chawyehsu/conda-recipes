@@ -1,4 +1,4 @@
-From 0be8b0c41a4d44502e626546a29bd3eb9f59b052 Mon Sep 17 00:00:00 2001
+From 4c45f25cd08270d0ee3643c976597eb2fcdfc1da Mon Sep 17 00:00:00 2001
 From: Chawye Hsu <su+git@chawyehsu.com>
 Date: Sun, 22 Mar 2026 16:13:25 +0800
 Subject: [PATCH] feat: macos support
@@ -11,7 +11,7 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  src/cmd.rs                |  32 +++-
  src/config.rs             |  66 ++++++++
  src/cron.rs               | 306 ++++++++++++++++++++++++++++----------
- src/init.rs               |   4 +-
+ src/init.rs               |   6 +-
  src/main.rs               |  65 ++++----
  src/mihoro.rs             | 171 ++++++++++++++-------
  src/resolve_mihomo_bin.rs | 145 ++++++++++++++----
@@ -19,14 +19,14 @@ Signed-off-by: Chawye Hsu <su+git@chawyehsu.com>
  src/service/mod.rs        | 211 ++++++++++++++++++++++++++
  src/service/systemd.rs    | 205 +++++++++++++++++++++++++
  src/systemctl.rs          |  86 -----------
- 14 files changed, 1360 insertions(+), 296 deletions(-)
+ 14 files changed, 1361 insertions(+), 297 deletions(-)
  create mode 100644 src/service/launchd.rs
  create mode 100644 src/service/mod.rs
  create mode 100644 src/service/systemd.rs
  delete mode 100644 src/systemctl.rs
 
 diff --git a/Cargo.lock b/Cargo.lock
-index 50b97bd..b0090b5 100644
+index 5772565..619a8a6 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
 @@ -17,6 +17,15 @@ dependencies = [
@@ -75,7 +75,7 @@ index 50b97bd..b0090b5 100644
 +
  [[package]]
  name = "clap"
- version = "4.6.0"
+ version = "4.6.1"
 @@ -877,6 +903,30 @@ dependencies = [
   "windows-registry",
  ]
@@ -107,7 +107,7 @@ index 50b97bd..b0090b5 100644
  [[package]]
  name = "icu_collections"
  version = "2.2.0"
-@@ -1137,6 +1187,7 @@ version = "0.12.0"
+@@ -1137,6 +1187,7 @@ version = "0.14.0"
  dependencies = [
   "anyhow",
   "base64",
@@ -174,7 +174,7 @@ index 50b97bd..b0090b5 100644
  name = "windows-link"
  version = "0.2.1"
 diff --git a/Cargo.toml b/Cargo.toml
-index 1958611..dcca417 100644
+index f1142a6..e4ff69d 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -1,6 +1,6 @@
@@ -182,7 +182,7 @@ index 1958611..dcca417 100644
  name = "mihoro"
 -description = "Mihomo CLI client on Linux."
 +description = "Mihomo CLI client, no more, no less."
- version = "0.12.0"
+ version = "0.14.0"
  edition = "2021"
  readme = "README.md"
 @@ -35,6 +35,7 @@ truncatable = "0.1"
@@ -194,7 +194,7 @@ index 1958611..dcca417 100644
  dialoguer = { version = "0.11", default-features = false }
  self_update = { version = "0.42", default-features = false, features = [
 diff --git a/README.md b/README.md
-index e74927a..61ee7eb 100644
+index a25ca45..dddf8fb 100644
 --- a/README.md
 +++ b/README.md
 @@ -14,9 +14,9 @@
@@ -209,8 +209,8 @@ index e74927a..61ee7eb 100644
  - No root privilege required. Maintains per-user instance.
  - First-class support for config subscription.
  
-@@ -56,6 +56,9 @@ mihomo_channel = "stable"
- # mihomo_arch = ""  # optional: override auto-detected CPU architecture
+@@ -73,6 +73,9 @@ ui = "metacubexd"
+ mihomo_channel = "stable"
  mihomo_binary_path = "~/.local/bin/mihomo"
  mihomo_config_root = "~/.config/mihomo"
 +service_manager = "auto"
@@ -219,7 +219,7 @@ index e74927a..61ee7eb 100644
  user_systemd_root = "~/.config/systemd/user"
  mihoro_user_agent = "mihoro"
  auto_update_interval = 12
-@@ -201,19 +204,19 @@ Full list of commands:
+@@ -216,19 +219,19 @@ Full list of commands:
  
  ```console
  $ mihoro --help
@@ -229,7 +229,7 @@ index e74927a..61ee7eb 100644
  Usage: mihoro [OPTIONS] [COMMAND]
  
  Commands:
-   setup        Setup mihoro by downloading mihomo binary and remote config
+   init         Initialize mihoro: download binary, config, geodata, and set up the systemd service
    update       Update mihomo components (config by default)
 -  apply        Apply mihomo config overrides and restart mihomo.service
 -  start        Start mihomo.service with systemctl
@@ -310,7 +310,7 @@ index 48ed0d6..bbe9395 100644
      fn test_parse_update_ui_flag() {
          let args = Args::parse_from(["mihoro", "update", "--ui"]);
 diff --git a/src/config.rs b/src/config.rs
-index 5587d5a..f746cbf 100644
+index 3bfea76..ebb7c30 100644
 --- a/src/config.rs
 +++ b/src/config.rs
 @@ -31,6 +31,16 @@ pub struct Config {
@@ -362,7 +362,7 @@ index 5587d5a..f746cbf 100644
      Ok(())
  }
  
-@@ -356,6 +378,50 @@ mod tests {
+@@ -364,6 +386,50 @@ mod tests {
          Ok(())
      }
  
@@ -803,10 +803,10 @@ index 6bcef68..dd66360 100644
      }
  }
 diff --git a/src/init.rs b/src/init.rs
-index 4c3a3fe..b62e5f8 100644
+index 316fe8c..75c521c 100644
 --- a/src/init.rs
 +++ b/src/init.rs
-@@ -230,7 +230,7 @@ pub async fn run(config_path: &str, client: &Client, opts: InitOptions) -> Resul
+@@ -225,7 +225,7 @@ pub async fn run(config_path: &str, client: &Client, opts: InitOptions) -> Resul
      if report.stage_failed("remote config") {
          let skip = || StageStatus::Skipped("skipped: remote config stage failed".to_string());
          report.record("install binary", skip());
@@ -814,18 +814,20 @@ index 4c3a3fe..b62e5f8 100644
 +        report.record("daemon service", skip());
          report.record("service start", skip());
      } else {
-         report.begin(
-@@ -247,7 +247,7 @@ pub async fn run(config_path: &str, client: &Client, opts: InitOptions) -> Resul
-         report.record("install binary", install_status);
+         report.begin("install binary", Some("installing mihomo binary"));
+@@ -240,8 +240,8 @@ pub async fn run(config_path: &str, client: &Client, opts: InitOptions) -> Resul
  
          report
--            .run("systemd service", None, || async {
-+            .run("daemon service", None, || async {
-                 mihoro.ensure_service().await
-             })
+             .run(
+-                "systemd service",
+-                Some("writing systemd service"),
++                "daemon service",
++                Some("writing daemon service"),
+                 || async { mihoro.ensure_service().await },
+             )
              .await;
 diff --git a/src/main.rs b/src/main.rs
-index 6378666..965d08a 100644
+index 8dad63c..a4d5fc7 100644
 --- a/src/main.rs
 +++ b/src/main.rs
 @@ -5,7 +5,7 @@ mod init;
@@ -850,7 +852,7 @@ index 6378666..965d08a 100644
  
  struct StageReport {
      entries: Vec<(&'static str, StageStatus)>,
-@@ -249,41 +248,49 @@ async fn cli() -> Result<()> {
+@@ -250,41 +249,49 @@ async fn cli() -> Result<()> {
          Some(Commands::Uninstall) => mihoro.uninstall()?,
          Some(Commands::Proxy { proxy }) => mihoro.proxy_commands(proxy)?,
  
@@ -927,7 +929,7 @@ index 6378666..965d08a 100644
  
          Some(Commands::Completions { shell }) => match shell {
 diff --git a/src/mihoro.rs b/src/mihoro.rs
-index adc540c..fb86f3c 100644
+index 3fe4851..05da9c5 100644
 --- a/src/mihoro.rs
 +++ b/src/mihoro.rs
 @@ -3,7 +3,9 @@ use crate::config::{apply_mihomo_override, parse_config, Config};
@@ -941,7 +943,7 @@ index adc540c..fb86f3c 100644
  use crate::ui::{install_ui, resolve_external_ui_path};
  use crate::utils::{
      create_parent_dir, delete_file, download_file, extract_gzip, try_decode_base64_file_inplace,
-@@ -33,6 +35,7 @@ pub struct Mihoro {
+@@ -34,6 +36,7 @@ pub struct Mihoro {
      pub mihomo_target_binary_path: String,
      pub mihomo_target_config_root: String,
      pub mihomo_target_config_path: String,
@@ -949,7 +951,7 @@ index adc540c..fb86f3c 100644
      pub mihomo_target_service_path: String,
  }
  
-@@ -64,21 +67,25 @@ impl Mihoro {
+@@ -65,21 +68,25 @@ impl Mihoro {
  
      /// Build a `Mihoro` from an already-validated `Config`.
      pub fn from_config(config: Config) -> Mihoro {
@@ -980,7 +982,7 @@ index adc540c..fb86f3c 100644
      /// Stage 1 of the binary install: resolve the URL and download to a temp file.
      ///
      /// Skips if the binary exists and `force` is false. The returned [`BinaryPlan`] is
-@@ -126,10 +133,10 @@ impl Mihoro {
+@@ -127,10 +134,10 @@ impl Mihoro {
          let binary_exists = fs::metadata(&self.mihomo_target_binary_path).is_ok();
          if binary_exists {
              println!(
@@ -993,7 +995,7 @@ index adc540c..fb86f3c 100644
          }
  
          extract_gzip(
-@@ -242,10 +249,12 @@ impl Mihoro {
+@@ -248,10 +255,12 @@ impl Mihoro {
  
      /// Write the systemd unit file.  Skips if the file already exists with identical content.
      pub async fn ensure_service(&self) -> Result<StageStatus> {
@@ -1007,7 +1009,7 @@ index adc540c..fb86f3c 100644
          if let Ok(existing) = fs::read_to_string(&self.mihomo_target_service_path) {
              if existing == service_content {
                  return Ok(StageStatus::Skipped("service file unchanged".to_string()));
-@@ -253,9 +262,9 @@ impl Mihoro {
+@@ -259,9 +268,9 @@ impl Mihoro {
          }
          create_parent_dir(Path::new(&self.mihomo_target_service_path))?;
          fs::write(&self.mihomo_target_service_path, &service_content)?;
@@ -1019,8 +1021,8 @@ index adc540c..fb86f3c 100644
              DETAIL_PREFIX.cyan(),
              self.mihomo_target_service_path.underline().yellow()
          );
-@@ -267,8 +276,9 @@ impl Mihoro {
-     /// Always enables the service so it survives reboots, even if it was already running but
+@@ -273,8 +282,9 @@ impl Mihoro {
+     /// Always enables mihomo.service so it survives reboots, even if it was already running but
      /// not enabled (e.g. started manually after a previous failed init).
      pub async fn ensure_service_running(&self) -> Result<StageStatus> {
 -        let is_active = Systemctl::is_active("mihomo.service");
@@ -1031,7 +1033,7 @@ index adc540c..fb86f3c 100644
  
          if is_active && is_enabled {
              return Ok(StageStatus::Skipped(
-@@ -277,10 +287,10 @@ impl Mihoro {
+@@ -283,10 +293,10 @@ impl Mihoro {
          }
  
          if !is_enabled {
@@ -1044,9 +1046,9 @@ index adc540c..fb86f3c 100644
          }
          Ok(StageStatus::Installed)
      }
-@@ -323,10 +333,11 @@ impl Mihoro {
+@@ -367,10 +377,11 @@ impl Mihoro {
  
-         // Stop the service before overwriting binary to avoid "Text file busy" error
+         // Stop mihomo.service before overwriting binary to avoid "Text file busy" error
          println!(
 -            "{} Stopping mihomo.service before overwriting...",
 -            DETAIL_PREFIX.yellow()
@@ -1059,7 +1061,7 @@ index adc540c..fb86f3c 100644
  
          // Extract and overwrite the binary
          extract_gzip(
-@@ -420,8 +431,12 @@ impl Mihoro {
+@@ -464,8 +475,12 @@ impl Mihoro {
      }
  
      pub async fn restart_service(&self) -> Result<StageStatus> {
@@ -1074,7 +1076,7 @@ index adc540c..fb86f3c 100644
          Ok(StageStatus::Installed)
      }
  
-@@ -436,28 +451,32 @@ impl Mihoro {
+@@ -480,28 +495,32 @@ impl Mihoro {
              },
          )?;
  
@@ -1118,11 +1120,11 @@ index adc540c..fb86f3c 100644
          );
  
          // Disable and remove cron job
-@@ -541,28 +560,12 @@ impl Mihoro {
+@@ -632,28 +651,12 @@ fn normalize_mihomo_version_token(token: &str) -> Option<String> {
      }
  }
  
--/// Render the systemd unit file content for the mihomo service.
+-/// Render the systemd unit file content for mihomo.service.
 -///
 -/// Reference: https://wiki.metacubex.one/startup/service/
 -fn render_service_string(binary_path: &str, config_root: &str) -> String {
@@ -1153,7 +1155,7 @@ index adc540c..fb86f3c 100644
  }
  
  #[cfg(test)]
-@@ -571,6 +574,8 @@ mod tests {
+@@ -662,6 +665,8 @@ mod tests {
      use std::fs;
      use tempfile::tempdir;
  
@@ -1162,7 +1164,7 @@ index adc540c..fb86f3c 100644
      /// Test that Mihoro::new correctly parses config and derives paths
      #[test]
      fn test_mihoro_new_parses_config_and_derives_paths() -> Result<()> {
-@@ -594,10 +599,17 @@ mod tests {
+@@ -685,10 +690,17 @@ mod tests {
              mihoro.mihomo_target_config_path,
              "/tmp/test/mihomo/config.yaml"
          );
@@ -1184,7 +1186,7 @@ index adc540c..fb86f3c 100644
  
          Ok(())
      }
-@@ -729,4 +741,49 @@ mod tests {
+@@ -890,4 +902,49 @@ mod tests {
  
          Ok(())
      }
@@ -1235,10 +1237,10 @@ index adc540c..fb86f3c 100644
 +    }
  }
 diff --git a/src/resolve_mihomo_bin.rs b/src/resolve_mihomo_bin.rs
-index 61e80d2..942aa79 100644
+index cc8ef43..686bb2b 100644
 --- a/src/resolve_mihomo_bin.rs
 +++ b/src/resolve_mihomo_bin.rs
-@@ -79,7 +79,22 @@ async fn fetch_latest_version_once(client: &Client, url: &str, user_agent: &str)
+@@ -86,7 +86,22 @@ async fn fetch_latest_version_once(client: &Client, url: &str, user_agent: &str)
  /// - MIPS: mips-hardfloat, mips-softfloat, mips64, mips64le, mipsle-hardfloat, mipsle-softfloat
  /// - Others: loong64-abi1, loong64-abi2, ppc64le, riscv64, s390x
  pub fn detect_arch() -> Result<String> {
@@ -1262,7 +1264,7 @@ index 61e80d2..942aa79 100644
      match arch {
          // x86_64: Default to amd64-compatible for maximum compatibility
          "x86_64" => Ok("amd64-compatible".to_string()),
-@@ -112,8 +127,16 @@ pub fn detect_arch() -> Result<String> {
+@@ -119,8 +134,16 @@ pub fn detect_arch() -> Result<String> {
      }
  }
  
@@ -1280,7 +1282,7 @@ index 61e80d2..942aa79 100644
      "386",
      "386-go120",
      "386-go123",
-@@ -146,16 +169,44 @@ const SUPPORTED_ARCHS: &[&str] = &[
+@@ -153,16 +176,44 @@ const SUPPORTED_ARCHS: &[&str] = &[
      "s390x",
  ];
  
@@ -1328,7 +1330,7 @@ index 61e80d2..942aa79 100644
          .iter()
          .filter(|a| a.starts_with(&arch[..arch.len().min(3)]))
          .copied()
-@@ -165,7 +216,7 @@ pub fn validate_arch(arch: &str) -> Result<String> {
+@@ -172,7 +223,7 @@ pub fn validate_arch(arch: &str) -> Result<String> {
          bail!(
              "unsupported architecture: '{}'\nSupported: {}",
              arch,
@@ -1337,7 +1339,7 @@ index 61e80d2..942aa79 100644
          );
      } else {
          bail!(
-@@ -177,14 +228,14 @@ pub fn validate_arch(arch: &str) -> Result<String> {
+@@ -184,14 +235,14 @@ pub fn validate_arch(arch: &str) -> Result<String> {
  }
  
  /// Constructs the download URL for a specific Mihomo version and architecture.
@@ -1354,7 +1356,7 @@ index 61e80d2..942aa79 100644
  }
  
  /// Resolves the Mihomo binary download URL.
-@@ -209,11 +260,13 @@ pub async fn resolve_binary_url(
+@@ -219,11 +270,13 @@ pub async fn resolve_binary(
          }
      }
  
@@ -1370,7 +1372,7 @@ index 61e80d2..942aa79 100644
      } else {
          detect_arch()?
      };
-@@ -228,7 +281,7 @@ pub async fn resolve_binary_url(
+@@ -238,7 +291,7 @@ pub async fn resolve_binary(
          "{} Fetching latest mihomo {} release for {}...",
          prefix.cyan(),
          channel_name.bold(),
@@ -1379,15 +1381,16 @@ index 61e80d2..942aa79 100644
      );
  
      let version = fetch_latest_version(client, channel, &config.mihoro_user_agent).await?;
-@@ -239,13 +292,14 @@ pub async fn resolve_binary_url(
+@@ -249,7 +302,7 @@ pub async fn resolve_binary(
          version.bold()
      );
  
 -    let url = build_download_url(&version, &arch, channel);
 +    let url = build_download_url(&version, &os, &arch, channel);
-     Ok(url)
- }
- 
+     Ok(ResolvedBinary {
+         url,
+         version: Some(version),
+@@ -270,6 +323,7 @@ pub async fn resolve_binary_url(
  #[cfg(test)]
  mod tests {
      use super::*;
@@ -1395,7 +1398,7 @@ index 61e80d2..942aa79 100644
  
      #[test]
      fn test_detect_arch_returns_valid_value() {
-@@ -253,13 +307,17 @@ mod tests {
+@@ -277,13 +331,17 @@ mod tests {
          let result = detect_arch();
          assert!(result.is_ok());
          let arch = result.unwrap();
@@ -1416,7 +1419,7 @@ index 61e80d2..942aa79 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/latest/download/mihomo-linux-amd64-v1.19.0.gz"
-@@ -268,7 +326,7 @@ mod tests {
+@@ -292,7 +350,7 @@ mod tests {
  
      #[test]
      fn test_build_download_url_alpha() {
@@ -1425,7 +1428,7 @@ index 61e80d2..942aa79 100644
          assert_eq!(
  			url,
  			"https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-linux-arm64-alpha-abc123.gz"
-@@ -277,37 +335,68 @@ mod tests {
+@@ -301,37 +359,68 @@ mod tests {
  
      #[test]
      fn test_build_download_url_compatible_arch() {
@@ -2279,5 +2282,5 @@ index 6007a8d..0000000
 -    }
 -}
 -- 
-2.53.0
+2.54.0
 
