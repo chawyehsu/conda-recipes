@@ -22,11 +22,14 @@ build:
     - win
   script:
     # Disable `self_update` feature for conda variant builds
-    - cargo install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
+    - cargo auditable install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
+    - cargo-bundle-licenses --format yaml --output ./THIRDPARTY.yml
 
 requirements:
   build:
     - ${{ compiler("rust") }}
+    - cargo-auditable
+    - cargo-bundle-licenses
 
 tests:
   - script:
@@ -36,7 +39,9 @@ tests:
 about:
   homepage: https://github.com/spencerwooo/mihoro
   license: MIT
-  license_file: LICENSE
+  license_file:
+    - LICENSE
+    - THIRDPARTY.yml
   summary: Mihomo CLI client, no more, no less
   description: Mihomo CLI client, no more, no less
   repository: https://github.com/spencerwooo/mihoro
