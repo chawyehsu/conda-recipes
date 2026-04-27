@@ -17,10 +17,6 @@ build:
   script:
     - cargo-bundle-licenses --format yaml --output ./THIRDPARTY.yml
     - cargo auditable build --release --locked
-    - if: unix
-      then: |
-        rm -rf target/release
-        mv target/${CARGO_BUILD_TARGET}/release target/release
     - if: win
       then: |
         if not exist %LIBRARY_PREFIX%\libexec\bear\bin mkdir %LIBRARY_PREFIX%\libexec\bear\bin
@@ -40,7 +36,9 @@ build:
         echo F | xcopy %RECIPE_DIR%\bear.cmd %LIBRARY_BIN%\bear.cmd /F /Y
         if %ERRORLEVEL% neq 0 exit 1
       else: |
-        target/release/generate-completions target/release/completions
+        rm -rf target/release
+        mv target/${CARGO_BUILD_TARGET}/release target/release
+        cargo run --bin generate-completions target/release/completions
         PREFIX=$PREFIX scripts/install.sh
         cp $RECIPE_DIR/bear.sh $PREFIX/bin/bear
         chmod +x $PREFIX/bin/bear
