@@ -240,6 +240,7 @@ jobs:
         merge-multiple: true
 
     - name: Attest Artifacts
+      id: attest
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
       with:
         subject-path: "uploads/**/*.conda"
@@ -265,7 +266,8 @@ jobs:
             foreach ($file in $files) {
               Write-Host "Uploading $($file.Name)"
               pixi run rattler-build upload --log-style plain anaconda "$file"
-              pixi run rattler-build upload --log-style plain prefix "$file"
+              pixi run rattler-build upload --log-style plain prefix "$file" `
+                --attestation ${{ steps.attest.outputs.bundle-path }}
             }
           }
         }
