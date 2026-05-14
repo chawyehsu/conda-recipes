@@ -123,9 +123,6 @@ jobs:
     if: needs.ci_check.outputs.should_build == 'true'
     outputs:
       pattern: ${{ steps.run_build.outputs.pattern }}
-    env:
-      SCCACHE_GHA_ENABLED: true
-      RUSTC_WRAPPER: sccache
     defaults:
       run:
         shell: pwsh
@@ -148,6 +145,8 @@ jobs:
       id: run_build
       env:
         CHANGED_FILES: ${{ needs.ci_check.outputs.changed_dirs }}
+        SCCACHE_GHA_ENABLED: true
+        RUSTC_WRAPPER: sccache
       run: |
         function Assert-LastExitCode([string]$Context) {
           if ($LASTEXITCODE -ne 0) {
@@ -244,7 +243,7 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.target }}-builds
         path: |
-          ./output/${{ matrix.target }}/${{ steps.run_build.outputs.pattern }}*.conda
+          output/${{ matrix.target }}/${{ steps.run_build.outputs.pattern }}*.conda
 
   cd_release:
     name: Release
