@@ -17,6 +17,9 @@ source:
 
 build:
   number: 0
+  skip:
+    - win
+    - osx
   script:
     env:
       # Use cmake to build aws-lc-sys, because conda's CFLAGS inject -O2 which
