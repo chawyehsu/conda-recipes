@@ -22,13 +22,13 @@ build:
       # AWS_LC_SYS_NO_JITTER_ENTROPY: "1"
       AWS_LC_SYS_CMAKE_BUILDER: "1"
     content:
-      # - if: win
-      #   then: |
-      #     set AWS_LC_SYS_CFLAGS=/std:c11 /experimental:c11atomics
-      #     set AWS_LC_SYS_NO_JITTER_ENTROPY=1
+      - if: win
+        then: |
+          for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
+          set "CARGO_HOME=%DRIVE_LETTER%\ch"
+          set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
       - if: build_platform == 'win-64' and target_platform == 'win-arm64'
         then: |
-          set "CARGO_TARGET_DIR=C:\tmp\cargo-target"
           set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
       - cargo auditable install --locked --root ${{ PREFIX }} --path crates/bin --no-track
       - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
