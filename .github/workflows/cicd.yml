@@ -237,7 +237,7 @@ jobs:
     - name: List Artifacts [Debug]
       run: |
         Write-Host "Artifacts:"
-        (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse) | ForEach-Object { $_.FullName }
+        (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue) | ForEach-Object { $_.FullName }
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
