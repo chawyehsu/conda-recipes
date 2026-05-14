@@ -41,6 +41,7 @@ requirements:
     - ${{ compiler("rust") }}
     - cargo-auditable
     - cargo-bundle-licenses
+    - cmake
 
 tests:
   - script:
