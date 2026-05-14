@@ -11,9 +11,9 @@ package:
 source:
   url: https://github.com/cargo-bins/cargo-binstall/archive/refs/tags/v${{ version }}.tar.gz
   sha256: 78a514462b487556265bb68adf9c0288b0e4263c9b08b583825b1cf685e36697
-  # patches:
-  #   - if: win and build_platform != target_platform
-  #     then: 0001-cross-compile-rc.patch
+  patches:
+    - if: win and build_platform != target_platform
+      then: 0001-cross-compile-rc.patch
 
 build:
   number: 0
@@ -30,9 +30,9 @@ build:
           for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
           set "CARGO_HOME=%DRIVE_LETTER%\ch"
           set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
-      - if: build_platform == 'win-64' and target_platform == 'win-arm64'
-        then: |
-          set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
+      # - if: build_platform == 'win-64' and target_platform == 'win-arm64'
+      #   then: |
+      #     set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
       - cargo auditable install --locked --root ${{ PREFIX }} --path crates/bin --no-track
       - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
 
