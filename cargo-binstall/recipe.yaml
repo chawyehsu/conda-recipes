@@ -11,19 +11,22 @@ package:
 source:
   url: https://github.com/cargo-bins/cargo-binstall/archive/refs/tags/v${{ version }}.tar.gz
   sha256: 78a514462b487556265bb68adf9c0288b0e4263c9b08b583825b1cf685e36697
-  patches:
-    - if: win and build_platform != target_platform
-      then: 0001-cross-compile-rc.patch
+  # patches:
+  #   - if: win and build_platform != target_platform
+  #     then: 0001-cross-compile-rc.patch
 
 build:
   number: 0
+  skip:
+    - unix
   script:
     env:
-      # AWS_LC_SYS_NO_JITTER_ENTROPY: "1"
+      # Use cmake to build aws-lc-sys, because conda's CFLAGS inject -O2 which
+      # overrides the -O0 required by jitterentropy-base.c, causing a build failure.
       AWS_LC_SYS_CMAKE_BUILDER: "1"
     content:
       - if: win
-        then: |
+        then: | # Avoid Windows path-length issue breaking Cmake/Cargo
           for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
           set "CARGO_HOME=%DRIVE_LETTER%\ch"
           set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
@@ -33,7 +36,6 @@ build:
       - cargo auditable install --locked --root ${{ PREFIX }} --path crates/bin --no-track
       - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
 
-
 requirements:
   build:
     - ${{ compiler("c") }}
@@ -42,6 +44,8 @@ requirements:
     - cargo-bundle-licenses
     - cmake
     - if: osx
+      # ld64 is needed otherwise below error raises:
+      # ld: -lto_library library filename must be 'libLTO.dylib'
       then: ld64
 
 tests:
