@@ -230,7 +230,7 @@ jobs:
         }
 
         # Generate glob pattern for artifact upload based on changed package names
-        $pattern = "[$($changed_dirs -join ',')]"
+        $pattern = "{$($changed_dirs -join ','),}"
         Write-Host "Pattern for artifact upload: $pattern"
         echo "pattern=$pattern" >> $env:GITHUB_OUTPUT
 
