@@ -221,9 +221,8 @@ jobs:
           Assert-LastExitCode "Package build $dir"
         }
 
-        # Generate a glob alternation pattern for package prefixes.
-        # Use brace expansion instead of character classes so '-' remains literal.
-        $pattern = "{$($changed_dirs -join ',')}"
+        # Generate glob pattern for artifact upload based on changed package names
+        $pattern = "[$($changed_dirs -join ',')]"
         Write-Host "Pattern for artifact upload: $pattern"
         echo "pattern=$pattern" >> $env:GITHUB_OUTPUT
 
