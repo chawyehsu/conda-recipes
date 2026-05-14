@@ -232,6 +232,11 @@ jobs:
         Write-Host "Pattern for artifact upload: $pattern"
         echo "pattern=$pattern" >> $env:GITHUB_OUTPUT
 
+    - name: List Artifacts [Debug]
+      run: |
+        Write-Host "Artifacts:"
+        (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse) | ForEach-Object { $_.FullName }
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
