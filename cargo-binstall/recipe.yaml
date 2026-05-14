@@ -19,7 +19,8 @@ build:
   number: 0
   script:
     env:
-      AWS_LC_SYS_NO_JITTER_ENTROPY: "1"
+      # AWS_LC_SYS_NO_JITTER_ENTROPY: "1"
+      AWS_LC_SYS_CMAKE_BUILDER: "1"
     content:
       # - if: win
       #   then: |
@@ -39,6 +40,9 @@ requirements:
     - ${{ compiler("rust") }}
     - cargo-auditable
     - cargo-bundle-licenses
+    - cmake
+    - if: osx
+      then: ld64
 
 tests:
   - script:
