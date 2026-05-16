@@ -11,3 +11,7 @@ build = "rattler-build build"
 
 [dependencies]
 rattler-build = ">=0.63.1,<0.64"
+
+[activation.env]
+SCCACHE_GHA_ENABLED = "1"
+RUSTC_WRAPPER = "sccache"
