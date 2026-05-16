@@ -228,8 +228,12 @@ jobs:
           Assert-LastExitCode "Package build $dir"
         }
 
-        # Remove all .conda files in output directory that do not match changed package names to avoid uploading irrelevant artifacts
-        $condaFiles = Get-ChildItem -Path ".output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue
+    - name: List Artifacts
+      run: |
+        $condaFiles = Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue
+
+        # Remove all .conda files in output directory that do not match changed
+        # package names to avoid uploading irrelevant artifacts
         foreach ($file in $condaFiles) {
           $fileName = $file.Name
           $matchesPackage = $false
@@ -245,9 +249,8 @@ jobs:
           }
         }
 
-    - name: List Artifacts
-      run: |
-        (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue) | ForEach-Object { $_.FullName }
+        # List remaining .conda files to be uploaded
+        $condaFiles | ForEach-Object { $_.FullName }
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
