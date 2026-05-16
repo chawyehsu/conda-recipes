@@ -229,7 +229,10 @@ jobs:
         }
 
     - name: List Artifacts
+      env:
+        CHANGED_FILES: ${{ needs.ci_check.outputs.changed_dirs }}
       run: |
+        $changed_dirs = $env:CHANGED_FILES -split ','
         $condaFiles = Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue
 
         # Remove all .conda files in output directory that do not match changed
@@ -250,7 +253,8 @@ jobs:
         }
 
         # List remaining .conda files to be uploaded
-        $condaFiles | ForEach-Object { $_.FullName }
+        Write-Host "Artifacts to be uploaded:" -ForegroundColor Cyan
+        (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue) | ForEach-Object { $_.FullName }
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
