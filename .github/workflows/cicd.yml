@@ -243,7 +243,8 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.target }}-builds
         path: |
-          output/${{ matrix.target }}/${{ steps.run_build.outputs.pattern }}*.conda
+          output/${{ matrix.target }}/*.conda
+          output/noarch/*.conda
 
   cd_release:
     name: Release
