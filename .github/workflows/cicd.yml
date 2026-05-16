@@ -229,13 +229,12 @@ jobs:
         }
 
         # Generate glob pattern for artifact upload based on changed package names
-        $pattern = "{$($changed_dirs -join ','),}"
-        Write-Host "Pattern for artifact upload: $pattern"
+        $pattern = "[$($changed_dirs -join ',')]"
         echo "pattern=$pattern" >> $env:GITHUB_OUTPUT
 
-    - name: List Artifacts [Debug]
+    - name: List Artifacts
       run: |
-        Write-Host "Artifacts:"
+        Write-Host "Pattern for artifact upload: ${{ steps.run_build.outputs.pattern }}"
         (Get-ChildItem -Path "./output/*/" -Include "*.conda" -Recurse -ErrorAction SilentlyContinue) | ForEach-Object { $_.FullName }
 
     - name: Upload Artifacts
@@ -243,8 +242,8 @@ jobs:
       with:
         name: ${{ matrix.os }}-${{ matrix.target }}-builds
         path: |
-          output/${{ matrix.target }}/*.conda
-          output/noarch/*.conda
+          output/${{ matrix.target }}/${{ steps.run_build.outputs.pattern }}*.conda
+          output/noarch/${{ steps.run_build.outputs.pattern }}*.conda
 
   cd_release:
     name: Release
