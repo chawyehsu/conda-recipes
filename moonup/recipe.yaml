@@ -60,8 +60,8 @@ about:
   license_file:
     - LICENSE
     - THIRDPARTY.yml
-  summary: "Manage multiple MoonBit installations"
-  description: "Moonup is a version manager for MoonBit"
+  summary: Manage multiple MoonBit installations
+  description: Moonup is a version manager for MoonBit
   repository: https://github.com/chawyehsu/moonup
 
 extra:
