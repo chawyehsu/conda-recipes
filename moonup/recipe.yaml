@@ -17,7 +17,6 @@ build:
   skip:
     # remove when moonbit adds support for these targets
     - win and arm64
-    - linux and aarch64
   script:
     env:
       # Use cmake to build aws-lc-sys, because conda's CFLAGS inject -O2 which
