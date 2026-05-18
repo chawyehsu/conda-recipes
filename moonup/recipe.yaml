@@ -23,9 +23,14 @@ build:
       # overrides the -O0 required by jitterentropy-base.c, causing a build failure.
       AWS_LC_SYS_CMAKE_BUILDER: "1"
     content:
-      # [win] disable default static linked executables
       - if: win
-        then: del /S /Q .cargo\config.toml
+        # [win] disable default static linked executables;
+        # Avoid Windows path-length issue breaking Cmake/Cargo
+        then: |
+          del /S /Q .cargo\config.toml
+          for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
+          set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
+          set "CARGO_HOME=%DRIVE_LETTER%\ch"
       # Disable `self_update` feature for conda variant builds
       - cargo auditable install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
       - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
