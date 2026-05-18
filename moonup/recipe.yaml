@@ -36,6 +36,7 @@ requirements:
     - ${{ compiler("rust") }}
     - cargo-auditable
     - cargo-bundle-licenses
+    - cmake
     - if: osx
       # ld64 is needed otherwise below error raises:
       # ld: -lto_library library filename must be 'libLTO.dylib'
