@@ -23,12 +23,19 @@ build:
     - if: win
       then: del /S /Q .cargo\config.toml
     # Disable `self_update` feature for conda variant builds
-    - cargo install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
+    - cargo auditable install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
+    - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
 
 requirements:
   build:
     - ${{ compiler("c") }}
     - ${{ compiler("rust") }}
+    - cargo-auditable
+    - cargo-bundle-licenses
+    - if: osx
+      # ld64 is needed otherwise below error raises:
+      # ld: -lto_library library filename must be 'libLTO.dylib'
+      then: ld64
   host:
     - if: linux
       then: openssl
@@ -40,7 +47,9 @@ tests:
 about:
   homepage: https://github.com/chawyehsu/moonup
   license: Apache-2.0
-  license_file: LICENSE
+  license_file:
+    - LICENSE
+    - THIRDPARTY.yml
   summary: "Manage multiple MoonBit installations"
   description: "Moonup is a version manager for MoonBit"
   repository: https://github.com/chawyehsu/moonup
