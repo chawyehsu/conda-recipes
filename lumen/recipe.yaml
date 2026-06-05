@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: lumen
-  version: "2.28.0"
+  version: "2.30.0"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://github.com/jnsahaj/lumen/archive/refs/tags/v${{ version }}.tar.gz
-  sha256: af21cebbc56d111e72493b1382c6c2c726963a1d10f6f0c422e7174ded5cd19a
+  sha256: 0ee11d795598710d5f5dc5d2151e22c446f6393575a233d5a2aecb5f843088f9
 
 build:
   number: 0
