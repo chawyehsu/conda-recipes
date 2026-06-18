@@ -20,8 +20,13 @@ build:
           for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
           set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
           set "CARGO_HOME=%DRIVE_LETTER%\ch"
-      - cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-cli --no-track
-      - cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-driver --no-track
+      - if: build_platform == target_platform
+        then: |
+          cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-cli --no-track
+          cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-driver --no-track
+        else: |
+          cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-cli --no-track --features vendored-openssl
+          cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-driver --no-track --features vendored-openssl
       - cargo-bundle-licenses --format yaml --output THIRDPARTY.yml
 
 requirements:
