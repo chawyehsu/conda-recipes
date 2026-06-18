@@ -1,0 +1,54 @@
+context:
+  name: weave
+  version: "0.3.6"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/Ataraxy-Labs/weave/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 3795fcc28ada8b522fb0081a1b8f3ace6e4f61d7be46fdb3cf588777b5f0608f
+
+build:
+  number: 0
+  script:
+    content:
+      - if: win
+        # [win] disable default static linked executables;
+        # Avoid Windows path-length issue breaking Cmake/Cargo
+        then: |
+          for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
+          set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
+          set "CARGO_HOME=%DRIVE_LETTER%\ch"
+      - cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-cli --no-track
+      - cargo auditable install --locked --root ${{ PREFIX }} --path crates/weave-driver --no-track
+      - cargo-bundle-licenses --format yaml --output THIRDPARTY.yml
+
+requirements:
+  build:
+    - ${{ compiler("rust") }}
+    - cargo-auditable
+    - cargo-bundle-licenses
+
+tests:
+  - script:
+      - if: build_platform == target_platform
+        then: weave --help
+
+about:
+  homepage: https://ataraxy-labs.github.io/weave
+  license: MIT OR Apache-2.0
+  license_file:
+    - LICENSE-APACHE
+    - LICENSE-MIT
+    - THIRDPARTY.yml
+  summary: Entity-level semantic merge driver for Git
+  description: |
+    Resolves merge conflicts that Git can't by understanding
+    code structure via tree-sitter
+  repository: https://github.com/Ataraxy-Labs/weave
+
+extra:
+  recipe-maintainers:
+    - chawyehsu
