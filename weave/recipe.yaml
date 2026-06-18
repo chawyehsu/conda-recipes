@@ -15,7 +15,6 @@ build:
   script:
     content:
       - if: win
-        # [win] disable default static linked executables;
         # Avoid Windows path-length issue breaking Cmake/Cargo
         then: |
           for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
@@ -30,6 +29,9 @@ requirements:
     - ${{ compiler("rust") }}
     - cargo-auditable
     - cargo-bundle-licenses
+  host:
+    - if: linux
+      then: openssl
 
 tests:
   - script:
