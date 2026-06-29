@@ -20,6 +20,7 @@ else
 fi
 
 # install header files
+mkdir -p "$LIBRARY_PREFIX/include/pdcurses"
 install -m 0644 curses.h panel.h term.h "$LIBRARY_PREFIX/include/pdcurses/"
 # needs defines matching the make step, see https://github.com/Bill-Gray/PDCursesMod/issues/133
 echo '#define PDC_WIDE 1'           >> pdcurses.h
