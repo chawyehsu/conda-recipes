@@ -20,10 +20,16 @@ else
 fi
 
 # install header files
-mkdir -p "$LIBRARY_PREFIX/include"
-for f in curses.h panel.h term.h; do
-    cp "$SRC_DIR/$f" "$LIBRARY_PREFIX/include/"
-done
+mkdir -p "$LIBRARY_PREFIX/include/pdcurses"
+install -m 0644 curses.h panel.h term.h "$LIBRARY_PREFIX/include/pdcurses/"
+# needs defines matching the make step, see https://github.com/Bill-Gray/PDCursesMod/issues/133
+# needs defines matching the make step, see https://github.com/Bill-Gray/PDCursesMod/issues/133
+cat > pdcurses.h <<'EOF'
+`#define` PDC_WIDE 1
+`#define` PDC_FORCE_UTF8 1
+`#include` "pdcurses/curses.h"
+EOF
+install -m 0644 pdcurses.h "$LIBRARY_PREFIX/include/pdcurses.h"
 
 if [[ ! "${PKG_NAME}" == "$pkg_name_static" ]]; then
     # install dll
