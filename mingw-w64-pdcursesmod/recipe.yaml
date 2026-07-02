@@ -41,14 +41,14 @@ outputs:
     tests:
       - package_contents:
           bin:
-            - pdcurses.dll
+            - libpdcurses.dll
           include:
             - curses.h
-            - panel.h
-            - term.h
+            - pdcurses/curses.h
+            - pdcurses/panel.h
+            - pdcurses/term.h
           files:
-            - Library/lib/curses.a
-            - Library/lib/pdcurses.a
+            - Library/lib/libpdcurses.a
 
   - package:
       name: ${{ name|lower }}-static
@@ -71,11 +71,11 @@ outputs:
       - package_contents:
           include:
             - curses.h
-            - panel.h
-            - term.h
+            - pdcurses/curses.h
+            - pdcurses/panel.h
+            - pdcurses/term.h
           files:
-            - Library/lib/curses.a
-            - Library/lib/pdcurses.a
+            - Library/lib/libpdcurses.a
 
 about:
   homepage: https://www.projectpluto.com/win32a.htm
