@@ -13,22 +13,14 @@ source:
 
 build:
   number: 0
+  skip: win
   script:
     env:
       CARGO_PROFILE_RELEASE_STRIP: symbols
       CARGO_PROFILE_RELEASE_LTO: fat
     content:
-      - if: win
-        # Avoid Windows path-length issue breaking cargo
-        then: |
-          for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
-          set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
-          set "CARGO_HOME=%DRIVE_LETTER%\ch"
-          set "OPENSSL_DIR=%LIBRARY_PREFIX%"
-          cargo auditable install --locked --root %LIBRARY_PREFIX% --path . --no-track --no-default-features --features crypto-cng
-        else:
-          - export OPENSSL_DIR=$PREFIX
-          - cargo auditable install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features --features=crypto-openssl
+      - export OPENSSL_DIR=$PREFIX
+      - cargo auditable install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features --features=crypto-openssl
       - cargo-bundle-licenses --format yaml --output THIRDPARTY.yml
 
 requirements:
@@ -37,7 +29,9 @@ requirements:
     - cargo-auditable
     - cargo-bundle-licenses
   host:
-    - openssl <4.0
+    - openssl <4.0a0
+    - if: linux
+      then: sqlite
 
 tests:
   - script:
