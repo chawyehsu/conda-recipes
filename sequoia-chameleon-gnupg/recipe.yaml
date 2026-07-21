@@ -36,8 +36,7 @@ requirements:
     - cargo-auditable
     - cargo-bundle-licenses
   host:
-    - if: unix
-      then: openssl <4.0
+    - openssl <4.0
 
 tests:
   - script:
