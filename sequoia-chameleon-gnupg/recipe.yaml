@@ -24,6 +24,7 @@ build:
           for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
           set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
           set "CARGO_HOME=%DRIVE_LETTER%\ch"
+          set "OPENSSL_DIR=%LIBRARY_PREFIX%"
           cargo auditable install --locked --root %LIBRARY_PREFIX% --path . --no-track --no-default-features --features crypto-cng
         else:
           - export OPENSSL_DIR=$PREFIX
