@@ -2,7 +2,7 @@ schema_version: 1
 
 context:
   name: nano
-  version: "9.1"
+  version: "9.2"
 
 package:
   name: ${{ name|lower }}
@@ -10,7 +10,7 @@ package:
 
 source:
   - url: https://www.nano-editor.org/dist/v${{ (version | split('.'))[0] }}/nano-${{ version }}.tar.xz
-    sha256: 5f47764274cb7532349ce0aa20ec10f1e8e851a6e9fa3eb66812c43d196db042
+    sha256: 05ecb99247b782e8a5b3a25ed4101dd034b0236902f7449bc9795b717642f7e9
     patches:
       - if: win
         then:
@@ -36,7 +36,7 @@ source:
     then:
       - path: autogen.sh
       - git: https://github.com/coreutils/gnulib.git
-        rev: "88592a2880cf39a2f597cd0294a90d8dd7faa2df"
+        rev: "833eea6be5607a85bc964bf728a7a82ca461b5b1"
         depth: 2222
         target_directory: gnulib
   - path: branding.sh
