@@ -6,9 +6,5 @@
       "win-arm64",
       "win-32"
     ]
-  },
-  {
-    "name": "mingw-w64-pdcursesmod",
-    "type": "host"
   }
 ]
