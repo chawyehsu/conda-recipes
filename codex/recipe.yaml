@@ -1,0 +1,49 @@
+context:
+  version: "0.149.1"
+
+package:
+  name: codex
+  version: ${{ version }}
+
+source:
+  url: https://github.com/openai/codex/archive/refs/tags/rust-v${{ version }}.tar.gz
+  sha256: 85139f405ce455bf14ff452615cdb2572d752e31a1e0da6891ac8325915d10ce
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - ${{ compiler('rust') }}
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - ${{ stdlib('c') }}
+    - cargo-bundle-licenses
+    - cargo-auditable
+    - just
+
+tests:
+  - script:
+      - codex --version
+  - package_contents:
+      bin:
+        - codex
+        - codex-code-mode-host
+      files:
+        - etc/pixi/codex/global-ignore-conda-prefix
+      strict: true
+
+about:
+  summary: Lightweight coding agent that runs in your terminal
+  homepage: https://github.com/openai/codex
+  license: Apache-2.0
+  license_file:
+    - LICENSE
+    - THIRDPARTY.yml
+
+extra:
+  recipe-maintainers:
+    - moritzwilksch
+    - zelosleone
+    - Hofer-Julian
+    - pavelzw
