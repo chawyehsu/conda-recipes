@@ -1,5 +1,10 @@
 c_stdlib:
-  - ${{ stdlib('c') }}
+  - if: linux
+    then: sysroot
+  - if: osx
+    then: macosx_deployment_target
+  - if: win
+    then: vs
 c_stdlib_version:
   - if: linux
     then: 2.28
