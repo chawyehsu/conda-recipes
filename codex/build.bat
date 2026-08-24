@@ -17,7 +17,10 @@ if not defined CARGO_BUILD_TARGET (
 @rem cargo-auditable compat
 sed -i.bak -e 's/"build",/"auditable","build",/g' scripts/codex_package/cargo.py
 @rem build
-just assemble-codex-package --cargo-profile release --package-dir "%PREFIX%" --target "%CARGO_BUILD_TARGET%"
+just assemble-codex-package --cargo-profile release --package-dir out --target "%CARGO_BUILD_TARGET%"
+
+@rem install artifacts
+robocopy "out/" "%PREFIX%" /E
 
 REM Pixi: prevent CONDA_PREFIX from leaking into sandboxed processes
 set "MARKER_DIR=%PREFIX%\etc\pixi\codex"
