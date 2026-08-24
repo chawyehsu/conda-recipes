@@ -10,3 +10,6 @@ c_stdlib_version:
     then: 2.28
   - if: osx
     then: 14.2
+c_compiler:
+  - if: win
+    then: vs2022

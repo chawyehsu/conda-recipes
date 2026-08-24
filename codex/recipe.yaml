@@ -30,7 +30,7 @@ requirements:
   host:
     - if: linux
       then:
-        - openssl
+        - openssl <4.0a0
         - libcap
 
 tests:
