@@ -10,9 +10,9 @@ c_stdlib_version:
     then: 2.28
   - if: osx
     then: 14.2
-c_compiler_version:
+c_compiler:
   - if: win
-    then: 2026
-cxx_compiler_version:
+    then: vs2026
+cxx_compiler:
   - if: win
-    then: 2026
+    then: vs2026
