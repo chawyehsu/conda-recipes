@@ -3,7 +3,7 @@
 set -o xtrace -o nounset -o pipefail -o errexit
 
 # build
-just assemble-codex-package --cargo cargo-auditable --cargo-profile release --package-dir out --target "${CARGO_BUILD_TARGET}"
+just assemble-codex-package --cargo "cargo auditable" --cargo-profile release --package-dir out --target "${CARGO_BUILD_TARGET}"
 
 # install artifacts
 cp -a out/bin/ "${PREFIX}/bin/"
