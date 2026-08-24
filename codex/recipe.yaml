@@ -11,6 +11,8 @@ source:
 
 build:
   number: 0
+  skip:
+    - osx
 
 requirements:
   build:
@@ -21,6 +23,15 @@ requirements:
     - cargo-bundle-licenses
     - cargo-auditable
     - just
+    - if: linux
+      then: pkg-config
+    - if: win
+      then: m2-sed
+  host:
+    - if: linux
+      then:
+        - openssl
+        - libcap
 
 tests:
   - script:
