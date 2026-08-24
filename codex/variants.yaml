@@ -1,4 +1,7 @@
+c_stdlib:
+  - ${{ stdlib('c') }}
 c_stdlib_version:
   - if: linux
     then: 2.28
-    else: 14.2
+  - if: osx
+    then: 14.2
