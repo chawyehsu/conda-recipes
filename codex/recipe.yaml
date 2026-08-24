@@ -11,8 +11,6 @@ source:
 
 build:
   number: 0
-  skip:
-    - osx
 
 requirements:
   build:
@@ -42,7 +40,6 @@ tests:
         - codex-code-mode-host
       files:
         - etc/pixi/codex/global-ignore-conda-prefix
-      strict: true
 
 about:
   summary: Lightweight coding agent that runs in your terminal

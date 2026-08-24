@@ -18,7 +18,7 @@ sed -i.bak -e 's/"build",/"auditable","build",/g' scripts/codex_package/cargo.py
 just assemble-codex-package --cargo-profile release --package-dir out --target "${CARGO_BUILD_TARGET}"
 
 # install artifacts
-mv out/* "${PREFIX}/"
+cp -r out/* "${PREFIX}/"
 
 # Pixi: prevent CONDA_PREFIX from leaking into sandboxed processes
 mkdir -p "${PREFIX}/etc/pixi/codex"

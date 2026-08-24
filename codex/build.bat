@@ -20,7 +20,7 @@ sed -i.bak -e 's/"build",/"auditable","build",/g' scripts/codex_package/cargo.py
 just assemble-codex-package --cargo-profile release --package-dir out --target "%CARGO_BUILD_TARGET%"
 
 @rem install artifacts
-robocopy "out/" "%PREFIX%" /E
+robocopy "out/" "%PREFIX%" /E /NFL /NDL /NJH /NJS /NC /NS /NP
 
 REM Pixi: prevent CONDA_PREFIX from leaking into sandboxed processes
 set "MARKER_DIR=%PREFIX%\etc\pixi\codex"
