@@ -2,6 +2,11 @@
 
 set -o xtrace -o nounset -o pipefail -o errexit
 
+if [[ ${OSTYPE} == "linux"* && "${build_platform:-}" != "${target_platform:-}" ]]; then
+    export PKG_CONFIG_ALLOW_CROSS=1
+    export OPENSSL_DIR="${PREFIX}"
+fi
+
 # cargo-auditable compat
 sed -i.bak -e 's/"build",/"auditable","build",/g' scripts/codex_package/cargo.py
 # build

@@ -13,6 +13,7 @@ build:
   number: 0
   skip:
     - osx
+    - linux and x86_64
 
 requirements:
   build:
