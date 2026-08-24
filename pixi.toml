@@ -8,7 +8,7 @@ license = "BSD-3-Clause"
 
 [tasks]
 # Set env-isolation to none to inherit host environments set in CI
-build = "rattler-build build --env-isolation 'none'"
+build = "rattler-build build --no-build-id --env-isolation 'none'"
 
 [dependencies]
 rattler-build = ">=0.63.1,<0.64"
