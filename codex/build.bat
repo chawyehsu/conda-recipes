@@ -1,6 +1,11 @@
 @echo on
 setlocal enabledelayedexpansion
 
+@rem Avoid Windows path-length issue breaking Cargo
+for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
+set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
+set "CARGO_HOME=%DRIVE_LETTER%\ch"
+
 if not defined CARGO_BUILD_TARGET (
     if "%target_platform%"=="win-arm64" (
         set "CARGO_BUILD_TARGET=aarch64-pc-windows-msvc"
