@@ -11,6 +11,9 @@ source:
 
 build:
   number: 0
+  skip:
+    - unix
+    - win and x86_64
   script:
     file: build
     env:
