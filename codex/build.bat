@@ -17,8 +17,7 @@ if not defined CARGO_BUILD_TARGET (
 @rem `ring` patch for cross-compile to windows arm
 if "%build_platform%"=="win-64" (
     if "%target_platform%"=="win-arm64" (
-        echo "[patch.crates-io]" >> "%SRC_DIR%\codex-rs\Cargo.toml"
-        echo "ring = { git = "https://github.com/briansmith/ring", rev = "e6aa4029690009a248a292d8a7f35602da5a2882" }" >> "%SRC_DIR%\codex-rs\Cargo.toml"
+        sed -i.bak -e '/\[patch.crates-io\]/a \ring = { git = "https://github.com/briansmith/ring", rev = "e6aa4029690009a248a292d8a7f35602da5a2882" }' "%SRC_DIR%\codex-rs\Cargo.toml"
     )
 )
 
