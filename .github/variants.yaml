@@ -1,4 +1,5 @@
-# shared baseline for recipes in this repo, based on conda-forge-pinning
+# shared baseline for recipes in this repo, based on conda-forge-pinning:
+# https://github.com/conda-forge/conda-forge-pinning-feedstock
 c_stdlib:
   - if: linux
     then: sysroot
@@ -10,15 +11,21 @@ c_stdlib:
 c_stdlib_version:
   - if: linux
     then: 2.17
-  - if: osx and x86_64
-    then: 10.13
-  - if: osx and arm64
+  - if: osx
     then: 11.0
 
 c_compiler:
+  - if: linux
+    then: gcc
+  - if: osx
+    then: clang
   - if: win
     then: vs
 c_compiler_version:
+  - if: linux
+    then: 15
+  - if: osx
+    then: 21
   # We use GitHub Actions to build packages, see `.github/matrix.json`. Ensure
   # the vs compiler is synced with the one provided in GitHub Actions runner images:
   # https://github.com/actions/runner-images/tree/main#available-images
@@ -26,8 +33,16 @@ c_compiler_version:
     then: 2022
 
 cxx_compiler:
+  - if: linux
+    then: gxx
+  - if: osx
+    then: clangxx
   - if: win
     then: vs
 cxx_compiler_version:
+  - if: linux
+    then: 15
+  - if: osx
+    then: 21
   - if: win
     then: 2022
