@@ -4,6 +4,8 @@ c_stdlib:
     then: sysroot
   - if: osx
     then: macosx_deployment_target
+  - if: win
+    then: vs
 
 c_stdlib_version:
   - if: linux
@@ -20,5 +22,12 @@ c_compiler_version:
   # We use GitHub Actions to build packages, see `.github/matrix.json`. Ensure
   # the vs compiler is synced with the one provided in GitHub Actions runner images:
   # https://github.com/actions/runner-images/tree/main#available-images
+  - if: win
+    then: 2022
+
+cxx_compiler:
+  - if: win
+    then: vs
+cxx_compiler_version:
   - if: win
     then: 2022

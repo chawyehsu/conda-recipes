@@ -1,3 +1,0 @@
-cxx_compiler:
-  - if: win
-    then: vs2022
