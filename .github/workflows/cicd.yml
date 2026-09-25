@@ -178,12 +178,13 @@ jobs:
 
           # Common build arguments
           $buildArgs = @(
-            '--log-style','plain',
+            '--log-style', 'plain',
             '--extra-meta', "flow_run_id=github_$env:GITHUB_RUN_ID",
             '--extra-meta', "remote_url=https://github.com/$env:GITHUB_REPOSITORY",
             '--extra-meta', "sha=$env:GITHUB_SHA",
-            '-c','conda-forge',
-            '-c','chawyehsu'
+            '-c', 'conda-forge',
+            '-c', 'chawyehsu',
+            '--variant-config', '.github/variants.yaml'
           )
 
           $collectedDeps = @()
@@ -212,6 +213,13 @@ jobs:
                   Write-Host "Building unpublished dependency $($dep.name) for $depPkgName..." -ForegroundColor Blue
                   $buildDepArgs = $buildArgs + @('--target-platform', $target)
                 }
+
+                # package variants.yaml
+                $variantPath = Join-Path -Path $depPkgName -ChildPath "variants.yaml"
+                if (Test-Path -Path $variantPath) {
+                  $buildDepArgs = $buildDepArgs + @('--variant-config', $variantPath)
+                }
+
                 pixi run build --recipe-dir $dep.name @buildDepArgs
                 Assert-LastExitCode "Dependency build $($dep.name)"
                 $collectedDeps += $dep.name
