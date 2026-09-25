@@ -11,4 +11,4 @@ license = "BSD-3-Clause"
 build = "rattler-build build --no-build-id --env-isolation 'none'"
 
 [dependencies]
-rattler-build = ">=0.63.1,<0.64"
+rattler-build = ">=0.76.1,<0.77"
