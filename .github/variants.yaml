@@ -21,4 +21,4 @@ c_compiler_version:
   # the vs compiler is synced with the one provided in GitHub Actions runner images:
   # https://github.com/actions/runner-images/tree/main#available-images
   - if: win
-    then: vs2022
+    then: 2022
