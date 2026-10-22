@@ -214,7 +214,7 @@ jobs:
                   $buildDepArgs = $buildArgs + @('--target-platform', $target)
                 }
 
-                # package variants.yaml
+                # dep package variants.yaml
                 $variantPath = Join-Path -Path $depPkgName -ChildPath "variants.yaml"
                 if (Test-Path -Path $variantPath) {
                   $buildDepArgs = $buildDepArgs + @('--variant-config', $variantPath)
@@ -229,6 +229,12 @@ jobs:
 
           # Build unpublished dependencies if any
           Build-UnpublishedDependency $dir
+
+          # package variants.yaml
+          $variantPath = Join-Path -Path $dir -ChildPath "variants.yaml"
+          if (Test-Path -Path $variantPath) {
+            $buildArgs = $buildArgs + @('--variant-config', $variantPath)
+          }
 
           Write-Host "Building $dir..." -ForegroundColor Magenta
           $packageArgs = $buildArgs + @('--target-platform', $target)
