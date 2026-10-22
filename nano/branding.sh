@@ -4,7 +4,7 @@ set -euo pipefail
 # Get pdcurses version from conda recipe
 pdc_recipe="${RECIPE_DIR}/../mingw-w64-pdcursesmod/recipe.yaml"
 PDC_VER=$(grep -oP 'version:\s*"\K[^"]+' "${pdc_recipe}")
-NANO_VER="GNU nano for Windows ${ARCH}, v${PKG_VERSION}-${PKG_BUILDNUM} $(TZ=UTC+8 date +'%Y-%m-%d') (PDCursesMod v${PDC_VER})"
+NANO_VER="GNU nano for Windows, v${PKG_VERSION}-${PKG_BUILDNUM} $(TZ=UTC+8 date +'%Y-%m-%d') (PDCursesMod v${PDC_VER})"
 BRANDING="Project info at https://github.com/chawyehsu/nano-for-windows\\\\n"
 
 echo "$NANO_VER"
