@@ -20,8 +20,10 @@ cat > pdcurses.h <<'EOF'
 #include "pdcurses/curses.h"
 EOF
 install -m 0644 pdcurses.h "$LIBRARY_PREFIX/include/pdcurses.h"
-# install `curses.h` as well for compatibility
+# install `curses.h`/`term.h`/`panel.h` as well for compatibility
 install -m 0644 pdcurses.h "$LIBRARY_PREFIX/include/curses.h"
+install -m 0644 term.h "$LIBRARY_PREFIX/include/term.h"
+install -m 0644 panel.h "$LIBRARY_PREFIX/include/panel.h"
 
 cd wincon
 if [[ "${PKG_NAME}" == "$pkg_name_static" ]]; then

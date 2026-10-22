@@ -44,6 +44,8 @@ outputs:
             - libpdcurses.dll
           include:
             - curses.h
+            - panel.h
+            - term.h
             - pdcurses/curses.h
             - pdcurses/panel.h
             - pdcurses/term.h
@@ -71,6 +73,8 @@ outputs:
       - package_contents:
           include:
             - curses.h
+            - panel.h
+            - term.h
             - pdcurses/curses.h
             - pdcurses/panel.h
             - pdcurses/term.h
