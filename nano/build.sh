@@ -5,7 +5,7 @@ set -ex
 if [[ "${target_platform}" =~ win-* ]]; then
     export LDFLAGS="${LDFLAGS:-} -L$LIBRARY_PREFIX/lib -static"
     # `PDC_NCMOUSE` to enable ncurses-compatible mode mouse API
-    export NCURSESW_CFLAGS="-I$LIBRARY_PREFIX/include -I$LIBRARY_PREFIX/include/pdcurses -DPDC_NCMOUSE"
+    export NCURSESW_CFLAGS="-I$LIBRARY_PREFIX/include -DPDC_NCMOUSE"
     export NCURSESW_LIBS="-lpdcurses -lwinmm"
 
     export BUILD=x86_64-w64-mingw32
