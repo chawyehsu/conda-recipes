@@ -9,6 +9,9 @@ if [[ "${target_platform}" =~ win-* ]]; then
     export NCURSESW_LIBS="-lpdcurses -lwinmm"
 
     export BUILD=x86_64-w64-mingw32
+    if [[ "${build_platform}" == 'osx-arm64' ]]; then
+        export BUILD=arm64-apple-darwin
+    fi
     if [[ "${build_platform}" == 'linux-64' ]]; then
         export BUILD=x86_64-conda-linux-gnu
     fi

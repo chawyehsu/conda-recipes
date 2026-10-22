@@ -65,6 +65,10 @@ requirements:
         - autoconf
         - automake
         - gettext-tools
+    - if: build_platform == 'osx-64' or build_platform == 'osx-arm64'
+      then:
+        - sed
+        - grep
   host:
     - if: win
       then: mingw-w64-pdcursesmod-static
