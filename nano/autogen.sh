@@ -28,6 +28,7 @@ modules="
 	wchar-h
 	wctype-h
 	wcwidth
+    windows-stat-timespec
 "
 
 # Make sure the local gnulib git repo is up-to-date.
