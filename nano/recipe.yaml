@@ -15,23 +15,24 @@ source:
       - if: win
         then:
         - 0001-win32-include-windows-header.patch
-        - 0002-win32-drop-bracketed-paste-mode-escape-sequences.patch
-        - 0003-win32-system-wide-rcfile-compat.patch
-        - 0004-win32-fix-file-parentdir-access.patch
-        - 0005-win32-replace-slashes-and-invalid-filename-chars.patch
-        - 0006-win32-homedir-tempdir-compat.patch
-        - 0007-win32-file-io-to-binary-mode.patch
-        - 0008-win32-utf8-support-and-detect-wide-char-width.patch
-        - 0009-win32-windows-conhost-read-stdin-data.patch
-        - 0010-win32-remove-halfdelay-for-unicode.patch
-        - 0011-win32-keycode-pdcursesmod-compat.patch
-        - 0012-win32-colortype-pdcursesmod-compat.patch
-        - 0013-win32-window-resize-handling-and-screen-redraw.patch
-        - 0014-win32-formatter-and-spell-check-support.patch
-        - 0015-win32-poshistory-item-windows-path-compat.patch # v8.5+
-        - 0016-win32-pdcursesmod-ctrlv-passthrough.patch
-        - 0017-win32-abort-unsupported-suspend-function.patch
-        - 0018-win32-windows-file-timestamp-struct.patch # v9.1
+        - 0002-win32-add-nano-rc-resource.patch
+        - 0003-win32-drop-bracketed-paste-mode-escape-sequences.patch
+        - 0004-win32-system-wide-rcfile-compat.patch
+        - 0005-win32-fix-file-parentdir-access.patch
+        - 0006-win32-replace-slashes-and-invalid-filename-chars.patch
+        - 0007-win32-homedir-tempdir-compat.patch
+        - 0008-win32-file-io-to-binary-mode.patch
+        - 0009-win32-utf8-support-and-detect-wide-char-width.patch
+        - 0010-win32-windows-conhost-read-stdin-data.patch
+        - 0011-win32-remove-halfdelay-for-unicode.patch
+        - 0012-win32-keycode-pdcursesmod-compat.patch
+        - 0013-win32-colortype-pdcursesmod-compat.patch
+        - 0014-win32-window-resize-handling-and-screen-redraw.patch
+        - 0015-win32-formatter-and-spell-check-support.patch
+        - 0016-win32-poshistory-item-windows-path-compat.patch # v8.5+
+        - 0017-win32-pdcursesmod-ctrlv-passthrough.patch
+        - 0018-win32-abort-unsupported-suspend-function.patch
+        - 0019-win32-windows-file-timestamp-struct.patch # v9.1
   - if: win and build_platform != 'win-64' and build_platform != 'win-arm64'
     then:
       - path: autogen.sh
