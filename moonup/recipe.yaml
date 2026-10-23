@@ -24,7 +24,6 @@ build:
       AWS_LC_SYS_CMAKE_BUILDER: "1"
     content:
       - if: win
-        # [win] disable default static linked executables;
         # Avoid Windows path-length issue breaking Cmake/Cargo
         then: |
           del /S /Q .cargo\config.toml
