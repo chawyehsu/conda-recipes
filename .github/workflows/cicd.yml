@@ -136,31 +136,21 @@ jobs:
     - name: Setup Pixi
       uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
 
-    - name: Compute cache epoch
-      id: cache-epoch
-      shell: bash
-      run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
-
-    # Restore the latest snapshot on every run. Only main saves, and the
-    # weekly epoch makes it at most one snapshot per job/platform per week
-    # instead of one per commit.
     - name: Restore kache store
       id: kache
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: .kache
-        key: kache-1.2.2-${{ matrix.os }}-${{ steps.cache-epoch.outputs.week }}
-        restore-keys: |
-          kache-1.2.2-${{ matrix.os }}-
+        key: kache-1.2.2-${{ runner.os }}-${{ runner.arch }}-${{ matrix.os }}
+        restore-keys: kache-1.2.2-${{ runner.os }}-${{ runner.arch }}-${{ matrix.os }}
 
     - name: Restore cargo registry
       id: cargo
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cargo
-        key: cargo-${{ matrix.os }}-${{ steps.cache-epoch.outputs.week }}
-        restore-keys: |
-          cargo-${{ matrix.os }}-
+        key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ matrix.os }}
+        restore-keys: cargo-${{ runner.os }}-${{ runner.arch }}-${{ matrix.os }}
 
     - name: Run Build
       id: run_build
@@ -295,14 +285,14 @@ jobs:
 
 
     - name: Save kache store
-      if: success() && github.ref == 'refs/heads/main' && steps.kache.outputs.cache-hit != 'true'
+      if: success() && github.ref == 'refs/heads/main'
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: .kache
         key: ${{ steps.kache.outputs.cache-primary-key }}
 
     - name: Save cargo registry
-      if: success() && github.ref == 'refs/heads/main' && steps.cargo.outputs.cache-hit != 'true'
+      if: success() && github.ref == 'refs/heads/main'
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cargo
@@ -315,6 +305,11 @@ jobs:
         path: |
           output/${{ matrix.target }}/*.conda
           output/noarch/*.conda
+
+    - name: Cache Report
+      run: |
+        pixi run kache stats --since 24h --full
+        pixi run kache stats --since 24h --format github >> "$GITHUB_STEP_SUMMARY"
 
   cd_release:
     name: Release
@@ -335,8 +330,6 @@ jobs:
 
     - name: Setup Pixi
       uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
-      with:
-        cache: true
 
     - name: Download Artifacts
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
