@@ -37,7 +37,7 @@ requirements:
     - cargo-auditable
     - cargo-bundle-licenses
     - cmake
-    - if: osx and (build_platform == 'oxs-arm64' or build_platform == 'oxs-64')
+    - if: osx and (build_platform == 'osx-arm64' or build_platform == 'osx-64')
       # ld64 is needed otherwise below error raises:
       # ld: -lto_library library filename must be 'libLTO.dylib'
       then: ld64
