@@ -1,0 +1,61 @@
+schema_version: 1
+
+context:
+  name: volta
+  version: "2.1.0"
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/chawyehsu/volta/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: 6633e31b63fff5f4b4b7c1ce0d04eebc3589444d7e9545d1c5552c7ac7915c41
+
+build:
+  number: 0
+  script:
+    env:
+      # Use cmake to build aws-lc-sys, because conda's CFLAGS inject -O2 which
+      # overrides the -O0 required by jitterentropy-base.c, causing a build failure.
+      AWS_LC_SYS_CMAKE_BUILDER: "1"
+    content:
+      - if: win
+        # Avoid Windows path-length issue breaking Cmake/Cargo
+        then: |
+          del /S /Q .cargo\config.toml
+          for %%I in ("%SRC_DIR%") do set DRIVE_LETTER=%%~dI
+          set "CARGO_TARGET_DIR=%DRIVE_LETTER%\cd"
+          set "CARGO_HOME=%DRIVE_LETTER%\ch"
+      - cargo auditable install --locked --root ${{ PREFIX }} --path . --no-track --no-default-features
+      - cargo-bundle-licenses --format yaml --output ${{ SRC_DIR }}/THIRDPARTY.yml
+
+requirements:
+  build:
+    - ${{ compiler("c") }}
+    - ${{ compiler("rust") }}
+    - cargo-auditable
+    - cargo-bundle-licenses
+    - cmake
+    - if: osx
+      # ld64 is needed otherwise below error raises:
+      # ld: -lto_library library filename must be 'libLTO.dylib'
+      then: ld64
+
+tests:
+  - script:
+      - volta --help
+
+about:
+  homepage: https://github.com/chawyehsu/volta
+  license: Apache-2.0
+  license_file:
+    - LICENSE
+    - THIRDPARTY.yml
+  summary: Maintained fork of Volta
+  description: Volta is a hassle-free way to manage your JavaScript command-line tools
+  repository: https://github.com/chawyehsu/volta
+
+extra:
+  recipe-maintainers:
+    - chawyehsu

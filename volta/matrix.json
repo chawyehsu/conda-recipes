@@ -1,0 +1,10 @@
+{
+  "include": [
+    { "target": "win-64",        "os": "windows-2022"     },
+    { "target": "win-arm64",     "os": "windows-2022"     },
+    { "target": "linux-64",      "os": "ubuntu-24.04"     },
+    { "target": "linux-aarch64", "os": "ubuntu-24.04-arm" },
+    { "target": "osx-64",        "os": "ubuntu-24.04"     },
+    { "target": "osx-arm64",     "os": "ubuntu-24.04"     }
+  ]
+}
