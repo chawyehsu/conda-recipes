@@ -12,3 +12,4 @@ build = "rattler-build build --no-build-id --env-isolation 'none'"
 
 [dependencies]
 rattler-build = ">=0.76.1,<0.77"
+kache = ">=1.2.2,<2"
